@@ -50,7 +50,7 @@ Zorunlu alanlar (bkz. `ModuleManifest` sözleşmesi, `FreeRehabHub.Modules.Contr
 
 ## 4. Kayıt / keşif
 
-Elle bir registry dosyasına ekleme **yapma**. `IModuleRegistry`, uygulama açılışında yüklü assembly'lerdeki `IModule` implementasyonlarını ve `modules/**/manifest.json` dosyalarını tarayarak modülü otomatik bulur. Modül görünmüyorsa önce `manifest.json`'daki `EntryPointType`'ın gerçek tip adıyla birebir eştiğini kontrol et.
+Elle bir registry dosyasına ekleme **yapma**. `IModuleRegistry`, uygulama açılışında `modules/**/manifest.json` dosyalarını tarar ve çıktı klasöründeki modül DLL'lerini **elle `Assembly.LoadFrom` ile yükleyip** içindeki `IModule` implementasyonlarını bulur — sadece zaten yüklü assembly'leri taramak yeterli **değil** (Faz 1, F1.05 spike'ında doğrulandı: .NET, koddan hiç dokunulmayan referanslı bir assembly'yi otomatik yüklemiyor). Modül görünmüyorsa önce `manifest.json`'daki `EntryPointType`'ın gerçek tip adıyla birebir eştiğini, sonra modül DLL'sinin çıktı klasöründe fiilen var olup olmadığını kontrol et.
 
 ## 5. Test
 

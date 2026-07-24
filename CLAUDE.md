@@ -163,7 +163,11 @@ Göreve başlamadan önce ilgili skill'i oku:
 | `testing-approach` | Test yazarken veya "nasıl test ederim" sorusunda |
 | `clinical-data-handling` | Hasta verisine, loglamaya veya `content-packs/`'e dokunan herhangi bir kod için |
 
-## 13. Bilinen Riskler / Açık Sorular
+## 13. Doğrulanmış Teknik Kararlar
+
+- **SQLCipher + .NET (Faz 1, F1.04 spike'ı ile doğrulandı):** `Microsoft.Data.Sqlite` (8.0.8) + `SQLitePCLRaw.bundle_e_sqlcipher` (2.1.10) kombinasyonu çalışıyor. Başlangıçta `SQLitePCL.Batteries_V2.Init()` çağrılmalı; şifreleme `SqliteConnectionStringBuilder.Password` ile uygulanıyor. Parolasız/yanlış parola ile açma denemeleri beklendiği gibi başarısız oluyor, doğru parola ile veri okunabiliyor — yani şifreleme gerçek, dekoratif değil. **Doğrulandı:** Linux x86_64 (Fedora, .NET 8). **Doğrulanmadı:** Windows/macOS — bu paket bundle'ı bu platformlar için de native binary içeriyor ama gerçek makinede test edilmedi; Faz 2'de (gerçek repository yazılırken) veya en geç Faz 8'de (paketleme) çapraz platform testi yapılmalı. `FreeRehabHub.Data` projesine bu paket referansları Faz 2'de eklenecek.
+
+## 14. Bilinen Riskler / Açık Sorular
 
 Mimari tartışmasında tespit edilip henüz çözülmemiş, ilgili fazda ele alınacak noktalar:
 

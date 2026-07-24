@@ -4,12 +4,12 @@
 
 [node name="TherapistSelectionScreen" type="Control"]
 script = ExtResource("1")
-_therapistList = NodePath("VBoxContainer/TherapistList")
-_selectButton = NodePath("VBoxContainer/SelectButton")
-_newTherapistNameInput = NodePath("VBoxContainer/NewTherapistNameInput")
-_newTherapistDisciplineOption = NodePath("VBoxContainer/NewTherapistDisciplineOption")
-_createButton = NodePath("VBoxContainer/CreateButton")
-_errorLabel = NodePath("VBoxContainer/ErrorLabel")
+_therapistListPath = NodePath("VBoxContainer/TherapistList")
+_selectButtonPath = NodePath("VBoxContainer/SelectButton")
+_newTherapistNameInputPath = NodePath("VBoxContainer/NewTherapistNameInput")
+_newTherapistDisciplineOptionPath = NodePath("VBoxContainer/NewTherapistDisciplineOption")
+_createButtonPath = NodePath("VBoxContainer/CreateButton")
+_errorLabelPath = NodePath("VBoxContainer/ErrorLabel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 offset_left = 40.0

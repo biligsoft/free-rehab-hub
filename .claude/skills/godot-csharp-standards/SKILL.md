@@ -51,7 +51,9 @@ Kod içinde açıklamasız sayısal/string literal yasak — anlamlı bir `const
 
 **Signal kullanımı:** Godot signal'leri (`[Signal]`) sadece **aynı sahne ağacı içindeki node-to-node** iletişim için kullanılır (ör. bir buton tıklanınca ebeveyn panel'i haberdar etmek). Katmanlar-arası iletişim (modül → ModuleHost, Service → UI) için C# `event`/arayüz kullan — bunlar Godot-bağımsız katmanlarda da çalışır ve `Modules.Contracts` sözleşmeleriyle tutarlıdır (ör. `IExerciseModule.Completed`). Signal'i asla katman sınırını geçmek için kullanma.
 
-**Node referansları:** `GetNode("../../Some/Path")` gibi kırılgan string yollar yasak. `[Export] private NodePath _fooPath` + `GetNode<T>(_fooPath)` ya da (Godot 4'te tercih edilen) doğrudan `[Export] private Foo _foo;` tip-güvenli export kullan. Referansları `_Ready()` içinde bir kez çöz, döngü içinde tekrar tekrar `GetNode` çağırma.
+**Node referansları:** `GetNode("../../Some/Path")` gibi kırılgan string yollar yasak. **Sadece `[Export] private NodePath _fooPath` + `_Ready()` içinde bir kez `GetNode<T>(_fooPath)` kullan.** Referansları döngü içinde tekrar tekrar `GetNode` çağırarak çözme.
+
+Doğrudan tip-güvenli `[Export] private Foo _foo;` (Node-türevi alan) deseni **kullanılmaz** — F2.16'da elle yazılan `.tscn` dosyalarında `_foo = NodePath("...")` ataması derleme zamanında hata vermiyor ama çalışma zamanında alanı hiç doldurmuyor (sessizce `null` kalıyor, `_Ready()`'de `NullReferenceException`'a yol açıyor). Bu, editörün node-picker UI'sıyla atandığında muhtemelen farklı çalışıyor, ama elle metin olarak yazılan sahnelerde güvenilir değil — bu proje sahneleri büyük ölçüde elle (Godot editörü GUI'siz) yazıldığından, `NodePath` deseni tek güvenli seçenek.
 
 **Autoload'lar (singleton):** Şu an tanımlı autoload'lar ve tek sorumlulukları:
 - `SessionContext` — aktif hasta/terapist/rol (Terapist/Çocuk modu) durumu

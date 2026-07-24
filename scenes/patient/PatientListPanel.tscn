@@ -4,8 +4,15 @@
 
 [node name="PatientListPanel" type="Control"]
 script = ExtResource("1")
-_patientList = NodePath("PatientItemList")
+_patientListPath = NodePath("PatientItemList")
+_newPatientButtonPath = NodePath("NewPatientButton")
 
 [node name="PatientItemList" type="ItemList" parent="."]
 offset_right = 400.0
 offset_bottom = 300.0
+
+[node name="NewPatientButton" type="Button" parent="."]
+offset_top = 310.0
+offset_right = 150.0
+offset_bottom = 340.0
+text = "Yeni Hasta"

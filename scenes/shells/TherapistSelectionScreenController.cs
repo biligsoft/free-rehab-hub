@@ -10,18 +10,30 @@ namespace FreeRehabHub.App.Shells;
 
 public partial class TherapistSelectionScreenController : Control
 {
-    [Export] private ItemList _therapistList = null!;
-    [Export] private Button _selectButton = null!;
-    [Export] private LineEdit _newTherapistNameInput = null!;
-    [Export] private OptionButton _newTherapistDisciplineOption = null!;
-    [Export] private Button _createButton = null!;
-    [Export] private Label _errorLabel = null!;
+    [Export] private NodePath _therapistListPath = null!;
+    [Export] private NodePath _selectButtonPath = null!;
+    [Export] private NodePath _newTherapistNameInputPath = null!;
+    [Export] private NodePath _newTherapistDisciplineOptionPath = null!;
+    [Export] private NodePath _createButtonPath = null!;
+    [Export] private NodePath _errorLabelPath = null!;
 
+    private ItemList _therapistList = null!;
+    private Button _selectButton = null!;
+    private LineEdit _newTherapistNameInput = null!;
+    private OptionButton _newTherapistDisciplineOption = null!;
+    private Button _createButton = null!;
+    private Label _errorLabel = null!;
     private AppServices _appServices = null!;
     private IReadOnlyList<Therapist> _therapists = Array.Empty<Therapist>();
 
     public override async void _Ready()
     {
+        _therapistList = GetNode<ItemList>(_therapistListPath);
+        _selectButton = GetNode<Button>(_selectButtonPath);
+        _newTherapistNameInput = GetNode<LineEdit>(_newTherapistNameInputPath);
+        _newTherapistDisciplineOption = GetNode<OptionButton>(_newTherapistDisciplineOptionPath);
+        _createButton = GetNode<Button>(_createButtonPath);
+        _errorLabel = GetNode<Label>(_errorLabelPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
         _errorLabel.Text = string.Empty;
         _selectButton.Disabled = true;

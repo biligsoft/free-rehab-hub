@@ -61,6 +61,7 @@ free-rehab-hub/
 
 ├── autoload/
 │   ├── SessionContext.cs
+│   ├── AppServices.cs               # composition-root: DB açıldıktan sonra kurulan Services katmanı örnekleri
 │   ├── LocalizationAutoload.cs
 │   ├── ThemeManager.cs
 │   └── ModuleRegistryAutoload.cs
@@ -121,7 +122,7 @@ C# PascalCase/camelCase standart konvansiyonları, dosya başına tek sınıf, m
 
 ## 7. Godot'a Özgü Kurallar (özet)
 
-Sahne organizasyonu (bir ekran = bir `.tscn`, "tanrı sahne" yasak), signal'ler sadece sahne-içi node-to-node iletişim için (katmanlar arası iletişim C# event/arayüz ile), tip-güvenli node referansları (`[Export]`, string path yasak), autoload listesi (`SessionContext`, `LocalizationAutoload`, `ThemeManager`, `ModuleRegistryAutoload`). Detay: `.claude/skills/godot-csharp-standards/`.
+Sahne organizasyonu (bir ekran = bir `.tscn`, "tanrı sahne" yasak), signal'ler sadece sahne-içi node-to-node iletişim için (katmanlar arası iletişim C# event/arayüz ile), tip-güvenli node referansları (`[Export]`, string path yasak), autoload listesi (`SessionContext`, `AppServices`, `LocalizationAutoload`, `ThemeManager`, `ModuleRegistryAutoload`). Detay: `.claude/skills/godot-csharp-standards/`.
 
 ## 8. Modül Ekleme Rehberi (özet)
 

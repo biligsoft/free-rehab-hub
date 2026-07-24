@@ -13,10 +13,12 @@ config_version=5
 config/name="FreeRehabHub"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
+run/main_scene="res://scenes/shells/LockScreen.tscn"
 
 [autoload]
 
 SessionContext="*res://autoload/SessionContext.cs"
+AppServices="*res://autoload/AppServices.cs"
 LocalizationAutoload="*res://autoload/LocalizationAutoload.cs"
 ThemeManager="*res://autoload/ThemeManager.cs"
 

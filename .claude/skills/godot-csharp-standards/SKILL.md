@@ -55,6 +55,7 @@ Kod içinde açıklamasız sayısal/string literal yasak — anlamlı bir `const
 
 **Autoload'lar (singleton):** Şu an tanımlı autoload'lar ve tek sorumlulukları:
 - `SessionContext` — aktif hasta/terapist/rol (Terapist/Çocuk modu) durumu
+- `AppServices` — composition-root/service-locator: `AppServices.Unlock(password)` çağrıldıktan sonra (kilit ekranında, SQLCipher DB açıldığında) kurulan `PatientService`/`TherapistService`/`TherapySessionService` örneklerini tutar ve sahnelere açar. `SessionContext`'ten ayrı tutuluyor çünkü sorumluluğu farklı: biri "kim/hangi hasta aktif" durumunu, diğeri "hangi servis örnekleri kurulu" bağlanmasını taşıyor.
 - `LocalizationAutoload` — TR/EN dil değiştirme, Godot `TranslationServer`'ı sarar
 - `ThemeManager` — erişilebilirlik temaları (yüksek kontrast, düşük uyaran)
 - `ModuleRegistryAutoload` — `IModuleRegistry`'yi sahne ağacına açar, `.tscn` yüklemesini üstlenir (Godot-bağımlı registry sınırı burasıdır)

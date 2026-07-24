@@ -28,6 +28,13 @@ public sealed class SqliteConnectionFactory
 
         var connection = new SqliteConnection(connectionString);
         connection.Open();
+
+        using (var pragma = connection.CreateCommand())
+        {
+            pragma.CommandText = "PRAGMA foreign_keys = ON;";
+            pragma.ExecuteNonQuery();
+        }
+
         return connection;
     }
 }

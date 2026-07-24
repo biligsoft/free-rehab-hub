@@ -19,6 +19,11 @@ config/icon="res://icon.svg"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[autoload]
+
+LocalizationAutoload="*res://autoload/LocalizationAutoload.cs"
+ThemeManager="*res://autoload/ThemeManager.cs"
+
 [dotnet]
 
 project/assembly_name="FreeRehabHub"

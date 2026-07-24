@@ -32,9 +32,7 @@ public partial class LockScreenController : Control
         try
         {
             _appServices.Unlock(password);
-            _errorLabel.Text = "Veritabanı açıldı.";
-            _passwordInput.Editable = false;
-            _unlockButton.Disabled = true;
+            GetTree().ChangeSceneToFile("res://scenes/shells/TherapistShell.tscn");
         }
         catch (SqliteException)
         {

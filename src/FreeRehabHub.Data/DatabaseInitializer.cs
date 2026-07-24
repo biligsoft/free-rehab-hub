@@ -27,6 +27,17 @@ public sealed class DatabaseInitializer
         );
 
         CREATE INDEX IF NOT EXISTS idx_therapysessions_patientid ON TherapySessions(PatientId);
+
+        CREATE TABLE IF NOT EXISTS AuditLogs (
+            Id TEXT PRIMARY KEY,
+            TherapistId TEXT NOT NULL REFERENCES Therapists(Id),
+            OccurredAt TEXT NOT NULL,
+            RecordType TEXT NOT NULL,
+            RecordId TEXT NOT NULL,
+            Action TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_auditlogs_record ON AuditLogs(RecordType, RecordId);
         """;
 
     private readonly SqliteConnectionFactory _connectionFactory;

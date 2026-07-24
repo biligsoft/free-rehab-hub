@@ -1,0 +1,8 @@
+namespace FreeRehabHub.Domain;
+
+public enum AuditRecordType
+{
+    Patient,
+    Therapist,
+    TherapySession
+}

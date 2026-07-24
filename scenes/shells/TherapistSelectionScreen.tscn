@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/shells/TherapistSelectionScreenController.cs" id="1"]
+
+[node name="TherapistSelectionScreen" type="Control"]
+script = ExtResource("1")
+_therapistList = NodePath("VBoxContainer/TherapistList")
+_selectButton = NodePath("VBoxContainer/SelectButton")
+_newTherapistNameInput = NodePath("VBoxContainer/NewTherapistNameInput")
+_newTherapistDisciplineOption = NodePath("VBoxContainer/NewTherapistDisciplineOption")
+_createButton = NodePath("VBoxContainer/CreateButton")
+_errorLabel = NodePath("VBoxContainer/ErrorLabel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 400.0
+offset_bottom = 420.0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+text = "Terapist Seçin"
+
+[node name="TherapistList" type="ItemList" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 150)
+
+[node name="SelectButton" type="Button" parent="VBoxContainer"]
+text = "Bu Benim"
+
+[node name="NewTherapistLabel" type="Label" parent="VBoxContainer"]
+text = "Yeni Terapist"
+
+[node name="NewTherapistNameInput" type="LineEdit" parent="VBoxContainer"]
+placeholder_text = "Ad Soyad"
+
+[node name="NewTherapistDisciplineOption" type="OptionButton" parent="VBoxContainer"]
+
+[node name="CreateButton" type="Button" parent="VBoxContainer"]
+text = "Oluştur ve Gir"
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer"]
+text = ""

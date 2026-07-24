@@ -32,7 +32,7 @@ public partial class LockScreenController : Control
         try
         {
             _appServices.Unlock(password);
-            GetTree().ChangeSceneToFile("res://scenes/shells/TherapistShell.tscn");
+            GetTree().ChangeSceneToFile("res://scenes/shells/TherapistSelectionScreen.tscn");
         }
         catch (SqliteException)
         {

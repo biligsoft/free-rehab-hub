@@ -21,3 +21,6 @@ jobs:
 
       - name: Build
         run: dotnet build FreeRehabHub.sln --no-restore --configuration Debug
+
+      - name: Test
+        run: dotnet test FreeRehabHub.sln --no-build --configuration Debug

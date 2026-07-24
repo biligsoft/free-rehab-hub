@@ -4,4 +4,10 @@
     <ProjectReference Include="..\FreeRehabHub.Domain\FreeRehabHub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- F1.04 spike'ında doğrulanan kombinasyon (bkz. CLAUDE.md §13) -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.10" />
+  </ItemGroup>
+
 </Project>

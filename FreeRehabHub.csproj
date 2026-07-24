@@ -11,6 +11,7 @@
          obj/ klasörlerinde üretilen AssemblyInfo.cs dosyalarını da yakalayıp CS0579 (yinelenen öznitelik)
          hatasına yol açıyor. Bu klasörleri derlemeden açıkça hariç tut. -->
     <Compile Remove="src\**\*.cs" />
+    <Compile Remove="tests\**\*.cs" />
     <Compile Remove=".godot\**\*.cs" />
   </ItemGroup>
   <PropertyGroup>

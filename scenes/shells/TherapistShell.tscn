@@ -1,9 +1,45 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/patient/PatientListPanel.tscn" id="1"]
+[ext_resource type="Script" path="res://scenes/shells/TherapistShellController.cs" id="2"]
 
 [node name="TherapistShell" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = ExtResource("2")
+_backupButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupButton")
+_backupStatusLabelPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupStatusLabel")
+_backupDirectoryDialogPath = NodePath("BackupDirectoryDialog")
 
-[node name="PatientListPanel" parent="." instance=ExtResource("1")]
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="ToolbarMargin" type="MarginContainer" parent="Layout"]
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Toolbar" type="HBoxContainer" parent="Layout/ToolbarMargin"]
+theme_override_constants/separation = 14
+
+[node name="BackupButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
+text = "Yedekle"
+
+[node name="BackupStatusLabel" type="Label" parent="Layout/ToolbarMargin/Toolbar"]
+size_flags_horizontal = 3
+vertical_alignment = 1
+text = ""
+autowrap_mode = 2
+
+[node name="PatientListPanel" parent="Layout" instance=ExtResource("1")]
+size_flags_vertical = 3
+
+[node name="BackupDirectoryDialog" type="FileDialog" parent="."]
+title = "Yedek Klasörü Seç"
+ok_button_text = "Seç"
+file_mode = 2
+access = 2
+size = Vector2i(720, 480)

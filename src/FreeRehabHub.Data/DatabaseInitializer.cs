@@ -38,6 +38,28 @@ public sealed class DatabaseInitializer
         );
 
         CREATE INDEX IF NOT EXISTS idx_auditlogs_record ON AuditLogs(RecordType, RecordId);
+
+        CREATE TABLE IF NOT EXISTS Prescriptions (
+            Id TEXT PRIMARY KEY,
+            PatientId TEXT NOT NULL REFERENCES Patients(Id),
+            CreatedByTherapistId TEXT NOT NULL REFERENCES Therapists(Id),
+            CreatedAt TEXT NOT NULL,
+            Notes TEXT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_prescriptions_patientid ON Prescriptions(PatientId);
+
+        CREATE TABLE IF NOT EXISTS PrescriptionItems (
+            Id TEXT PRIMARY KEY,
+            PrescriptionId TEXT NOT NULL REFERENCES Prescriptions(Id),
+            ExerciseCardId TEXT NOT NULL,
+            Repetitions INTEGER NULL,
+            Sets INTEGER NULL,
+            FrequencyPerWeek INTEGER NULL,
+            SortOrder INTEGER NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_prescriptionitems_prescriptionid ON PrescriptionItems(PrescriptionId);
         """;
 
     private readonly SqliteConnectionFactory _connectionFactory;

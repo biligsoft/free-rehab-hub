@@ -33,6 +33,8 @@ public sealed class DatabaseInitializerTests : IDisposable
         Assert.Contains("Therapists", tableNames);
         Assert.Contains("TherapySessions", tableNames);
         Assert.Contains("AuditLogs", tableNames);
+        Assert.Contains("Prescriptions", tableNames);
+        Assert.Contains("PrescriptionItems", tableNames);
     }
 
     [Fact]

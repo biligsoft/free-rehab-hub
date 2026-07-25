@@ -1,0 +1,16 @@
+{
+  "id": "com.freerehabhub.arm-raise",
+  "version": "1.0.0",
+  "kind": "exercise",
+  "displayName": { "tr": "Kol Kaldırma", "en": "Arm Raise" },
+  "description": {
+    "tr": "Kamera aracılığıyla omuz fleksiyonu (kol kaldırma) hareketini takip eden, tekrar sayısını ve ulaşılan açıyı ölçen bir egzersiz.",
+    "en": "A camera-based exercise that tracks shoulder flexion (arm raise) movement, measuring repetition count and range of motion achieved."
+  },
+  "disciplines": ["physiotherapy"],
+  "difficultyRange": { "min": 1, "max": 2 },
+  "requiredCapabilities": ["camera"],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.ArmRaise.ArmRaiseController",
+  "scenePath": "res://modules/com.freerehabhub.arm-raise/ArmRaise.tscn"
+}

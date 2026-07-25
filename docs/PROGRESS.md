@@ -1,8 +1,8 @@
 ## Güncel durum
 - Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — başladı (2026-07-25)
-- Son tamamlanan adım: F6.01
-- Son commit: F6.01 - ProgressRecord domain modeli ve repository sözleşmesi eklendi
-- Sıradaki: F6.02 (DB şeması + SqliteProgressRecordRepository implementasyonu) — henüz başlanmadı
+- Son tamamlanan adım: F6.02
+- Son commit: F6.02 - ProgressRecords DB şeması ve SqliteProgressRecordRepository implementasyonu
+- Sıradaki: F6.03 (ProgressRecordService + AppServices bağlantısı + ModuleHost'tan kayıt) — henüz başlanmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -22,6 +22,12 @@
   katman kuralı gereği Modules.Contracts'a bağımlı olamadığı için ayrı bir tip, dönüşüm
   ileride Services katmanında yapılacak. Bilinçli olarak dar tutuldu: bu adımda DB şeması,
   SQLite implementasyonu veya `ModuleHost` entegrasyonu yok.
+- F6.02 - **`ProgressRecords`/`ProgressRecordMetrics` DB şeması + `SqliteProgressRecordRepository`.**
+  `PrescriptionRepository` ile aynı desen: `AddAsync` (transaction içinde kayıt + metrikler ayrı
+  child tabloya), `GetHistoryByPatientIdAsync` (CompletedAt'e göre azalan). `SessionId`'ye bilinçli
+  olarak FK yok — `ModuleHost` henüz her oynatışta gerçek bir `TherapySessions` kaydı oluşturmuyor,
+  sadece tekil bir `Guid` üretiyor (bkz. Açık riskler). Gerçek SQLCipher dosyasıyla 4 test: round-trip
+  (metriklerle), null alanlar, çoklu kayıt sıralaması, boş geçmiş. Tüm çözüm: 105/105 test yeşil.
 
 ### Faz 5 — MediaPipe Entegrasyonu + Kamera Tabanlı Modül: tamamlandı (2026-07-25)
 - F5.01 - **Risk-doğrulama spike'ı: MediaPipe native çalışıyor mu?** F1.04/F1.05'teki spike deseniyle, mimariye girmeden önce MediaPipe'ın bu geliştirme makinesinde gerçekten poz tespiti yapıp yapamadığı test edildi. İki ayrı engel bulundu: (1) bu ortamda kamera erişimi yok (`video` grubu izni eksik, kullanıcının kendi aksiyonu gerekiyor), (2) mediapipe pip paketi (0.10.7-0.10.35, hem eski `solutions.pose` hem yeni `tasks.vision.PoseLandmarker` API'si) bu Fedora makinesinde `PoseLandmarker`/`Pose` kurulumunda tutarlı şekilde çöküyor (`TAG:index:name is invalid` — dahili graph isimlendirme hatası, CPU/GPU delegate'ten ve Python sürümünden bağımsız, hem bu ortamda hem kullanıcının kendi makinesinde tekrar üretildi). Aynı test standart bir Debian tabanlı Docker container'ında sorunsuz çalıştı — sorunun mediapipe'ın genelinde değil, bu Fedora'nın araç zincirinde (glibc/libstdc++) olduğu doğrulandı. **Karar:** üretim mimarisi (native process, Docker değil) değişmedi; bu geliştirme makinesinde mediapipe'a dokunan kodun geliştirme/test döngüsü Docker üzerinden yapılacak. Bulgular `CLAUDE.md` §13/§14'e işlendi. Kod değişikliği yok (saf risk-doğrulama adımı, F1.04/F1.05 gibi).
@@ -108,3 +114,4 @@
 - **Faz 5'ten kalan, henüz bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). Bu geliştirme makinesinde hem kamera erişimi (`video` grubu izni eksik) hem mediapipe'ın kendisi (Fedora araç zinciri uyumsuzluğu, Docker'da doğrulandı) engelli — kullanıcının kendi makinesinde `video` grubu düzeltmesi + `services/mediapipe-service/.venv` kurulumu (`pip install -r requirements.txt`, `python download_model.py`) sonrası gerçek kamerayla test edilmeli.
 - Assessment modüllerinin (`general-functional-checkin`) hâlâ gerçek bir oynatma ekranı yok (F5.10'da bilinçli olarak not edildi) — `FormRenderer`'ı barındırıp `IAssessmentModule.Score()`'u çağıracak bir host ekranı gerekiyor, `ModuleLibraryPanel` şu an sadece `Kind == Exercise` modülleri listeliyor. Faz 5'in yarattığı bir eksiklik değil, ayrı faz-bağımsız bir iş.
 - `AppServices`'in `services/mediapipe-service`'i çözme şekli (`ProjectSettings.GlobalizePath("res://services/mediapipe-service")`, F5.08) sadece dev modunda çalışır — paketlenmiş build'de `res://` bir `.pck` olur, Python kaynak dosyaları oraya export edilmez/çalıştırılamaz. Faz 8'in "MediaPipe binary gömülü" maddesi bunu çözecek, o zaman bu yol çözümlemesi de gözden geçirilmeli.
+- **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.

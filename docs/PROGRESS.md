@@ -1,8 +1,8 @@
 ## Güncel durum
 - Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — başladı (2026-07-25)
-- Son tamamlanan adım: F6.02
-- Son commit: F6.02 - ProgressRecords DB şeması ve SqliteProgressRecordRepository implementasyonu
-- Sıradaki: F6.03 (ProgressRecordService + AppServices bağlantısı + ModuleHost'tan kayıt) — henüz başlanmadı
+- Son tamamlanan adım: F6.03
+- Son commit: F6.03 - ProgressRecordService eklendi, AppServices'e bağlandı, ModuleHost tamamlanan modülün sonucunu kalıcı kaydediyor
+- Sıradaki: F6.04 (ilerleme grafiği ekranı — PatientListPanel'den erişilen, ProgressRecordService.GetHistoryByPatientIdAsync'i görselleştiren bir ekran) — henüz başlanmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -28,6 +28,14 @@
   olarak FK yok — `ModuleHost` henüz her oynatışta gerçek bir `TherapySessions` kaydı oluşturmuyor,
   sadece tekil bir `Guid` üretiyor (bkz. Açık riskler). Gerçek SQLCipher dosyasıyla 4 test: round-trip
   (metriklerle), null alanlar, çoklu kayıt sıralaması, boş geçmiş. Tüm çözüm: 105/105 test yeşil.
+- F6.03 - **`ProgressRecordService` + `AppServices` bağlantısı + `ModuleHost`'tan kayıt.**
+  `PrescriptionService` ile aynı desen (`AddAsync` → kayıt + `Created` audit log, `GetHistoryByPatientIdAsync`
+  loglanmıyor — liste görünümü). `AuditRecordType`'a `ProgressRecord` değeri eklendi. `ModuleHostController
+  .OnModuleCompleted` artık `ModuleResult`'u `ProgressRecord`'a çevirip (`SessionContext.ActiveTherapist`
+  varsa) kalıcı kaydediyor, sonra sonuç ekranına yönleniyor. Xvfb+gerçek Godot ile uçtan uca doğrulandı:
+  `arm-raise`'e senkron 10 tekrarlık sentetik `PoseFrame` beslendi, modül tamamlandı, gerçek SQLCipher
+  DB'den `ProgressRecordService.GetHistoryByPatientIdAsync` ile doğru `ModuleId`/skor/metriklerle 1 kayıt
+  geri okundu. Tüm çözüm: 107/107 test yeşil.
 
 ### Faz 5 — MediaPipe Entegrasyonu + Kamera Tabanlı Modül: tamamlandı (2026-07-25)
 - F5.01 - **Risk-doğrulama spike'ı: MediaPipe native çalışıyor mu?** F1.04/F1.05'teki spike deseniyle, mimariye girmeden önce MediaPipe'ın bu geliştirme makinesinde gerçekten poz tespiti yapıp yapamadığı test edildi. İki ayrı engel bulundu: (1) bu ortamda kamera erişimi yok (`video` grubu izni eksik, kullanıcının kendi aksiyonu gerekiyor), (2) mediapipe pip paketi (0.10.7-0.10.35, hem eski `solutions.pose` hem yeni `tasks.vision.PoseLandmarker` API'si) bu Fedora makinesinde `PoseLandmarker`/`Pose` kurulumunda tutarlı şekilde çöküyor (`TAG:index:name is invalid` — dahili graph isimlendirme hatası, CPU/GPU delegate'ten ve Python sürümünden bağımsız, hem bu ortamda hem kullanıcının kendi makinesinde tekrar üretildi). Aynı test standart bir Debian tabanlı Docker container'ında sorunsuz çalıştı — sorunun mediapipe'ın genelinde değil, bu Fedora'nın araç zincirinde (glibc/libstdc++) olduğu doğrulandı. **Karar:** üretim mimarisi (native process, Docker değil) değişmedi; bu geliştirme makinesinde mediapipe'a dokunan kodun geliştirme/test döngüsü Docker üzerinden yapılacak. Bulgular `CLAUDE.md` §13/§14'e işlendi. Kod değişikliği yok (saf risk-doğrulama adımı, F1.04/F1.05 gibi).

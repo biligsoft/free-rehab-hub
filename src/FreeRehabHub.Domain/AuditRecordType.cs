@@ -5,5 +5,6 @@ public enum AuditRecordType
     Patient,
     Therapist,
     TherapySession,
-    Database
+    Database,
+    Prescription
 }

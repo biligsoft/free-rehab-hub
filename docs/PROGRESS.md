@@ -1,9 +1,9 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.03
-- Son commit: F7.03 - AccessControlService (kiosk PIN hashleme/doğrulama) ve AppServices bağlantısı eklendi
-- Sıradaki: kiosk kilidi UI'si — PIN kurulum/değiştirme ekranı, `ChildKioskShell` ve
-  Terapist↔Çocuk mod geçişi (henüz kullanıcı onayı bekleniyor, adım numarası belirlenmedi)
+- Son tamamlanan adım: F7.04
+- Son commit: F7.04 - Kiosk PIN kurulum/değiştirme ekranı eklendi
+- Sıradaki: `ChildKioskShell` ve Terapist↔Çocuk mod geçişi (PIN doğrulamasını kullanarak
+  kiosk kilidinden çıkış) — henüz kullanıcı onayı bekleniyor, adım numarası belirlenmedi
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -36,6 +36,15 @@
   .FixedTimeEquals` ile sabit-zamanlı karşılaştırma, timing-attack'e karşı),
   `IsPinConfiguredAsync`. `AppServices.Unlock()`'a diğer servislerle aynı anda bağlandı.
   7 yeni test (fake repository'lerle). Tüm çözüm: 119/119 test yeşil.
+- F7.04 - **Kiosk PIN kurulum/değiştirme ekranı.** `scenes/shells/KioskPinSetupPanel.tscn`/
+  Controller — `PatientFormPanel`'deki Card/Content düzeni: durum etiketi ("PIN kurulu"/
+  "kurulu değil"), iki `secret=true` `LineEdit` (PIN + tekrar), Kaydet/Geri, mesaj etiketi.
+  Doğrulama: boş PIN, eşleşmeyen PIN, aktif terapist yoksa hata. `TherapistShell`'e "Kiosk
+  PIN" butonu + navigasyon eklendi. Bu ekranda yeni xUnit testi yok (saf Godot UI, önceki
+  ekranlarla aynı desen). Xvfb+gerçek Godot ile uçtan uca doğrulandı: gerçek buton
+  tıklamalarıyla kurulmamış durum → eşleşmeyen PIN hatası → boş PIN hatası → başarılı kayıt
+  ("PIN kaydedildi", durum güncellendi, alanlar temizlendi) → `AccessControlService` üzerinden
+  doğru/yanlış PIN doğrulaması → Geri ile `TherapistShell`'e dönüş, hepsi doğru çalıştı.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

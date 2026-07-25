@@ -1,0 +1,16 @@
+{
+  "id": "com.yourorg.template-exercise",
+  "version": "0.1.0",
+  "kind": "exercise",
+  "displayName": { "tr": "Şablon Egzersiz", "en": "Template Exercise" },
+  "description": {
+    "tr": "Yeni bir egzersiz modülü için başlangıç şablonu. Kopyaladıktan sonra id, sınıf adları ve egzersiz mekaniği gerçek modülünüze göre değiştirilmeli.",
+    "en": "Starter template for a new exercise module. After copying, replace the id, class names, and exercise mechanic with your real module."
+  },
+  "disciplines": ["physiotherapy"],
+  "difficultyRange": { "min": 1, "max": 1 },
+  "requiredCapabilities": [],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.TemplateExercise.TemplateExerciseController",
+  "scenePath": "res://templates/module-starter/exercise/TemplateExercise.tscn"
+}

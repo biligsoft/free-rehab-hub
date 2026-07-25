@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\FreeRehabHub.Core\FreeRehabHub.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tests/ kendi ayrı csproj'unda derleniyor; varsayılan **/*.cs glob'unun bu dosyaları burada
+         ikinci kez derlemesini engelle. -->
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
+
+</Project>

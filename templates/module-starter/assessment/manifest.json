@@ -1,0 +1,16 @@
+{
+  "id": "com.yourorg.template-assessment",
+  "version": "0.1.0",
+  "kind": "assessment",
+  "displayName": { "tr": "Şablon Değerlendirme", "en": "Template Assessment" },
+  "description": {
+    "tr": "Yeni bir değerlendirme modülü için başlangıç şablonu. Kopyaladıktan sonra id, sınıf adı, form şeması ve Score() mantığı gerçek modülünüze göre değiştirilmeli.",
+    "en": "Starter template for a new assessment module. After copying, replace the id, class name, form schema, and Score() logic with your real module."
+  },
+  "disciplines": ["physiotherapy"],
+  "difficultyRange": { "min": 1, "max": 1 },
+  "requiredCapabilities": [],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.TemplateAssessment.TemplateAssessment",
+  "formSchemaPath": "res://templates/module-starter/assessment/form-schema.json"
+}

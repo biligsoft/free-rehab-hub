@@ -17,6 +17,7 @@
     <Compile Remove="src\**\*.cs" />
     <Compile Remove="tests\**\*.cs" />
     <Compile Remove="modules\**\*.cs" />
+    <Compile Remove="templates\**\*.cs" />
     <Compile Remove=".godot\**\*.cs" />
   </ItemGroup>
   <PropertyGroup>

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FreeRehabHub.Core;
@@ -95,8 +96,32 @@ public sealed class ModuleRegistry : IModuleRegistry
                 $"'{assemblyPath}' derlenmiş modül assembly'si bulunamadı. Proje derlenmiş mi kontrol edin.");
         }
 
-        return Assembly.LoadFrom(assemblyPath);
+        return new ModuleLoadContext().LoadFromAssemblyPath(assemblyPath);
     }
 
     private sealed record ModuleManifestEntry(ModuleManifest Manifest, string ModuleDirectory);
+
+    // Godot, oyunun kendi assembly'lerini (FreeRehabHub.Modules.Contracts dahil) kendi özel
+    // AssemblyLoadContext'ine yüklüyor — Assembly.LoadFrom bu context'i bilmediği için modül DLL'sinin
+    // Modules.Contracts/Core bağımlılığını ayrı bir kopya olarak yükler ve "as IModule" cast'i sessizce
+    // başarısız olur (aynı isimli ama farklı kimlikli iki IModule tipi). Bu context, o iki paylaşılan
+    // sözleşme assembly'sini her zaman zaten yüklü olan (bu kodun kendisinin parçası olduğu) kopyaya
+    // yönlendirerek tip kimliğini garanti ediyor.
+    private sealed class ModuleLoadContext : AssemblyLoadContext
+    {
+        protected override Assembly? Load(AssemblyName assemblyName)
+        {
+            if (assemblyName.Name == typeof(IModule).Assembly.GetName().Name)
+            {
+                return typeof(IModule).Assembly;
+            }
+
+            if (assemblyName.Name == typeof(Discipline).Assembly.GetName().Name)
+            {
+                return typeof(Discipline).Assembly;
+            }
+
+            return null;
+        }
+    }
 }

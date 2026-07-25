@@ -21,6 +21,7 @@ SessionContext="*res://autoload/SessionContext.cs"
 AppServices="*res://autoload/AppServices.cs"
 LocalizationAutoload="*res://autoload/LocalizationAutoload.cs"
 ThemeManager="*res://autoload/ThemeManager.cs"
+ModuleRegistryAutoload="*res://autoload/ModuleRegistryAutoload.cs"
 
 [display]
 

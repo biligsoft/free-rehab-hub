@@ -86,6 +86,19 @@ public sealed class ProcessManagerServiceTests
     }
 
     [Fact]
+    public void Start_InvalidWorkingDirectory_ThrowsAndLeavesStateCleanForStop()
+    {
+        using var manager = new ProcessManagerService();
+        var (fileName, arguments) = LongRunningProcessCommand();
+        var nonExistentDirectory = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid().ToString());
+
+        Assert.ThrowsAny<Exception>(() => manager.Start(fileName, arguments, nonExistentDirectory));
+
+        Assert.False(manager.IsRunning);
+        manager.Stop();
+    }
+
+    [Fact]
     public async Task WaitUntilHealthyAsync_ProcessNotRunning_ReturnsFalseImmediately()
     {
         using var manager = new ProcessManagerService();

@@ -22,7 +22,7 @@ public sealed class ProcessManagerService : IDisposable
 
         // Stdout/stderr'i redirect edip okumadan bırakmak, OS pipe buffer'ı dolunca alt sürecin
         // asılı kalmasına (deadlock) yol açabilir — bu yüzden redirect etmiyoruz, konsolu miras alır.
-        _process = new Process
+        var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -33,7 +33,20 @@ public sealed class ProcessManagerService : IDisposable
                 CreateNoWindow = true
             }
         };
-        _process.Start();
+
+        try
+        {
+            process.Start();
+        }
+        catch
+        {
+            // Start() başarısız olursa _process'i atanmamış bırak — aksi halde sonraki Stop()/Dispose()
+            // çağrısı, hiç OS sürecine bağlanmamış bir Process nesnesinde HasExited okumaya çalışıp çöker.
+            process.Dispose();
+            throw;
+        }
+
+        _process = process;
     }
 
     public async Task<bool> WaitUntilHealthyAsync(

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FreeRehabHub.Domain\FreeRehabHub.Domain.csproj" />
+    <ProjectReference Include="..\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

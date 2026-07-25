@@ -1,0 +1,51 @@
+{
+  "id": "com.freerehabhub.general-functional-checkin",
+  "title": { "tr": "Genel Fonksiyonel Değerlendirme", "en": "General Functional Check-in" },
+  "fields": [
+    {
+      "id": "painLevel",
+      "type": "scale",
+      "label": { "tr": "Ağrı seviyesi (0-10)", "en": "Pain level (0-10)" },
+      "required": true,
+      "minValue": 0,
+      "maxValue": 10
+    },
+    {
+      "id": "functionalDifficulty",
+      "type": "scale",
+      "label": { "tr": "Günlük aktivitelerde zorluk (0-10)", "en": "Difficulty with daily activities (0-10)" },
+      "required": true,
+      "minValue": 0,
+      "maxValue": 10
+    },
+    {
+      "id": "affectedSide",
+      "type": "singleChoice",
+      "label": { "tr": "Etkilenen taraf", "en": "Affected side" },
+      "required": true,
+      "options": [
+        { "value": "left", "label": { "tr": "Sol", "en": "Left" } },
+        { "value": "right", "label": { "tr": "Sağ", "en": "Right" } },
+        { "value": "bilateral", "label": { "tr": "Çift taraflı", "en": "Bilateral" } },
+        { "value": "none", "label": { "tr": "Yok", "en": "None" } }
+      ]
+    },
+    {
+      "id": "symptoms",
+      "type": "multiChoice",
+      "label": { "tr": "Belirtiler", "en": "Symptoms" },
+      "options": [
+        { "value": "swelling", "label": { "tr": "Şişlik", "en": "Swelling" } },
+        { "value": "stiffness", "label": { "tr": "Sertlik", "en": "Stiffness" } },
+        { "value": "numbness", "label": { "tr": "Uyuşukluk", "en": "Numbness" } },
+        { "value": "weakness", "label": { "tr": "Güçsüzlük", "en": "Weakness" } }
+      ]
+    },
+    {
+      "id": "notes",
+      "type": "text",
+      "label": { "tr": "Notlar", "en": "Notes" },
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "com.freerehabhub.general-functional-checkin",
+  "version": "1.0.0",
+  "kind": "assessment",
+  "displayName": { "tr": "Genel Fonksiyonel Değerlendirme", "en": "General Functional Check-in" },
+  "description": {
+    "tr": "Ağrı seviyesini ve günlük aktivitelerdeki zorluğu hasta öz bildirimiyle kaydeden, telifsiz basit bir kontrol formu.",
+    "en": "A simple, royalty-free check-in form that records pain level and daily-activity difficulty via patient self-report."
+  },
+  "disciplines": ["physiotherapy", "occupationalTherapy"],
+  "difficultyRange": { "min": 1, "max": 1 },
+  "requiredCapabilities": [],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.GeneralFunctionalCheckin.GeneralFunctionalCheckinAssessment",
+  "formSchemaPath": "res://content-packs/assessment-forms/general-functional-checkin.json"
+}

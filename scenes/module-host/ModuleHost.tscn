@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/module-host/ModuleHostController.cs" id="1"]
+
+[node name="ModuleHost" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_statusLabelPath = NodePath("Layout/ToolbarMargin/Toolbar/StatusLabel")
+_pauseButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/PauseButton")
+_exitButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/ExitButton")
+_moduleContainerPath = NodePath("Layout/ModuleContainer")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="ToolbarMargin" type="MarginContainer" parent="Layout"]
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Toolbar" type="HBoxContainer" parent="Layout/ToolbarMargin"]
+theme_override_constants/separation = 14
+
+[node name="StatusLabel" type="Label" parent="Layout/ToolbarMargin/Toolbar"]
+size_flags_horizontal = 3
+vertical_alignment = 1
+text = ""
+autowrap_mode = 2
+
+[node name="PauseButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
+text = "Duraklat"
+
+[node name="ExitButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
+text = "Çık"
+
+[node name="ModuleContainer" type="Control" parent="Layout"]
+size_flags_vertical = 3
+anchor_right = 1.0

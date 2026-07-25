@@ -18,6 +18,11 @@ public sealed class SqliteConnectionFactory
         _password = password;
     }
 
+    public SqliteConnectionFactory CreateSiblingFactory(string databasePath)
+    {
+        return new SqliteConnectionFactory(databasePath, _password);
+    }
+
     public SqliteConnection CreateOpenConnection()
     {
         var connectionString = new SqliteConnectionStringBuilder

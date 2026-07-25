@@ -13,6 +13,7 @@ public partial class AppServices : Node
     public PatientService? PatientService { get; private set; }
     public TherapistService? TherapistService { get; private set; }
     public TherapySessionService? TherapySessionService { get; private set; }
+    public BackupService? BackupService { get; private set; }
 
     public bool IsUnlocked => PatientService is not null;
 
@@ -28,9 +29,11 @@ public partial class AppServices : Node
         ITherapistRepository therapistRepository = new SqliteTherapistRepository(connectionFactory);
         ITherapySessionRepository sessionRepository = new SqliteTherapySessionRepository(connectionFactory);
         IAuditLogRepository auditLogRepository = new SqliteAuditLogRepository(connectionFactory);
+        IBackupRepository backupRepository = new SqliteBackupRepository(connectionFactory);
 
         PatientService = new PatientService(patientRepository, auditLogRepository);
         TherapistService = new TherapistService(therapistRepository, auditLogRepository);
         TherapySessionService = new TherapySessionService(sessionRepository, auditLogRepository);
+        BackupService = new BackupService(backupRepository, auditLogRepository);
     }
 }

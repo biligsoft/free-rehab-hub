@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using FreeRehabHub.App.Autoload;
+using FreeRehabHub.Domain;
 using FreeRehabHub.Modules.Contracts;
 using Godot;
 
@@ -177,10 +178,27 @@ public partial class ModuleHostController : Control
         ExitToTherapistShell();
     }
 
-    private void OnModuleCompleted(object? sender, ModuleResult result)
+    private async void OnModuleCompleted(object? sender, ModuleResult result)
     {
         _isCompleted = true;
         CleanUpActiveModule();
+
+        var therapist = _sessionContext.ActiveTherapist;
+        if (therapist is not null && _appServices.ProgressRecordService is not null)
+        {
+            var record = new ProgressRecord
+            {
+                Id = Guid.NewGuid(),
+                PatientId = result.PatientId,
+                ModuleId = result.ModuleId,
+                SessionId = result.SessionId,
+                CompletedAt = result.CompletedAt,
+                NormalizedScore = result.NormalizedScore,
+                Metrics = result.Metrics,
+                Notes = result.Notes
+            };
+            await _appServices.ProgressRecordService.AddAsync(record, therapist.Id);
+        }
 
         _sessionContext.SetLastModuleResult(result);
         GetTree().ChangeSceneToFile(ModuleResultPanelScenePath);

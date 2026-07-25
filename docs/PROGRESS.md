@@ -1,8 +1,9 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.02
-- Son commit: F7.02 - KioskPin DB şeması ve SqliteKioskPinRepository implementasyonu eklendi
-- Sıradaki: F7.03 — `AccessControlService` (PIN hashleme/doğrulama) + `AppServices` bağlantısı
+- Son tamamlanan adım: F7.03
+- Son commit: F7.03 - AccessControlService (kiosk PIN hashleme/doğrulama) ve AppServices bağlantısı eklendi
+- Sıradaki: kiosk kilidi UI'si — PIN kurulum/değiştirme ekranı, `ChildKioskShell` ve
+  Terapist↔Çocuk mod geçişi (henüz kullanıcı onayı bekleniyor, adım numarası belirlenmedi)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -28,6 +29,13 @@
   `SqlitePrescriptionRepository`'deki transaction deseniyle aynı). 3 yeni test: PIN
   yokken `GetAsync` `null`, round-trip, ikinci `SetAsync` öncekini değiştiriyor. Tüm
   `Data.Tests`: 43/43 yeşil.
+- F7.03 - **`AccessControlService` + `AppServices` bağlantısı.** `AuditRecordType`'a
+  `KioskPin` eklendi. `SetPinAsync` (PBKDF2-SHA256, 100.000 iterasyon, rastgele salt —
+  yeni paket gerekmedi, .NET BCL; boş PIN'de `ArgumentException`; ilk kurulumda `Created`,
+  üzerine yazmada `Updated` audit log), `VerifyPinAsync` (`CryptographicOperations
+  .FixedTimeEquals` ile sabit-zamanlı karşılaştırma, timing-attack'e karşı),
+  `IsPinConfiguredAsync`. `AppServices.Unlock()`'a diğer servislerle aynı anda bağlandı.
+  7 yeni test (fake repository'lerle). Tüm çözüm: 119/119 test yeşil.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

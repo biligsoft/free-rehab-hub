@@ -9,11 +9,14 @@ namespace FreeRehabHub.App.Autoload;
 public partial class AppServices : Node
 {
     private const string DatabaseResourcePath = "user://freerehabhub.db";
+    private const string ExerciseLibraryResourcePath = "res://content-packs/exercise-library";
 
     public PatientService? PatientService { get; private set; }
     public TherapistService? TherapistService { get; private set; }
     public TherapySessionService? TherapySessionService { get; private set; }
     public BackupService? BackupService { get; private set; }
+    public PrescriptionService? PrescriptionService { get; private set; }
+    public IExerciseLibraryRepository? ExerciseLibraryRepository { get; private set; }
 
     public bool IsUnlocked => PatientService is not null;
 
@@ -30,10 +33,17 @@ public partial class AppServices : Node
         ITherapySessionRepository sessionRepository = new SqliteTherapySessionRepository(connectionFactory);
         IAuditLogRepository auditLogRepository = new SqliteAuditLogRepository(connectionFactory);
         IBackupRepository backupRepository = new SqliteBackupRepository(connectionFactory);
+        IPrescriptionRepository prescriptionRepository = new SqlitePrescriptionRepository(connectionFactory);
 
         PatientService = new PatientService(patientRepository, auditLogRepository);
         TherapistService = new TherapistService(therapistRepository, auditLogRepository);
         TherapySessionService = new TherapySessionService(sessionRepository, auditLogRepository);
         BackupService = new BackupService(backupRepository, auditLogRepository);
+        PrescriptionService = new PrescriptionService(prescriptionRepository, auditLogRepository);
+
+        // Statik içerik, DB parolasına bağımlı değil ama tek "kurulum kapısı" (IsUnlocked) tutarlılığı
+        // için diğerleriyle aynı anda kuruluyor.
+        ExerciseLibraryRepository = new ContentPackExerciseLibraryRepository(
+            ProjectSettings.GlobalizePath(ExerciseLibraryResourcePath));
     }
 }

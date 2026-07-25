@@ -3,39 +3,60 @@
 [ext_resource type="Script" path="res://scenes/shells/TherapistSelectionScreenController.cs" id="1"]
 
 [node name="TherapistSelectionScreen" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource("1")
-_therapistListPath = NodePath("VBoxContainer/TherapistList")
-_selectButtonPath = NodePath("VBoxContainer/SelectButton")
-_newTherapistNameInputPath = NodePath("VBoxContainer/NewTherapistNameInput")
-_newTherapistDisciplineOptionPath = NodePath("VBoxContainer/NewTherapistDisciplineOption")
-_createButtonPath = NodePath("VBoxContainer/CreateButton")
-_errorLabelPath = NodePath("VBoxContainer/ErrorLabel")
+_therapistListPath = NodePath("Card/Content/TherapistList")
+_selectButtonPath = NodePath("Card/Content/SelectButton")
+_newTherapistNameInputPath = NodePath("Card/Content/NewTherapistNameInput")
+_newTherapistDisciplineOptionPath = NodePath("Card/Content/NewTherapistDisciplineOption")
+_createButtonPath = NodePath("Card/Content/CreateButton")
+_errorLabelPath = NodePath("Card/Content/ErrorLabel")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-offset_left = 40.0
-offset_top = 40.0
-offset_right = 400.0
-offset_bottom = 420.0
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(400, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
 text = "Terapist Seçin"
 
-[node name="TherapistList" type="ItemList" parent="VBoxContainer"]
+[node name="TherapistList" type="ItemList" parent="Card/Content"]
 custom_minimum_size = Vector2(0, 150)
 
-[node name="SelectButton" type="Button" parent="VBoxContainer"]
+[node name="SelectButton" type="Button" parent="Card/Content"]
+theme_type_variation = &"PrimaryButton"
 text = "Bu Benim"
 
-[node name="NewTherapistLabel" type="Label" parent="VBoxContainer"]
-text = "Yeni Terapist"
+[node name="Divider" type="HSeparator" parent="Card/Content"]
 
-[node name="NewTherapistNameInput" type="LineEdit" parent="VBoxContainer"]
+[node name="NewTherapistLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"SectionLabel"
+text = "YENİ TERAPİST"
+
+[node name="NewTherapistNameInput" type="LineEdit" parent="Card/Content"]
 placeholder_text = "Ad Soyad"
 
-[node name="NewTherapistDisciplineOption" type="OptionButton" parent="VBoxContainer"]
+[node name="NewTherapistDisciplineOption" type="OptionButton" parent="Card/Content"]
 
-[node name="CreateButton" type="Button" parent="VBoxContainer"]
+[node name="CreateButton" type="Button" parent="Card/Content"]
+theme_type_variation = &"PrimaryButton"
 text = "Oluştur ve Gir"
 
-[node name="ErrorLabel" type="Label" parent="VBoxContainer"]
+[node name="ErrorLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"ErrorLabel"
 text = ""
+autowrap_mode = 2

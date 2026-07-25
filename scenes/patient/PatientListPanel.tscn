@@ -3,16 +3,43 @@
 [ext_resource type="Script" path="res://scenes/patient/PatientListPanelController.cs" id="1"]
 
 [node name="PatientListPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource("1")
-_patientListPath = NodePath("PatientItemList")
-_newPatientButtonPath = NodePath("NewPatientButton")
+_patientListPath = NodePath("Card/Content/PatientItemList")
+_newPatientButtonPath = NodePath("Card/Content/NewPatientButton")
+_emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
 
-[node name="PatientItemList" type="ItemList" parent="."]
-offset_right = 400.0
-offset_bottom = 300.0
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="NewPatientButton" type="Button" parent="."]
-offset_top = 310.0
-offset_right = 150.0
-offset_bottom = 340.0
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(440, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "Hastalarım"
+
+[node name="EmptyStateLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"EmptyStateLabel"
+text = "Henüz hasta yok. Aşağıdaki \"Yeni Hasta\" ile ilk kaydı oluşturabilirsiniz."
+autowrap_mode = 2
+visible = false
+
+[node name="PatientItemList" type="ItemList" parent="Card/Content"]
+custom_minimum_size = Vector2(0, 260)
+
+[node name="NewPatientButton" type="Button" parent="Card/Content"]
+theme_type_variation = &"PrimaryButton"
 text = "Yeni Hasta"

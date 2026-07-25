@@ -3,33 +3,55 @@
 [ext_resource type="Script" path="res://scenes/patient/PatientFormPanelController.cs" id="1"]
 
 [node name="PatientFormPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource("1")
-_fullNameInputPath = NodePath("VBoxContainer/FullNameInput")
-_dateOfBirthInputPath = NodePath("VBoxContainer/DateOfBirthInput")
-_saveButtonPath = NodePath("VBoxContainer/SaveButton")
-_cancelButtonPath = NodePath("VBoxContainer/CancelButton")
-_errorLabelPath = NodePath("VBoxContainer/ErrorLabel")
+_fullNameInputPath = NodePath("Card/Content/FullNameInput")
+_dateOfBirthInputPath = NodePath("Card/Content/DateOfBirthInput")
+_saveButtonPath = NodePath("Card/Content/Actions/SaveButton")
+_cancelButtonPath = NodePath("Card/Content/Actions/CancelButton")
+_errorLabelPath = NodePath("Card/Content/ErrorLabel")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-offset_left = 40.0
-offset_top = 40.0
-offset_right = 400.0
-offset_bottom = 260.0
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(400, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
 text = "Yeni Hasta"
 
-[node name="FullNameInput" type="LineEdit" parent="VBoxContainer"]
+[node name="FullNameInput" type="LineEdit" parent="Card/Content"]
 placeholder_text = "Ad Soyad"
 
-[node name="DateOfBirthInput" type="LineEdit" parent="VBoxContainer"]
+[node name="DateOfBirthInput" type="LineEdit" parent="Card/Content"]
 placeholder_text = "Doğum Tarihi (YYYY-AA-GG)"
 
-[node name="SaveButton" type="Button" parent="VBoxContainer"]
+[node name="Actions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="SaveButton" type="Button" parent="Card/Content/Actions"]
+theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
 text = "Kaydet"
 
-[node name="CancelButton" type="Button" parent="VBoxContainer"]
+[node name="CancelButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
 text = "Vazgeç"
 
-[node name="ErrorLabel" type="Label" parent="VBoxContainer"]
+[node name="ErrorLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"ErrorLabel"
 text = ""
+autowrap_mode = 2

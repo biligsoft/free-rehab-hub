@@ -1,8 +1,8 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.01
-- Son commit: F7.01 - KioskPin domain modeli ve IKioskPinRepository sözleşmesi eklendi
-- Sıradaki: F7.02 — `KioskPin` DB şeması + `SqliteKioskPinRepository`
+- Son tamamlanan adım: F7.02
+- Son commit: F7.02 - KioskPin DB şeması ve SqliteKioskPinRepository implementasyonu eklendi
+- Sıradaki: F7.03 — `AccessControlService` (PIN hashleme/doğrulama) + `AppServices` bağlantısı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -23,6 +23,11 @@
 - F7.01 - **`KioskPin` domain modeli + `IKioskPinRepository` sözleşmesi.** `Domain`'e eklendi
   — `PinHash`/`Salt`/`UpdatedAt`. F6.01'deki gibi bilinçli olarak dar: DB şeması, SQLite
   implementasyonu, hashleme mantığı (`AccessControlService`) veya UI bu adımda yok.
+- F7.02 - **`KioskPin` DB şeması + `SqliteKioskPinRepository`.** Tekil-satır ayar tablosu (Id
+  yok — `SetAsync` transaction içinde eski satırı silip yenisini yazıyor,
+  `SqlitePrescriptionRepository`'deki transaction deseniyle aynı). 3 yeni test: PIN
+  yokken `GetAsync` `null`, round-trip, ikinci `SetAsync` öncekini değiştiriyor. Tüm
+  `Data.Tests`: 43/43 yeşil.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

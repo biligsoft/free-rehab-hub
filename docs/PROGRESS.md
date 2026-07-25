@@ -1,13 +1,25 @@
 ## Güncel durum
-- Faz: 3 (Değerlendirme Formu Motoru + İlk Assessment Modülü) — tamamlandı (2026-07-25)
-- Son tamamlanan Faz 3 adımı: F3.05
-- Son commit: F3.05 - Örnek değerlendirme modülü eklendi (general-functional-checkin)
-- Sıradaki: Faz 4 (Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü)
+- Faz: 4 (Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü) — tamamlandı (2026-07-25)
+- Son tamamlanan Faz 4 adımı: F4.14
+- Son commit: F4.14 - target-tap egzersiz modülü eklendi; Exercise modülleri için ayrı csproj mimarisi kaldırıldı (Godot motor kısıtlaması)
+- Sıradaki: Faz 5 (MediaPipe Entegrasyonu + Kamera Tabanlı Modül)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 4 — Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü: tamamlandı (2026-07-25)
+- F4.01 - **`IModuleRegistry` sözleşmesi.** `GetAvailableModules`, `GetModulesByDiscipline`, `CreateInstance` — CLAUDE.md §5 ile birebir.
+- F4.02 - **`ModuleRegistry` implementasyonu.** `modules/**/manifest.json` tarayıp hafifçe `ModuleManifest` listesi döndürüyor (DLL yüklemeden); `CreateInstance`, modül klasöründeki `.csproj` adından derlenmiş DLL'i bulup özel bir `AssemblyLoadContext` (`ModuleLoadContext`) ile yüklüyor. Gerçek Godot çalışma zamanında bulunan bug: Godot, oyunun kendi assembly'lerini kendi özel ALC'sine yüklediği için düz `Assembly.LoadFrom` `Modules.Contracts`'ın **ayrı bir kopyasını** yüklüyor, `as IModule` cast'i sessizce başarısız oluyordu — `ModuleLoadContext`, paylaşılan sözleşme assembly'lerini her zaman zaten-yüklü kopyaya yönlendirerek düzeltti.
+- F4.03 - **`ModuleRegistryAutoload`.** `res://modules` + oyunun çıktı klasörünü çözüp `ModuleRegistry`'yi sahne ağacına açan ince autoload.
+- F4.04 - **`templates/module-starter/`.** Exercise ve Assessment alt-varyantları, her biri kendi `Tests/` projesiyle. (F4.14'te Exercise varyantı, aşağıdaki mimari düzeltmeye göre güncellendi.)
+- F4.05 - **`content-packs/exercise-library/`.** `ExerciseCard` (Domain) + `IExerciseLibraryRepository`/`ContentPackExerciseLibraryRepository` (JSON dosya tabanlı, DB değil) + 3 örnek statik egzersiz kartı. Yol boyunca `LocalizedText`, Domain'in de kullanabilmesi için `Modules.Contracts`'tan `Core`'a taşındı (Domain, Modules.Contracts'a bağımlı olamaz).
+- F4.06–F4.10 - **Reçete oluşturucu (backend).** `ExercisePrescription`/`PrescriptionItem` (Domain, **değişmez geçmiş** modeli — her atama ayrı bir kayıt, `Update` yok, sadece `Add`+`GetLatest`/`GetHistory`) → `IPrescriptionRepository` → `Prescriptions`/`PrescriptionItems` tabloları → `SqlitePrescriptionRepository` (transaction içinde) → `PrescriptionService` (audit log'lu, liste görünümü loglanmıyor).
+- F4.11 - `AppServices`'e `PrescriptionService` + `ExerciseLibraryRepository` bağlandı.
+- F4.12 - **`PrescriptionBuilderPanel` ekranı.** Kütüphaneden kart ekleme + reps/sets düzenleme (dinamik satırlar) + hastanın en son reçetesiyle ön-dolum + Kaydet/Vazgeç. Xvfb+gerçek DB ile uçtan uca doğrulandı.
+- F4.13 - `PatientListPanel`'e "Reçete" butonu + navigasyon.
+- F4.14 - **İlk kamerasız egzersiz modülü: `com.freerehabhub.target-tap`** ("Hedef Vurma" — reaksiyon/koordinasyon egzersizi). **Yol boyunca bulunan büyük mimari sorun:** Godot 4 C#'ta belgelenmiş, hâlâ açık bir motor kısıtlaması var (`godotengine/godot#77675`, `#82060`) — bir `.tscn`'e bağlı script sınıfı SADECE ana proje derlemesinde bulunabiliyor, ayrı bir modül DLL'inde değil. Bu, F1.05'ten beri varsayılan "her modül kendi ayrı csproj'u" mimarisini kendi sahnesi olan (Exercise) modüller için kırıyordu — hiç gerçek Godot'ta test edilmemiş olan F4.04 şablonu da dahil. **Düzeltme:** Exercise modülleri artık kendi `.csproj`'una sahip değil; `*Controller.cs`/`Scoring/*.cs` dosyaları isimlendirme-kuralına-dayalı bir `Compile Include` (`modules\**\*Controller.cs`, `modules\**\Scoring\*.cs`) ile doğrudan `FreeRehabHub.csproj`'a deriveniyor (elle referans gerekmez, sadece dosya adı kuralına uyulmalı). Assessment modülleri (ayrı csproj + reflection) değişmedi. `ModuleRegistry.CreateInstance`, `ScenePath`'i olan modüller için artık net bir hata fırlatıyor (Godot katmanı `PackedScene.Instantiate()` ile kurmalı, reflection değil). Ayrıca gerçek Godot kapanışında bulunan ikinci bir bug: `Dispose(bool)`, native tarafta zaten yok edilmiş çocuk node'lara (`Timer`, hedef `Button`) erişmeye çalışıyordu — `GodotObject.IsInstanceValid()` koruması eklendi.
 
 ### Faz 3 — Değerlendirme Formu Motoru + İlk Assessment Modülü: tamamlandı (2026-07-25)
 - F3.01 - **Modules.Contracts temel modül sözleşmeleri.** `ModuleKind`, `LocalizedText`, `DifficultyRange`, `ModuleManifest`, `ModuleContext`, `ModuleResult`, `FormSubmission`, `IModule`, `IExerciseModule`, `IAssessmentModule` eklendi (CLAUDE.md §5 ile birebir). `IPoseAwareModule` (Faz 5'te kamera veri şekli netleşince) ve `IModuleRegistry` (implementasyonu Faz 4 kapsamı) bilinçli olarak kapsam dışı bırakıldı — henüz kullanacak hiçbir şey yokken spekülatif tasarlanmadı.
@@ -55,8 +67,9 @@
 ## Açık riskler / bir sonraki fazda hatırlanacaklar
 - SQLCipher paket kombinasyonu Windows/macOS'ta henüz test edilmedi (Faz 2 bu platformlarda doğrulamadan kapandı — en geç Faz 8'de (paketleme) yapılmalı).
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
-- `SessionContext` F2.11'de eklendi. `ModuleRegistryAutoload` hâlâ Faz 4'te.
-- Modül `manifest.json` dosyaları (F3.05) şu an sadece veri/dokümantasyon amaçlı — hiçbir kod onları okumuyor; her modülün C# sınıfı kendi `ModuleManifest`'ini elle (JSON'la aynı içerikte) hardcode ediyor. Faz 4'te gerçek registry kurulurken bu ikilik çözülmeli: registry JSON'u okuyup `Manifest`'i dışarıdan mı sağlıyor, yoksa modül kendi `manifest.json`'unu runtime'da kendi mi okuyor — `IModuleRegistry.CreateInstance(moduleId)`'in tam davranışı o fazda netleşecek.
+- `SessionContext` F2.11'de, `ModuleRegistryAutoload` F4.03'te eklendi.
+- Modül `manifest.json` dosyaları hâlâ her modülün C# sınıfındaki hardcoded `ModuleManifest`'le aynı içeriği taşıyor (bilinçli ikilik — bkz. F4.02: `manifest.json` hafif keşif/katalog için, C# `Manifest` çalışma zamanında otorite). İkisi elle senkron tutulmalı; ileride bir tutarlılık testi (manifest.json ↔ C# Manifest) eklenebilir ama henüz yok.
+- **Exercise modülleri kendi `.csproj`'una sahip DEĞİL** (Godot 4'ün "script sadece ana derlemede bulunabilir" motor kısıtlaması yüzünden, bkz. F4.14 ve `module-development` skill § 3a) — yeni bir Exercise modülü eklerken bu farkı unutma: sadece `*Controller.cs`/`Scoring/*.cs` isimlendirme kuralına uy, `.csproj` ekleme. Faz 5'in kamera-tabanlı modülleri de bu kurala tabi olacak.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
 - SQLCipher şifreleme anahtarının nereden geleceği (OS keychain / ilk kurulum parolası) hâlâ çözülmedi — `SqliteConnectionFactory` şu an anahtarı parametre olarak alıyor, kaynağı belirlenmedi (bkz. `clinical-data-handling` skill).
 - `high-contrast.tres` ve `low-stimulation.tres` hâlâ boş (F0.07 sadece `default.tres`'i doldurdu) — Faz 7'de gerçek bir erişilebilirlik tasarım geçişi gerekiyor.

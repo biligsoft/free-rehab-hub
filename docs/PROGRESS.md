@@ -1,13 +1,20 @@
 ## Güncel durum
-- Faz: 2 (Hasta Yönetimi + Veri Katmanı) — tamamlandı (2026-07-25)
-- Son tamamlanan Faz 2 adımı: F2.18
-- Son commit: F2.18 - Yedekleme UI tetikleyicisi
-- Sıradaki: Faz 3 (Değerlendirme Formu Motoru + İlk Assessment Modülü)
+- Faz: 3 (Değerlendirme Formu Motoru + İlk Assessment Modülü) — tamamlandı (2026-07-25)
+- Son tamamlanan Faz 3 adımı: F3.05
+- Son commit: F3.05 - Örnek değerlendirme modülü eklendi (general-functional-checkin)
+- Sıradaki: Faz 4 (Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 3 — Değerlendirme Formu Motoru + İlk Assessment Modülü: tamamlandı (2026-07-25)
+- F3.01 - **Modules.Contracts temel modül sözleşmeleri.** `ModuleKind`, `LocalizedText`, `DifficultyRange`, `ModuleManifest`, `ModuleContext`, `ModuleResult`, `FormSubmission`, `IModule`, `IExerciseModule`, `IAssessmentModule` eklendi (CLAUDE.md §5 ile birebir). `IPoseAwareModule` (Faz 5'te kamera veri şekli netleşince) ve `IModuleRegistry` (implementasyonu Faz 4 kapsamı) bilinçli olarak kapsam dışı bırakıldı — henüz kullanacak hiçbir şey yokken spekülatif tasarlanmadı.
+- F3.02 - **Form şeması veri modeli.** `FormFieldType`, `FormFieldOption`, `FormField`, `FormSchema` eklendi — `FormSubmission`'la aynı katmanda, Godot-bağımsız.
+- F3.03 - **FormSchemaLoader.** JSON'dan `FormSchema`'ya deserialize (`System.Text.Json`, camelCase); doğrulama: Id zorunlu, başlık/etiketler TR+EN ikisi de dolu, en az bir alan, alan Id'leri tekil, seçim alanlarının en az bir seçeneği olmalı, `MinValue > MaxValue` yasak. Hatalar `FormSchemaValidationException` ile fırlatılıyor. İlk kez `tests/FreeRehabHub.Modules.Contracts.Tests` projesi kuruldu (8 test).
+- F3.04 - **Form renderer.** `scenes/form-engine/FormRenderer.tscn` + Controller — `FormSchema`'dan gerçek zamanlı Control ağacı üretiyor (Text→LineEdit, Number→SpinBox, Scale→HSlider, SingleChoice→OptionButton, MultiChoice→CheckBox listesi, Boolean→CheckBox), etiketler `LocalizationAutoload.CurrentLocale`'e göre TR/EN. Gönder'de zorunlu alan kontrolü yapılıp C# `event Submitted` ile `FormSubmission` dışarı açılıyor (Godot signal değil — katmanlar-arası iletişim kuralına uygun). Xvfb+Godot otomasyonuyla 6 alan tipi uçtan uca doğrulandı (render → programatik değer girişi → Gönder → doğru `FormSubmission`).
+- F3.05 - **Örnek değerlendirme modülü.** `modules/com.freerehabhub.general-functional-checkin/` — telifsiz, projeye özel bir ağrı/fonksiyon öz-bildirim formu + `IAssessmentModule` implementasyonu (`Score()` ağrı/zorluk skalalarını 0-1 normalize skora çeviriyor, ham metrikleri ve belirti sayısını `Metrics`'e taşıyor). `modules/**/*.csproj` glob'u ilk kez `FreeRehabHub.csproj`'a bağlandı (test projeleri hariç) — F1.05 spike'ının ilk gerçek kullanımı. Yol boyunca bulunan tasarım kusuru: `Score()`'un saf fonksiyon kalabilmesi için `ModuleContext`'e `CompletedAt` eklendi (önceden `Score()` içinde `DateTime.UtcNow` çağrılıyordu, bu "aynı girdi→aynı çıktı" kuralını bozardı). `content-packs/assessment-forms/general-functional-checkin.json`'ın `FormSchemaLoader` ile gerçekten yüklenebildiği ayrı bir testle doğrulandı.
 
 ### Faz 2 — Hasta Yönetimi + Veri Katmanı: tamamlandı (2026-07-24 – 2026-07-25)
 - F2.01 - Domain temel varlıkları (`Patient`, `Therapist`, `TherapySession`, `Discipline` enum'u — `Discipline` Core'da, ileride Modules.Contracts'ın da kullanacağı ortak kavram olduğu için)
@@ -49,6 +56,7 @@
 - SQLCipher paket kombinasyonu Windows/macOS'ta henüz test edilmedi (Faz 2 bu platformlarda doğrulamadan kapandı — en geç Faz 8'de (paketleme) yapılmalı).
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
 - `SessionContext` F2.11'de eklendi. `ModuleRegistryAutoload` hâlâ Faz 4'te.
+- Modül `manifest.json` dosyaları (F3.05) şu an sadece veri/dokümantasyon amaçlı — hiçbir kod onları okumuyor; her modülün C# sınıfı kendi `ModuleManifest`'ini elle (JSON'la aynı içerikte) hardcode ediyor. Faz 4'te gerçek registry kurulurken bu ikilik çözülmeli: registry JSON'u okuyup `Manifest`'i dışarıdan mı sağlıyor, yoksa modül kendi `manifest.json`'unu runtime'da kendi mi okuyor — `IModuleRegistry.CreateInstance(moduleId)`'in tam davranışı o fazda netleşecek.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
 - SQLCipher şifreleme anahtarının nereden geleceği (OS keychain / ilk kurulum parolası) hâlâ çözülmedi — `SqliteConnectionFactory` şu an anahtarı parametre olarak alıyor, kaynağı belirlenmedi (bkz. `clinical-data-handling` skill).
 - `high-contrast.tres` ve `low-stimulation.tres` hâlâ boş (F0.07 sadece `default.tres`'i doldurdu) — Faz 7'de gerçek bir erişilebilirlik tasarım geçişi gerekiyor.

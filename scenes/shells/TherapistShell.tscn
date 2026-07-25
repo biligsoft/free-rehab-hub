@@ -10,6 +10,7 @@ script = ExtResource("2")
 _backupButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupButton")
 _backupStatusLabelPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupStatusLabel")
 _backupDirectoryDialogPath = NodePath("BackupDirectoryDialog")
+_kioskPinButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/KioskPinButton")
 
 [node name="Layout" type="VBoxContainer" parent="."]
 anchor_right = 1.0
@@ -33,6 +34,9 @@ size_flags_horizontal = 3
 vertical_alignment = 1
 text = ""
 autowrap_mode = 2
+
+[node name="KioskPinButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
+text = "Kiosk PIN"
 
 [node name="PatientListPanel" parent="Layout" instance=ExtResource("1")]
 size_flags_vertical = 3

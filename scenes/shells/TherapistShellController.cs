@@ -6,13 +6,17 @@ namespace FreeRehabHub.App.Shells;
 
 public partial class TherapistShellController : Control
 {
+    private const string KioskPinSetupScenePath = "res://scenes/shells/KioskPinSetupPanel.tscn";
+
     [Export] private NodePath _backupButtonPath = null!;
     [Export] private NodePath _backupStatusLabelPath = null!;
     [Export] private NodePath _backupDirectoryDialogPath = null!;
+    [Export] private NodePath _kioskPinButtonPath = null!;
 
     private Button _backupButton = null!;
     private Label _backupStatusLabel = null!;
     private FileDialog _backupDirectoryDialog = null!;
+    private Button _kioskPinButton = null!;
     private AppServices _appServices = null!;
     private SessionContext _sessionContext = null!;
 
@@ -21,12 +25,19 @@ public partial class TherapistShellController : Control
         _backupButton = GetNode<Button>(_backupButtonPath);
         _backupStatusLabel = GetNode<Label>(_backupStatusLabelPath);
         _backupDirectoryDialog = GetNode<FileDialog>(_backupDirectoryDialogPath);
+        _kioskPinButton = GetNode<Button>(_kioskPinButtonPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
 
         _backupStatusLabel.Text = string.Empty;
         _backupButton.Pressed += OnBackupButtonPressed;
         _backupDirectoryDialog.DirSelected += OnBackupDirectorySelected;
+        _kioskPinButton.Pressed += OnKioskPinButtonPressed;
+    }
+
+    private void OnKioskPinButtonPressed()
+    {
+        GetTree().ChangeSceneToFile(KioskPinSetupScenePath);
     }
 
     private void OnBackupButtonPressed()

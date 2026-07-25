@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/shells/KioskPinSetupPanelController.cs" id="1"]
+
+[node name="KioskPinSetupPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_statusLabelPath = NodePath("Card/Content/StatusLabel")
+_pinInputPath = NodePath("Card/Content/PinInput")
+_confirmPinInputPath = NodePath("Card/Content/ConfirmPinInput")
+_saveButtonPath = NodePath("Card/Content/Actions/SaveButton")
+_backButtonPath = NodePath("Card/Content/Actions/BackButton")
+_messageLabelPath = NodePath("Card/Content/MessageLabel")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(400, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "Kiosk PIN Ayarı"
+
+[node name="StatusLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"SectionLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="PinInput" type="LineEdit" parent="Card/Content"]
+placeholder_text = "Yeni PIN"
+secret = true
+
+[node name="ConfirmPinInput" type="LineEdit" parent="Card/Content"]
+placeholder_text = "Yeni PIN (Tekrar)"
+secret = true
+
+[node name="Actions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="SaveButton" type="Button" parent="Card/Content/Actions"]
+theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
+text = "Kaydet"
+
+[node name="BackButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
+text = "Geri"
+
+[node name="MessageLabel" type="Label" parent="Card/Content"]
+text = ""
+autowrap_mode = 2

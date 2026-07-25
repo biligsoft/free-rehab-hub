@@ -11,3 +11,9 @@ obj/
 
 # download_assets.py çalışma zamanı logu
 assets/download_assets.log
+
+# mediapipe-service — Python sanal ortamı ve download_model.py'nin indirdiği model dosyası
+services/mediapipe-service/.venv/
+services/mediapipe-service/models/
+services/mediapipe-service/__pycache__/
+services/mediapipe-service/**/__pycache__/

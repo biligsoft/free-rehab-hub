@@ -8,7 +8,10 @@ anchor_bottom = 1.0
 script = ExtResource("1")
 _patientListPath = NodePath("Card/Content/PatientItemList")
 _newPatientButtonPath = NodePath("Card/Content/NewPatientButton")
+_editButtonPath = NodePath("Card/Content/Actions/EditButton")
+_deleteButtonPath = NodePath("Card/Content/Actions/DeleteButton")
 _emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
+_confirmDeleteDialogPath = NodePath("ConfirmDeleteDialog")
 
 [node name="Background" type="Panel" parent="."]
 anchor_right = 1.0
@@ -40,6 +43,23 @@ visible = false
 [node name="PatientItemList" type="ItemList" parent="Card/Content"]
 custom_minimum_size = Vector2(0, 260)
 
+[node name="Actions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="EditButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
+text = "Düzenle"
+
+[node name="DeleteButton" type="Button" parent="Card/Content/Actions"]
+theme_type_variation = &"DangerButton"
+size_flags_horizontal = 3
+text = "Sil"
+
 [node name="NewPatientButton" type="Button" parent="Card/Content"]
 theme_type_variation = &"PrimaryButton"
 text = "Yeni Hasta"
+
+[node name="ConfirmDeleteDialog" type="ConfirmationDialog" parent="."]
+title = "Hastayı Sil"
+ok_button_text = "Sil"
+cancel_button_text = "Vazgeç"

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=16 format=3]
+[gd_resource type="Theme" load_steps=19 format=3]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window_bg"]
 bg_color = Color(0.933, 0.949, 0.941, 1)
@@ -129,6 +129,54 @@ content_margin_top = 10.0
 content_margin_right = 18.0
 content_margin_bottom = 10.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_danger_normal"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.722, 0.263, 0.263, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_danger_hover"]
+bg_color = Color(0.965, 0.925, 0.921, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.722, 0.263, 0.263, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_danger_pressed"]
+bg_color = Color(0.937, 0.851, 0.843, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.2, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lineedit_normal"]
 bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
@@ -222,6 +270,16 @@ PrimaryButton/colors/font_color = Color(1, 1, 1, 1)
 PrimaryButton/colors/font_hover_color = Color(1, 1, 1, 1)
 PrimaryButton/colors/font_pressed_color = Color(1, 1, 1, 1)
 PrimaryButton/colors/font_disabled_color = Color(0.659, 0.678, 0.663, 1)
+
+DangerButton/base_type = &"Button"
+DangerButton/styles/normal = SubResource("StyleBoxFlat_button_danger_normal")
+DangerButton/styles/hover = SubResource("StyleBoxFlat_button_danger_hover")
+DangerButton/styles/pressed = SubResource("StyleBoxFlat_button_danger_pressed")
+DangerButton/styles/disabled = SubResource("StyleBoxFlat_button_secondary_disabled")
+DangerButton/colors/font_color = Color(0.722, 0.263, 0.263, 1)
+DangerButton/colors/font_hover_color = Color(0.722, 0.263, 0.263, 1)
+DangerButton/colors/font_pressed_color = Color(0.6, 0.2, 0.2, 1)
+DangerButton/colors/font_disabled_color = Color(0.659, 0.678, 0.663, 1)
 
 LineEdit/styles/normal = SubResource("StyleBoxFlat_lineedit_normal")
 LineEdit/styles/focus = SubResource("StyleBoxFlat_lineedit_focus")

@@ -26,6 +26,12 @@
           Link="TestModulesRoot\com.freerehabhub.general-functional-checkin\GeneralFunctionalCheckin.csproj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- ScenePath'i olan modüllerde CreateInstance'ın reddettiğini doğrulamak için sahte, gerçek bir
+         .csproj/.dll'i olmayan bir modül manifesti (bkz. ModuleRegistry.CreateInstance). -->
+    <None Include="Fixtures\fake-scene-module-manifest.json"
+          Link="TestModulesRoot\com.freerehabhub.fake-scene-module\manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

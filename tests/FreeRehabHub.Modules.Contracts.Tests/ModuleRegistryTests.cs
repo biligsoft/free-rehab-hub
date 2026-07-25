@@ -6,6 +6,7 @@ namespace FreeRehabHub.Modules.Contracts.Tests;
 public sealed class ModuleRegistryTests
 {
     private const string GeneralFunctionalCheckinId = "com.freerehabhub.general-functional-checkin";
+    private const string FakeSceneModuleId = "com.freerehabhub.fake-scene-module";
 
     private static readonly string ModulesRootPath = Path.Combine(AppContext.BaseDirectory, "TestModulesRoot");
     private static readonly string ModuleAssemblyDirectory = AppContext.BaseDirectory;
@@ -13,12 +14,12 @@ public sealed class ModuleRegistryTests
     private readonly ModuleRegistry _registry = new(ModulesRootPath, ModuleAssemblyDirectory);
 
     [Fact]
-    public void GetAvailableModules_ScansRealModuleDirectory_ReturnsGeneralFunctionalCheckinManifest()
+    public void GetAvailableModules_ScansTestModuleDirectory_ReturnsBothFixtureManifests()
     {
         var modules = _registry.GetAvailableModules();
 
-        var manifest = Assert.Single(modules);
-        Assert.Equal(GeneralFunctionalCheckinId, manifest.Id);
+        Assert.Equal(2, modules.Count);
+        var manifest = Assert.Single(modules, m => m.Id == GeneralFunctionalCheckinId);
         Assert.Equal(ModuleKind.Assessment, manifest.Kind);
         Assert.Contains(Discipline.Physiotherapy, manifest.Disciplines);
     }
@@ -67,6 +68,14 @@ public sealed class ModuleRegistryTests
     public void CreateInstance_UnknownModuleId_ThrowsModuleRegistrationException()
     {
         Assert.Throws<ModuleRegistrationException>(() => _registry.CreateInstance("com.freerehabhub.does-not-exist"));
+    }
+
+    [Fact]
+    public void CreateInstance_ModuleWithScenePath_ThrowsModuleRegistrationException()
+    {
+        // ScenePath'i olan modüller Godot katmanında PackedScene.Instantiate() ile kurulmalı,
+        // reflection'la (CreateInstance) değil — bkz. ModuleRegistry.CreateInstance yorumu.
+        Assert.Throws<ModuleRegistrationException>(() => _registry.CreateInstance(FakeSceneModuleId));
     }
 
     [Fact]

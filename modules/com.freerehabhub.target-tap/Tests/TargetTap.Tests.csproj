@@ -10,16 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Bu modülün ayrı bir production csproj'u yok — Exercise modüllerin *Controller.cs ve Scoring/*.cs
-         dosyaları, modules/ altına taşındıklarında FreeRehabHub.csproj'a doğrudan derlenir (Godot'un
-         "script sınıfı sadece ana derlemede bulunabilir" kısıtlaması yüzünden, bkz. o dosyadaki yorum).
-         Sadece Godot-bağımsız Scoring/ sınıfını test etmek için doğrudan Modules.Contracts'a referans
-         veriyoruz; Controller.cs (Godot'a bağımlı) bu test projesine hiç dahil edilmiyor. -->
-    <ProjectReference Include="..\..\..\..\src\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
+    <!-- Bu modülün ayrı bir production csproj'u yok (Controller.cs, FreeRehabHub.csproj'a doğrudan
+         derleniyor — bkz. o dosyadaki Compile Include açıklaması). Sadece Godot-bağımsız Scoring/
+         sınıfını test etmek için doğrudan Modules.Contracts'a referans veriyoruz. -->
+    <ProjectReference Include="..\..\..\src\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Scoring\TemplateExerciseScorer.cs" Link="Scoring\TemplateExerciseScorer.cs" />
+    <Compile Include="..\Scoring\TargetTapScorer.cs" Link="Scoring\TargetTapScorer.cs" />
   </ItemGroup>
 
   <ItemGroup>

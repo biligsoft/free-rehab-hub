@@ -5,9 +5,11 @@
     <ProjectReference Include="src\FreeRehabHub.Data\FreeRehabHub.Data.csproj" />
     <ProjectReference Include="src\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
     <ProjectReference Include="src\FreeRehabHub.Services\FreeRehabHub.Services.csproj" />
-    <!-- Her modül kendi csproj'unu modules/<id>/ altına ekler, elle bir yere referans eklenmesi gerekmez
-         (bkz. CLAUDE.md §2, F1.05 spike'ı). Modüllerin kendi Tests/ alt projeleri (xUnit paketleri taşır)
-         oyunun asıl derlemesine karışmasın diye hariç tutuluyor. -->
+    <!-- SADECE Assessment modülleri (kendi .tscn'i olmayan) kendi csproj'unu modules/<id>/ altına ekler,
+         elle bir yere referans eklenmesi gerekmez (bkz. CLAUDE.md §2, F1.05 spike'ı). Exercise modülleri
+         KENDİ csproj'unu KULLANMAZ — bkz. aşağıdaki Compile Include açıklaması ve module-development skill'i.
+         Modüllerin kendi Tests/ alt projeleri (xUnit paketleri taşır) oyunun asıl derlemesine karışmasın
+         diye hariç tutuluyor. -->
     <ProjectReference Include="modules\**\*.csproj" Exclude="modules\**\*.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -19,6 +21,18 @@
     <Compile Remove="modules\**\*.cs" />
     <Compile Remove="templates\**\*.cs" />
     <Compile Remove=".godot\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Godot 4'ün C# desteğinde bilinen bir motor kısıtlaması var: bir .tscn'e bağlı script sınıfı SADECE
+         ana proje derlemesinde bulunabiliyor, ayrı bir csproj/DLL'de değil (bkz. godotengine/godot#77675,
+         #82060 — "Scripts cannot be loaded from additional C# projects"). Bu yüzden Exercise modüllerinin
+         (kendi .tscn'i olan) *Controller.cs ve Scoring/*.cs dosyaları — module-development skill'indeki
+         isimlendirme kuralına güvenerek (Controller.cs soneki, Scoring/ alt klasörü sadece Exercise'a özgü,
+         bkz. skill § 3a/3b) — doğrudan bu derlemeye dahil ediliyor. Assessment modülleri (sahnesi yok, yukarıdaki
+         ProjectReference glob'uyla ayrı derleniyor, ModuleRegistry reflection'la yüklüyor) bu glob'a hiç girmiyor
+         çünkü ne "*Controller.cs" adında bir dosyaları ne de bir Scoring/ klasörleri var. -->
+    <Compile Include="modules\**\*Controller.cs" Exclude="modules\**\Tests\**\*.cs" />
+    <Compile Include="modules\**\Scoring\*.cs" Exclude="modules\**\Tests\**\*.cs" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>

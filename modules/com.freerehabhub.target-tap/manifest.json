@@ -1,0 +1,16 @@
+{
+  "id": "com.freerehabhub.target-tap",
+  "version": "1.0.0",
+  "kind": "exercise",
+  "displayName": { "tr": "Hedef Vurma", "en": "Target Tap" },
+  "description": {
+    "tr": "Ekranda rastgele konumlarda beliren hedeflere olabildiğince hızlı ve doğru tıklayarak el-göz koordinasyonu ve reaksiyon süresini çalıştıran, kamera gerektirmeyen bir egzersiz.",
+    "en": "A camera-free exercise that trains hand-eye coordination and reaction time by tapping targets that appear at random positions on screen, as quickly and accurately as possible."
+  },
+  "disciplines": ["occupationalTherapy", "psychology"],
+  "difficultyRange": { "min": 1, "max": 1 },
+  "requiredCapabilities": [],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.TargetTap.TargetTapController",
+  "scenePath": "res://modules/com.freerehabhub.target-tap/TargetTap.tscn"
+}

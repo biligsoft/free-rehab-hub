@@ -30,6 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "com.freerehabhub.general-fu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralFunctionalCheckin.Tests", "modules\com.freerehabhub.general-functional-checkin\Tests\GeneralFunctionalCheckin.Tests.csproj", "{E0681617-011C-4AEF-897E-B099FD9ADF61}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "com.freerehabhub.target-tap", "com.freerehabhub.target-tap", "{941B1A8E-8E9F-4751-98A1-7F986B348408}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TargetTap.Tests", "modules\com.freerehabhub.target-tap\Tests\TargetTap.Tests.csproj", "{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +107,12 @@ Global
 		{E0681617-011C-4AEF-897E-B099FD9ADF61}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
 		{E0681617-011C-4AEF-897E-B099FD9ADF61}.ExportRelease|Any CPU.ActiveCfg = Debug|Any CPU
 		{E0681617-011C-4AEF-897E-B099FD9ADF61}.ExportRelease|Any CPU.Build.0 = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.ExportDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.ExportRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE}.ExportRelease|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{669583F4-6EF8-4FAE-AD76-62333EFDE977} = {7D984A88-899D-471F-AEAB-4C1426CDE1FB}
@@ -116,5 +126,7 @@ Global
 		{E61D6D3F-20A0-4680-B870-3CBFEE8BBF3C} = {72AA7181-8D25-473B-BE67-6918B55AE10A}
 		{E4697955-998B-4C6E-83F3-73254037E09B} = {72AA7181-8D25-473B-BE67-6918B55AE10A}
 		{E0681617-011C-4AEF-897E-B099FD9ADF61} = {E4697955-998B-4C6E-83F3-73254037E09B}
+		{941B1A8E-8E9F-4751-98A1-7F986B348408} = {72AA7181-8D25-473B-BE67-6918B55AE10A}
+		{1EB064A2-36DD-4DAF-91B0-9C6407EFDDAE} = {941B1A8E-8E9F-4751-98A1-7F986B348408}
 	EndGlobalSection
 EndGlobal

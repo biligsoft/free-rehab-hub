@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/com.freerehabhub.target-tap/TargetTapController.cs" id="1"]
+
+[node name="TargetTap" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_roundLabelPath = NodePath("Layout/RoundLabel")
+_playAreaPath = NodePath("Layout/PlayArea")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 10
+
+[node name="RoundLabel" type="Label" parent="Layout"]
+theme_type_variation = &"TitleLabel"
+text = "Tur: 0 / 8"
+
+[node name="PlayArea" type="Control" parent="Layout"]
+custom_minimum_size = Vector2(0, 400)
+size_flags_vertical = 3
+clip_contents = true

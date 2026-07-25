@@ -41,6 +41,18 @@ public sealed class ModuleRegistry : IModuleRegistry
         var entry = ScanManifests().FirstOrDefault(candidate => candidate.Manifest.Id == moduleId)
             ?? throw new ModuleRegistrationException($"'{moduleId}' Id'li bir modül bulunamadı.");
 
+        // ScenePath'i olan modüller (kendi .tscn'i olan Exercise modülleri) reflection'la (Activator.CreateInstance)
+        // değil, Godot katmanında PackedScene.Instantiate() ile kurulmalı — aksi halde [Export] NodePath alanları
+        // ve .tscn'deki çocuk node'lar (Layout/PlayArea vb.) hiç oluşmaz, _Ready() ilk GetNode çağrısında patlar.
+        // ModuleRegistry (bu sınıf) Godot'a bağımlı olamayacağı için bu işi kendisi yapamaz — çağıran Godot katmanı
+        // (ör. ModuleRegistryAutoload/ModuleHost) Manifest.ScenePath'i GD.Load<PackedScene>() ile yüklemeli.
+        if (entry.Manifest.ScenePath is not null)
+        {
+            throw new ModuleRegistrationException(
+                $"'{moduleId}' modülünün bir ScenePath'i var — CreateInstance bunun için kullanılamaz. " +
+                $"Godot katmanı Manifest.ScenePath ('{entry.Manifest.ScenePath}') üzerinden PackedScene.Instantiate() ile kurmalı.");
+        }
+
         var assembly = LoadModuleAssembly(entry.ModuleDirectory);
         var entryType = assembly.GetType(entry.Manifest.EntryPointType)
             ?? throw new ModuleRegistrationException(

@@ -12,13 +12,16 @@ public partial class TherapistShellController : Control
     [Export] private NodePath _backupStatusLabelPath = null!;
     [Export] private NodePath _backupDirectoryDialogPath = null!;
     [Export] private NodePath _kioskPinButtonPath = null!;
+    [Export] private NodePath _themeOptionButtonPath = null!;
 
     private Button _backupButton = null!;
     private Label _backupStatusLabel = null!;
     private FileDialog _backupDirectoryDialog = null!;
     private Button _kioskPinButton = null!;
+    private OptionButton _themeOptionButton = null!;
     private AppServices _appServices = null!;
     private SessionContext _sessionContext = null!;
+    private ThemeManager _themeManager = null!;
 
     public override void _Ready()
     {
@@ -26,13 +29,27 @@ public partial class TherapistShellController : Control
         _backupStatusLabel = GetNode<Label>(_backupStatusLabelPath);
         _backupDirectoryDialog = GetNode<FileDialog>(_backupDirectoryDialogPath);
         _kioskPinButton = GetNode<Button>(_kioskPinButtonPath);
+        _themeOptionButton = GetNode<OptionButton>(_themeOptionButtonPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
+        _themeManager = GetNode<ThemeManager>("/root/ThemeManager");
 
         _backupStatusLabel.Text = string.Empty;
         _backupButton.Pressed += OnBackupButtonPressed;
         _backupDirectoryDialog.DirSelected += OnBackupDirectorySelected;
         _kioskPinButton.Pressed += OnKioskPinButtonPressed;
+
+        _themeOptionButton.Clear();
+        _themeOptionButton.AddItem("Varsayılan");
+        _themeOptionButton.AddItem("Yüksek Kontrast");
+        _themeOptionButton.AddItem("Düşük Uyaran");
+        _themeOptionButton.Selected = (int)_themeManager.CurrentVariant;
+        _themeOptionButton.ItemSelected += OnThemeSelected;
+    }
+
+    private void OnThemeSelected(long index)
+    {
+        _themeManager.ApplyTheme((ThemeVariant)index);
     }
 
     private void OnKioskPinButtonPressed()

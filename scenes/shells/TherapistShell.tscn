@@ -11,6 +11,7 @@ _backupButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupButton")
 _backupStatusLabelPath = NodePath("Layout/ToolbarMargin/Toolbar/BackupStatusLabel")
 _backupDirectoryDialogPath = NodePath("BackupDirectoryDialog")
 _kioskPinButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/KioskPinButton")
+_themeOptionButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/ThemeOptionButton")
 
 [node name="Layout" type="VBoxContainer" parent="."]
 anchor_right = 1.0
@@ -37,6 +38,9 @@ autowrap_mode = 2
 
 [node name="KioskPinButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
 text = "Kiosk PIN"
+
+[node name="ThemeOptionButton" type="OptionButton" parent="Layout/ToolbarMargin/Toolbar"]
+tooltip_text = "Tema"
 
 [node name="PatientListPanel" parent="Layout" instance=ExtResource("1")]
 size_flags_vertical = 3

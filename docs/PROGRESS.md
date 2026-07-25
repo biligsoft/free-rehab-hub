@@ -1,13 +1,27 @@
 ## Güncel durum
-- Faz: 5 (MediaPipe Entegrasyonu + Kamera Tabanlı Modül) — tamamlandı (2026-07-25)
-- Son tamamlanan adım: F5.11
-- Son commit: F5.11 - Sonuç ekranı eklendi
-- Sıradaki: Faz 6 (İlerleme Takibi, Grafikler, PDF Rapor) — henüz başlanmadı, kullanıcı onayı bekleniyor
+- Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — başladı (2026-07-25)
+- Son tamamlanan adım: F6.01
+- Son commit: F6.01 - ProgressRecord domain modeli ve repository sözleşmesi eklendi
+- Sıradaki: F6.02 (DB şeması + SqliteProgressRecordRepository implementasyonu) — henüz başlanmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: devam ediyor
+- Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)
+  hâlâ bir oynatma ekranı yok (F5.10'da not edilmişti), bu yüzden Faz 6 önce sadece
+  `ModuleHost` üzerinden geçen Exercise sonuçlarını kalıcı kayda çevirecek; Assessment
+  entegrasyonu, o host ekranı eklendiğinde ayrı bir faz-bağımsız işle ele alınacak.
+- F6.01 - **`ProgressRecord` domain modeli + `IProgressRecordRepository` sözleşmesi.**
+  `Domain`'e eklendi — bir modülün (Exercise) tamamlanmasının kalıcı, değişmez kaydı
+  (`ExercisePrescription`'daki desenle aynı: Update yok, sadece `AddAsync` + geçmiş sorgusu).
+  Alanlar (`ModuleId`, `SessionId`, `CompletedAt`, `NormalizedScore`, `Metrics`, `Notes`)
+  bilinçli olarak `Modules.Contracts.ModuleResult` ile birebir aynı isimlendirmede — Domain,
+  katman kuralı gereği Modules.Contracts'a bağımlı olamadığı için ayrı bir tip, dönüşüm
+  ileride Services katmanında yapılacak. Bilinçli olarak dar tutuldu: bu adımda DB şeması,
+  SQLite implementasyonu veya `ModuleHost` entegrasyonu yok.
 
 ### Faz 5 — MediaPipe Entegrasyonu + Kamera Tabanlı Modül: tamamlandı (2026-07-25)
 - F5.01 - **Risk-doğrulama spike'ı: MediaPipe native çalışıyor mu?** F1.04/F1.05'teki spike deseniyle, mimariye girmeden önce MediaPipe'ın bu geliştirme makinesinde gerçekten poz tespiti yapıp yapamadığı test edildi. İki ayrı engel bulundu: (1) bu ortamda kamera erişimi yok (`video` grubu izni eksik, kullanıcının kendi aksiyonu gerekiyor), (2) mediapipe pip paketi (0.10.7-0.10.35, hem eski `solutions.pose` hem yeni `tasks.vision.PoseLandmarker` API'si) bu Fedora makinesinde `PoseLandmarker`/`Pose` kurulumunda tutarlı şekilde çöküyor (`TAG:index:name is invalid` — dahili graph isimlendirme hatası, CPU/GPU delegate'ten ve Python sürümünden bağımsız, hem bu ortamda hem kullanıcının kendi makinesinde tekrar üretildi). Aynı test standart bir Debian tabanlı Docker container'ında sorunsuz çalıştı — sorunun mediapipe'ın genelinde değil, bu Fedora'nın araç zincirinde (glibc/libstdc++) olduğu doğrulandı. **Karar:** üretim mimarisi (native process, Docker değil) değişmedi; bu geliştirme makinesinde mediapipe'a dokunan kodun geliştirme/test döngüsü Docker üzerinden yapılacak. Bulgular `CLAUDE.md` §13/§14'e işlendi. Kod değişikliği yok (saf risk-doğrulama adımı, F1.04/F1.05 gibi).

@@ -13,7 +13,10 @@ _emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
 _moduleItemListPath = NodePath("Card/Content/Body/ModuleItemList")
 _chartPath = NodePath("Card/Content/Body/DetailColumn/Chart")
 _recordsContainerPath = NodePath("Card/Content/Body/DetailColumn/RecordsScroll/RecordsContainer")
-_backButtonPath = NodePath("Card/Content/BackButton")
+_reportStatusLabelPath = NodePath("Card/Content/ReportStatusLabel")
+_pdfReportButtonPath = NodePath("Card/Content/Actions/PdfReportButton")
+_reportFileDialogPath = NodePath("ReportFileDialog")
+_backButtonPath = NodePath("Card/Content/Actions/BackButton")
 
 [node name="Background" type="Panel" parent="."]
 anchor_right = 1.0
@@ -70,5 +73,25 @@ size_flags_horizontal = 3
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="BackButton" type="Button" parent="Card/Content"]
+[node name="ReportStatusLabel" type="Label" parent="Card/Content"]
+text = ""
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="BackButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
 text = "Geri"
+
+[node name="PdfReportButton" type="Button" parent="Card/Content/Actions"]
+theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
+text = "PDF Rapor"
+
+[node name="ReportFileDialog" type="FileDialog" parent="."]
+title = "İlerleme Raporunu Kaydet"
+ok_button_text = "Kaydet"
+file_mode = 4
+access = 2
+filters = PackedStringArray("*.pdf ; PDF Dosyası")

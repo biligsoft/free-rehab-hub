@@ -1,6 +1,6 @@
-using System.Text;
 using FreeRehabHub.App.Autoload;
 using FreeRehabHub.Core;
+using FreeRehabHub.Services;
 using Godot;
 
 namespace FreeRehabHub.App.ModuleResultScreen;
@@ -61,24 +61,8 @@ public partial class ModuleResultPanelController : Control
 
         foreach (var (key, value) in result.Metrics)
         {
-            _metricsContainer.AddChild(new Label { Text = $"{HumanizeMetricKey(key)}: {value:0.##}" });
+            _metricsContainer.AddChild(new Label { Text = $"{MetricKeyFormatter.Humanize(key)}: {value:0.##}" });
         }
-    }
-
-    private static string HumanizeMetricKey(string key)
-    {
-        var builder = new StringBuilder();
-        foreach (var character in key)
-        {
-            if (char.IsUpper(character) && builder.Length > 0)
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(builder.Length == 0 ? char.ToUpperInvariant(character) : character);
-        }
-
-        return builder.ToString();
     }
 
     private void OnDonePressed()

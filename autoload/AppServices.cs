@@ -14,6 +14,7 @@ public partial class AppServices : Node
     private const string DatabaseResourcePath = "user://freerehabhub.db";
     private const string ExerciseLibraryResourcePath = "res://content-packs/exercise-library";
     private const string MediaPipeServiceResourcePath = "res://services/mediapipe-service";
+    private const string ReportFontResourcePath = "res://assets/fonts/liberation-sans";
 
     public PatientService? PatientService { get; private set; }
     public TherapistService? TherapistService { get; private set; }
@@ -21,6 +22,7 @@ public partial class AppServices : Node
     public BackupService? BackupService { get; private set; }
     public PrescriptionService? PrescriptionService { get; private set; }
     public ProgressRecordService? ProgressRecordService { get; private set; }
+    public ProgressReportService? ProgressReportService { get; private set; }
     public IExerciseLibraryRepository? ExerciseLibraryRepository { get; private set; }
     public IPoseTrackingService? PoseTrackingService { get; private set; }
 
@@ -48,6 +50,8 @@ public partial class AppServices : Node
         BackupService = new BackupService(backupRepository, auditLogRepository);
         PrescriptionService = new PrescriptionService(prescriptionRepository, auditLogRepository);
         ProgressRecordService = new ProgressRecordService(progressRecordRepository, auditLogRepository);
+        ProgressReportService = new ProgressReportService(
+            ProjectSettings.GlobalizePath(ReportFontResourcePath), auditLogRepository);
 
         // Statik içerik, DB parolasına bağımlı değil ama tek "kurulum kapısı" (IsUnlocked) tutarlılığı
         // için diğerleriyle aynı anda kuruluyor.

@@ -40,6 +40,16 @@ Format: OBJ + FBX + GLB (Godot 4 için GLB önerilir, doğrudan import edilir).
 Her paketin kendi `SOURCE.txt` dosyası indirme linkini ve lisansı tekrar eder.
 Tüm Kenney paketleri CC0 1.0 (kamu malı, atıf gerekmez).
 
+## fonts/liberation-sans/ — PDF rapor fontu (Faz 6, F6.05)
+
+- Kaynak: Liberation Fonts (Red Hat), bu geliştirme makinesindeki `liberation-sans-fonts`
+  sistem paketinden kopyalandı (https://github.com/liberationfonts/liberation-fonts)
+- Lisans: SIL Open Font License 1.1 (bkz. `LICENSE` dosyası, aynı klasörde)
+- Sadece `Regular`/`Bold` — PDFsharp 6.x .NET Core'da (GDI+ yok) sistem fontlarını otomatik
+  çözemiyor, bu yüzden `LiberationSansFontResolver` (bkz. `FreeRehabHub.Services`) bu dosyaları
+  bayt olarak okuyup PDF'e gömüyor. Hedef makinede (Windows/macOS/Linux) hangi fontların kurulu
+  olduğundan bağımsız, tutarlı render için bilinçli olarak repoya gömülü.
+
 ## Kapsam kararı: neden "her şey" değil
 
 Kenney'nin tüm kataloğu (200+ paket, uzay/yarış/kale gibi projeyle

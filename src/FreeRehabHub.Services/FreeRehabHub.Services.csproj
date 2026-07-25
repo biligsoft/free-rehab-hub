@@ -5,4 +5,8 @@
     <ProjectReference Include="..\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="PdfSharp" Version="6.2.4" />
+  </ItemGroup>
+
 </Project>

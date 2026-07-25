@@ -14,6 +14,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- ProgressReportServiceTests, gerçek gömülü fontla (bkz. assets/fonts/liberation-sans/) PDF
+         üretimini doğruluyor — ContentPackExerciseLibraryRepository testlerindeki desenle aynı. -->
+    <None Include="..\..\assets\fonts\liberation-sans\*.ttf" Link="TestData\fonts\liberation-sans\%(FileName)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FreeRehabHub.App.Autoload;
 using FreeRehabHub.Core;
 using FreeRehabHub.Domain;
 using FreeRehabHub.Modules.Contracts;
+using FreeRehabHub.Services;
 using Godot;
 
 namespace FreeRehabHub.App.Progress;
@@ -22,6 +22,9 @@ public partial class ProgressPanelController : Control
     [Export] private NodePath _moduleItemListPath = null!;
     [Export] private NodePath _chartPath = null!;
     [Export] private NodePath _recordsContainerPath = null!;
+    [Export] private NodePath _reportStatusLabelPath = null!;
+    [Export] private NodePath _pdfReportButtonPath = null!;
+    [Export] private NodePath _reportFileDialogPath = null!;
     [Export] private NodePath _backButtonPath = null!;
 
     private Label _titleLabel = null!;
@@ -30,6 +33,9 @@ public partial class ProgressPanelController : Control
     private ItemList _moduleItemList = null!;
     private ProgressChart _chart = null!;
     private VBoxContainer _recordsContainer = null!;
+    private Label _reportStatusLabel = null!;
+    private Button _pdfReportButton = null!;
+    private FileDialog _reportFileDialog = null!;
     private Button _backButton = null!;
 
     private SessionContext _sessionContext = null!;
@@ -48,6 +54,9 @@ public partial class ProgressPanelController : Control
         _moduleItemList = GetNode<ItemList>(_moduleItemListPath);
         _chart = GetNode<ProgressChart>(_chartPath);
         _recordsContainer = GetNode<VBoxContainer>(_recordsContainerPath);
+        _reportStatusLabel = GetNode<Label>(_reportStatusLabelPath);
+        _pdfReportButton = GetNode<Button>(_pdfReportButtonPath);
+        _reportFileDialog = GetNode<FileDialog>(_reportFileDialogPath);
         _backButton = GetNode<Button>(_backButtonPath);
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
         _appServices = GetNode<AppServices>("/root/AppServices");
@@ -55,8 +64,11 @@ public partial class ProgressPanelController : Control
         _localization = GetNode<LocalizationAutoload>("/root/LocalizationAutoload");
 
         _errorLabel.Text = string.Empty;
+        _reportStatusLabel.Text = string.Empty;
         _emptyStateLabel.Visible = false;
         _moduleItemList.ItemSelected += index => ShowModule((int)index);
+        _pdfReportButton.Pressed += OnPdfReportButtonPressed;
+        _reportFileDialog.FileSelected += OnReportFileSelected;
         _backButton.Pressed += OnBackPressed;
 
         await LoadAsync();
@@ -68,6 +80,7 @@ public partial class ProgressPanelController : Control
         if (patient is null)
         {
             _errorLabel.Text = "Aktif hasta bulunamadı.";
+            _pdfReportButton.Disabled = true;
             return;
         }
 
@@ -77,6 +90,7 @@ public partial class ProgressPanelController : Control
         _moduleIds = _history.Select(record => record.ModuleId).Distinct().ToList();
 
         _emptyStateLabel.Visible = _history.Count == 0;
+        _pdfReportButton.Disabled = _history.Count == 0;
 
         _moduleItemList.Clear();
         foreach (var moduleId in _moduleIds)
@@ -120,7 +134,8 @@ public partial class ProgressPanelController : Control
     private static string FormatRecordLine(ProgressRecord record)
     {
         var metricsText = string.Join(
-            ", ", record.Metrics.Select(metric => $"{HumanizeMetricKey(metric.Key)}: {metric.Value:0.##}"));
+            ", ",
+            record.Metrics.Select(metric => $"{MetricKeyFormatter.Humanize(metric.Key)}: {metric.Value:0.##}"));
         var scoreText = $"{record.CompletedAt.ToLocalTime():dd.MM.yyyy HH:mm} — {record.NormalizedScore:P0}";
         return metricsText.Length == 0 ? scoreText : $"{scoreText} ({metricsText})";
     }
@@ -132,20 +147,52 @@ public partial class ProgressPanelController : Control
         return manifest is null ? moduleId : Localize(manifest.DisplayName);
     }
 
-    private static string HumanizeMetricKey(string key)
+    private void OnPdfReportButtonPressed()
     {
-        var builder = new StringBuilder();
-        foreach (var character in key)
+        var patient = _sessionContext.ActivePatient;
+        if (patient is null)
         {
-            if (char.IsUpper(character) && builder.Length > 0)
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(builder.Length == 0 ? char.ToUpperInvariant(character) : character);
+            return;
         }
 
-        return builder.ToString();
+        _reportStatusLabel.Text = string.Empty;
+        _reportFileDialog.CurrentFile = SuggestReportFileName(patient.FullName);
+        _reportFileDialog.PopupCentered(new Vector2I(720, 480));
+    }
+
+    private async void OnReportFileSelected(string filePath)
+    {
+        var patient = _sessionContext.ActivePatient;
+        var therapist = _sessionContext.ActiveTherapist;
+        if (patient is null || therapist is null)
+        {
+            _reportStatusLabel.Text = "Aktif hasta veya terapist bulunamadı.";
+            return;
+        }
+
+        _pdfReportButton.Disabled = true;
+        _reportStatusLabel.Text = "Rapor oluşturuluyor...";
+
+        try
+        {
+            var modules = _moduleIds.Select(id => (ModuleId: id, DisplayName: ResolveModuleDisplayName(id))).ToList();
+            await _appServices.ProgressReportService!.GeneratePdfAsync(patient, therapist, _history, modules, filePath);
+            _reportStatusLabel.Text = $"Rapor oluşturuldu: {filePath}";
+        }
+        catch (Exception exception)
+        {
+            _reportStatusLabel.Text = $"Rapor oluşturulamadı: {exception.Message}";
+        }
+        finally
+        {
+            _pdfReportButton.Disabled = false;
+        }
+    }
+
+    private static string SuggestReportFileName(string patientFullName)
+    {
+        var sanitized = new string(patientFullName.Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+        return $"{sanitized}-ilerleme-raporu.pdf";
     }
 
     private void OnBackPressed()

@@ -1,13 +1,16 @@
 ## Güncel durum
-- Faz: 4 (Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü) — tamamlandı (2026-07-25)
-- Son tamamlanan Faz 4 adımı: F4.14
-- Son commit: F4.14 - target-tap egzersiz modülü eklendi; Exercise modülleri için ayrı csproj mimarisi kaldırıldı (Godot motor kısıtlaması)
-- Sıradaki: Faz 5 (MediaPipe Entegrasyonu + Kamera Tabanlı Modül)
+- Faz: 5 (MediaPipe Entegrasyonu + Kamera Tabanlı Modül) — devam ediyor (başladı 2026-07-25)
+- Son tamamlanan adım: F5.01
+- Son commit: F5.01 - MediaPipe spike: Fedora geliştirme makinesinde native kurulum sorunu doğrulandı, Docker'da çalıştığı teyit edildi
+- Sıradaki: F5.02 (henüz belirlenmedi — MediaPipe WebSocket client/servis iskeleti olması muhtemel)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 5 — MediaPipe Entegrasyonu + Kamera Tabanlı Modül: devam ediyor (başladı 2026-07-25)
+- F5.01 - **Risk-doğrulama spike'ı: MediaPipe native çalışıyor mu?** F1.04/F1.05'teki spike deseniyle, mimariye girmeden önce MediaPipe'ın bu geliştirme makinesinde gerçekten poz tespiti yapıp yapamadığı test edildi. İki ayrı engel bulundu: (1) bu ortamda kamera erişimi yok (`video` grubu izni eksik, kullanıcının kendi aksiyonu gerekiyor), (2) mediapipe pip paketi (0.10.7-0.10.35, hem eski `solutions.pose` hem yeni `tasks.vision.PoseLandmarker` API'si) bu Fedora makinesinde `PoseLandmarker`/`Pose` kurulumunda tutarlı şekilde çöküyor (`TAG:index:name is invalid` — dahili graph isimlendirme hatası, CPU/GPU delegate'ten ve Python sürümünden bağımsız, hem bu ortamda hem kullanıcının kendi makinesinde tekrar üretildi). Aynı test standart bir Debian tabanlı Docker container'ında sorunsuz çalıştı — sorunun mediapipe'ın genelinde değil, bu Fedora'nın araç zincirinde (glibc/libstdc++) olduğu doğrulandı. **Karar:** üretim mimarisi (native process, Docker değil) değişmedi; bu geliştirme makinesinde mediapipe'a dokunan kodun geliştirme/test döngüsü Docker üzerinden yapılacak. Bulgular `CLAUDE.md` §13/§14'e işlendi. Kod değişikliği yok (saf risk-doğrulama adımı, F1.04/F1.05 gibi).
 
 ### Faz 4 — Modül Sistemi Altyapısı + Egzersiz Kütüphanesi + İlk Kamerasız Egzersiz Modülü: tamamlandı (2026-07-25)
 - F4.01 - **`IModuleRegistry` sözleşmesi.** `GetAvailableModules`, `GetModulesByDiscipline`, `CreateInstance` — CLAUDE.md §5 ile birebir.

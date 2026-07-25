@@ -1,0 +1,13 @@
+{
+  "id": "shoulder-flexion-supine",
+  "displayName": { "tr": "Sırtüstü Omuz Fleksiyonu", "en": "Supine Shoulder Flexion" },
+  "instructions": {
+    "tr": "Sırtüstü uzanın, dirseğinizi düz tutarak kolunuzu yavaşça baş üstüne doğru kaldırın, ardından kontrollü şekilde başlangıç pozisyonuna indirin.",
+    "en": "Lie on your back, keep your elbow straight, slowly raise your arm overhead, then lower it back to the starting position with control."
+  },
+  "disciplines": ["physiotherapy"],
+  "difficultyLevel": 1,
+  "suggestedRepetitions": 10,
+  "suggestedSets": 3,
+  "tags": ["shoulder", "range-of-motion", "upper-extremity"]
+}

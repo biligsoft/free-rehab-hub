@@ -1,3 +1,5 @@
+using FreeRehabHub.Core;
+
 namespace FreeRehabHub.Modules.Contracts;
 
 public sealed class FormField

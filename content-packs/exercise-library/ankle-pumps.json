@@ -1,0 +1,13 @@
+{
+  "id": "ankle-pumps",
+  "displayName": { "tr": "Ayak Bileği Pompalama", "en": "Ankle Pumps" },
+  "instructions": {
+    "tr": "Oturur veya sırtüstü pozisyonda, ayak bileğinizi yavaşça yukarı ve aşağı hareket ettirin; hareketi olabildiğince geniş açıda yapmaya çalışın.",
+    "en": "While sitting or lying on your back, slowly move your ankle up and down, trying to use as full a range of motion as possible."
+  },
+  "disciplines": ["physiotherapy"],
+  "difficultyLevel": 1,
+  "suggestedRepetitions": 15,
+  "suggestedSets": 2,
+  "tags": ["ankle", "circulation", "lower-extremity"]
+}

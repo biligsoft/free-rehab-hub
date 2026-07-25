@@ -1,4 +1,4 @@
-namespace FreeRehabHub.Modules.Contracts;
+namespace FreeRehabHub.Core;
 
 public sealed class LocalizedText
 {

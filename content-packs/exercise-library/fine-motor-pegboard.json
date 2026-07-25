@@ -1,0 +1,13 @@
+{
+  "id": "fine-motor-pegboard",
+  "displayName": { "tr": "İnce Motor Pegboard Çalışması", "en": "Fine Motor Pegboard Task" },
+  "instructions": {
+    "tr": "Küçük pegleri baş parmak ve işaret parmağınızla tutarak bir bir deliklere yerleştirin; her pegi yavaş ve kontrollü hareketlerle yerleştirmeye özen gösterin.",
+    "en": "Pick up the small pegs using your thumb and index finger and place them into the holes one at a time, moving slowly and with control."
+  },
+  "disciplines": ["occupationalTherapy"],
+  "difficultyLevel": 2,
+  "suggestedRepetitions": 20,
+  "suggestedSets": 1,
+  "tags": ["fine-motor", "hand", "grasp"]
+}

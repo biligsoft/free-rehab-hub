@@ -7,5 +7,6 @@ public enum AuditRecordType
     TherapySession,
     Database,
     Prescription,
-    ProgressRecord
+    ProgressRecord,
+    KioskPin
 }

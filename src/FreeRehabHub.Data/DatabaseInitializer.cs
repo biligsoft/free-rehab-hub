@@ -60,6 +60,29 @@ public sealed class DatabaseInitializer
         );
 
         CREATE INDEX IF NOT EXISTS idx_prescriptionitems_prescriptionid ON PrescriptionItems(PrescriptionId);
+
+        -- SessionId'ye kasıtlı olarak FK yok: ModuleHost henüz her modül oynatışında gerçek bir
+        -- TherapySessions kaydı oluşturmuyor (bkz. docs/PROGRESS.md açık riskler), sadece tekil bir Guid.
+        CREATE TABLE IF NOT EXISTS ProgressRecords (
+            Id TEXT PRIMARY KEY,
+            PatientId TEXT NOT NULL REFERENCES Patients(Id),
+            ModuleId TEXT NOT NULL,
+            SessionId TEXT NOT NULL,
+            CompletedAt TEXT NOT NULL,
+            NormalizedScore REAL NOT NULL,
+            Notes TEXT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_progressrecords_patientid ON ProgressRecords(PatientId);
+
+        CREATE TABLE IF NOT EXISTS ProgressRecordMetrics (
+            Id TEXT PRIMARY KEY,
+            ProgressRecordId TEXT NOT NULL REFERENCES ProgressRecords(Id),
+            MetricKey TEXT NOT NULL,
+            MetricValue REAL NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_progressrecordmetrics_progressrecordid ON ProgressRecordMetrics(ProgressRecordId);
         """;
 
     private readonly SqliteConnectionFactory _connectionFactory;

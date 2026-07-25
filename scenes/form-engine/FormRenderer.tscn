@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/form-engine/FormRendererController.cs" id="1"]
+
+[node name="FormRenderer" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_titleLabelPath = NodePath("Layout/TitleLabel")
+_fieldsContainerPath = NodePath("Layout/ScrollContainer/FieldsContainer")
+_submitButtonPath = NodePath("Layout/Actions/SubmitButton")
+_errorLabelPath = NodePath("Layout/ErrorLabel")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Layout"]
+theme_type_variation = &"TitleLabel"
+text = ""
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Layout"]
+size_flags_vertical = 3
+
+[node name="FieldsContainer" type="VBoxContainer" parent="Layout/ScrollContainer"]
+theme_override_constants/separation = 18
+size_flags_horizontal = 3
+
+[node name="ErrorLabel" type="Label" parent="Layout"]
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="Layout"]
+theme_override_constants/separation = 10
+
+[node name="SubmitButton" type="Button" parent="Layout/Actions"]
+theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
+text = "Gönder"

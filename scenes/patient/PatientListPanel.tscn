@@ -12,6 +12,7 @@ _editButtonPath = NodePath("Card/Content/Actions/EditButton")
 _deleteButtonPath = NodePath("Card/Content/Actions/DeleteButton")
 _prescriptionButtonPath = NodePath("Card/Content/Actions/PrescriptionButton")
 _modulesButtonPath = NodePath("Card/Content/Actions/ModulesButton")
+_progressButtonPath = NodePath("Card/Content/Actions/ProgressButton")
 _emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
 _confirmDeleteDialogPath = NodePath("ConfirmDeleteDialog")
 
@@ -64,6 +65,10 @@ text = "Reçete"
 [node name="ModulesButton" type="Button" parent="Card/Content/Actions"]
 size_flags_horizontal = 3
 text = "Modüller"
+
+[node name="ProgressButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
+text = "İlerleme"
 
 [node name="NewPatientButton" type="Button" parent="Card/Content"]
 theme_type_variation = &"PrimaryButton"

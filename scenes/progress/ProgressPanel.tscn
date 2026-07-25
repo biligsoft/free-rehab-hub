@@ -1,0 +1,74 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/progress/ProgressPanelController.cs" id="1"]
+[ext_resource type="Script" path="res://scenes/progress/ProgressChart.cs" id="2"]
+
+[node name="ProgressPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_titleLabelPath = NodePath("Card/Content/TitleLabel")
+_errorLabelPath = NodePath("Card/Content/ErrorLabel")
+_emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
+_moduleItemListPath = NodePath("Card/Content/Body/ModuleItemList")
+_chartPath = NodePath("Card/Content/Body/DetailColumn/Chart")
+_recordsContainerPath = NodePath("Card/Content/Body/DetailColumn/RecordsScroll/RecordsContainer")
+_backButtonPath = NodePath("Card/Content/BackButton")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(640, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "İlerleme"
+
+[node name="ErrorLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="EmptyStateLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"EmptyStateLabel"
+text = "Bu hasta için henüz ilerleme kaydı yok. Bir egzersiz modülü tamamlandığında burada görünecek."
+autowrap_mode = 2
+visible = false
+
+[node name="Body" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 14
+
+[node name="ModuleItemList" type="ItemList" parent="Card/Content/Body"]
+custom_minimum_size = Vector2(200, 260)
+
+[node name="DetailColumn" type="VBoxContainer" parent="Card/Content/Body"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Chart" type="Control" parent="Card/Content/Body/DetailColumn"]
+custom_minimum_size = Vector2(0, 160)
+size_flags_horizontal = 3
+script = ExtResource("2")
+
+[node name="RecordsScroll" type="ScrollContainer" parent="Card/Content/Body/DetailColumn"]
+custom_minimum_size = Vector2(0, 90)
+size_flags_horizontal = 3
+
+[node name="RecordsContainer" type="VBoxContainer" parent="Card/Content/Body/DetailColumn/RecordsScroll"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="BackButton" type="Button" parent="Card/Content"]
+text = "Geri"

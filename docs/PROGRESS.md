@@ -1,10 +1,9 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.05
-- Son commit: F7.05 - ChildKioskShell ve PIN korumalı kiosk moduna geçiş eklendi
-- Sıradaki: TTS, erişilebilirlik temaları (`high-contrast.tres`/`low-stimulation.tres`) veya
-  ödül sistemi (Faz 7'nin kalan 3 alt özelliği) — henüz kullanıcı onayı bekleniyor, adım
-  numarası belirlenmedi
+- Son tamamlanan adım: F7.06
+- Son commit: F7.06 - Erişilebilirlik temaları (Yüksek Kontrast/Düşük Uyaran) ve tema seçici eklendi
+- Sıradaki: kullanıcının belirlediği sıraya göre (erişilebilirlik → ödül sistemi → TTS)
+  erişilebilirlik tamamlandı, sırada **ödül sistemi** var — henüz başlanmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -62,6 +61,25 @@
   doğru başlık) → modül seçilip oynanıyor → erken çıkış sonuç ekranına gidiyor → "Tamam"
   `TherapistShell`'e değil `ChildKioskShell`'e dönüyor, hasta korunuyor → yanlış PIN
   reddediliyor, doğru PIN ile Role=Therapist'e dönüp hasta temizleniyor.
+- F7.06 - **Erişilebilirlik temaları: Yüksek Kontrast / Düşük Uyaran.** `themes/high-contrast
+  .tres` ve `themes/low-stimulation.tres` (Faz 1'den beri boş stub) `default.tres`'teki her
+  theme-type-variation (`TitleLabel`, `SectionLabel`, `ErrorLabel`, `EmptyStateLabel`,
+  `PrimaryButton`, `DangerButton` vb.) karşılanacak şekilde dolduruldu. **Yüksek Kontrast:**
+  siyah/beyaz zemin, kalın (3-4px) kenarlık, büyütülmüş yazı tipi (taban 20pt, başlık 32pt),
+  gölge yok, güçlü mavi birincil buton, kırmızı tehlike butonu, klasik amber seçim rengi.
+  **Düşük Uyaran:** soluk/desatüre soğuk palet, ince (1px) kenarlık, geniş köşe yuvarlaklığı,
+  gölge yok, toz mavi-gri birincil buton, alarm-kırmızısından kaçınan hardal tonunda tehlike
+  butonu, biraz küçültülmüş (15pt) yazı tipi. `TherapistShell` araç çubuğuna tema seçici
+  (`OptionButton`) eklendi, `ThemeManager.ApplyTheme()`'e bağlandı — sadece terapist ekranında,
+  kiosk modundaki çocuk tema seçeneği görmüyor. Yeni xUnit testi yok (saf tema kaynağı/UI).
+  Xvfb+gerçek Godot ile doğrulandı: tema sırayla Varsayılan→Yüksek Kontrast→Düşük Uyaran
+  değiştirildi, her aşamada ekran görüntüsü alınıp görsel olarak incelendi (renk/kenarlık/yazı
+  boyutu tasarlandığı gibi), `PatientFormPanel`'e geçişte temanın kalıcı kaldığı doğrulandı
+  (`GetTree().Root.Theme` kök seviyesinde ayarlandığı için). **Yol boyunca bulunan harness
+  detayı:** ekran görüntüsü için beklenen `RenderingServer.FramePostDraw` sinyali `--headless`
+  modda hiç tetiklenmiyor (süreç zaman aşımına uğruyor) — çözüm, sadece bu doğrulama script'i
+  için `xvfb-run` + headless olmayan gerçek Godot çalıştırması; ürünün/normal test akışının
+  kalıcı bir parçası değil.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)
@@ -203,7 +221,6 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - **Exercise modülleri kendi `.csproj`'una sahip DEĞİL** (Godot 4'ün "script sadece ana derlemede bulunabilir" motor kısıtlaması yüzünden, bkz. F4.14 ve `module-development` skill § 3a) — yeni bir Exercise modülü eklerken bu farkı unutma: sadece `*Controller.cs`/`Scoring/*.cs` isimlendirme kuralına uy, `.csproj` ekleme. Faz 5'in kamera-tabanlı modülleri de bu kurala tabi olacak.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
 - SQLCipher şifreleme anahtarının nereden geleceği (OS keychain / ilk kurulum parolası) hâlâ çözülmedi — `SqliteConnectionFactory` şu an anahtarı parametre olarak alıyor, kaynağı belirlenmedi (bkz. `clinical-data-handling` skill).
-- `high-contrast.tres` ve `low-stimulation.tres` hâlâ boş (F0.07 sadece `default.tres`'i doldurdu) — Faz 7'de gerçek bir erişilebilirlik tasarım geçişi gerekiyor.
 - `assets/.gdignore` mevcut — bir modül `assets/` altındaki ikon/2D/3D varlıklarından birini gerçekten kullanmaya başladığında bu dosya kaldırılmalı (veya sadece kullanılan alt klasör için daraltılmalı), yoksa Godot editörü o varlığı içe aktarmaz.
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
 - **Faz 5'ten kalan, henüz bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). Bu geliştirme makinesinde hem kamera erişimi (`video` grubu izni eksik) hem mediapipe'ın kendisi (Fedora araç zinciri uyumsuzluğu, Docker'da doğrulandı) engelli — kullanıcının kendi makinesinde `video` grubu düzeltmesi + `services/mediapipe-service/.venv` kurulumu (`pip install -r requirements.txt`, `python download_model.py`) sonrası gerçek kamerayla test edilmeli.

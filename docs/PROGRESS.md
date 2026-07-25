@@ -1,8 +1,8 @@
 ## Güncel durum
 - Faz: 2 (Hasta Yönetimi + Veri Katmanı) — devam ediyor
-- Son tamamlanan Faz 2 adımı: F2.15
-- Son commit: F0.08 - UI ikon ve 2D/3D varlık kütüphanesi eklendi
-- Kalan Faz 2 kapsamı: hasta düzenleme/silme UI, şifreli yedekleme
+- Son tamamlanan Faz 2 adımı: F2.16
+- Son commit: F2.16 - Hasta düzenleme/silme UI eklendi
+- Kalan Faz 2 kapsamı: şifreli yedekleme
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -32,6 +32,8 @@
 - F0.06 - `docs/PROGRESS.md` F2.11-F2.15 ve F0.02-F0.05 ile güncellendi
 - F0.07 - **Arayüz tema ve responsive yerleşim düzeltmeleri.** Xvfb + Godot (headless) otomasyon turuyla ekran görüntüsü alınıp UI incelemesi yapıldı (9 bulgu); hepsi düzeltildi. `themes/default.tres` artık gerçek renk paleti, buton (birincil/ikincil/devre dışı), giriş alanı, liste ve hata etiketi stilleri tanımlıyor (önceden boş `[resource]` bloğuydu). LockScreen, TherapistSelectionScreen, PatientListPanel, PatientFormPanel, TherapistShell'in kökü tam-ekran anchor'landı, içerik `PanelContainer` tabanlı ortalanmış bir karta taşındı. `PatientListPanelController`'a boş liste mesajı ve tarih yerelleştirmesi (`dd.MM.yyyy`) eklendi. `high-contrast.tres`/`low-stimulation.tres` bilinçli olarak dokunulmadı (Faz 7 kapsamı).
 - F0.08 - **UI ikon ve 2D/3D varlık kütüphanesi.** `download_assets.py` (yeniden çalıştırılabilir, stdlib-only) — 53 kürasyonlu Lucide ikonu (`assets/ui_icons/`, ISC/MIT), 5 Kenney.nl 2D paketi + 4 Kenney.nl 3D paketi (`assets/2d_graphics/`, `assets/3d_models/`, hepsi CC0). Kaynak/lisans dökümü `assets/ASSET_MANIFEST.md`'de. Toplam ~110 MB. `assets/.gdignore` eklendi çünkü henüz hiçbir sahne bu varlıklara referans vermiyor — binlerce dosya Godot'un içe aktarma taramasını kilitliyordu; bir modül fiilen kullanmaya başladığında kaldırılmalı.
+- F0.09 - `docs/PROGRESS.md` F0.06-F0.08 ile güncellendi
+- F2.16 - **Hasta düzenleme/silme UI.** `PatientListPanel`'e seçili hastaya bağlı Düzenle/Sil butonları eklendi (seçim yokken devre dışı); Sil, `ConfirmationDialog` ile onay istiyor. `PatientFormPanel` artık `SessionContext.ActivePatient` üzerinden çift modda çalışıyor: null ise ekleme, doluysa düzenleme (başlık değişiyor, alanlar önceden doluyor, Kaydet `UpdateAsync`'e yönleniyor, Id/CreatedAt korunuyor). `themes/default.tres`'e Sil için `DangerButton` (kırmızı vurgulu) varyasyonu eklendi. Xvfb+Godot otomasyon turuyla seç/düzenle/güncelle/sil akışı uçtan uca doğrulandı.
 
 ### Faz 1 — Temel + Risk Doğrulama (İskelet): tamamlandı (2026-07-24)
 - F1.01 - Godot .NET çözüm iskeleti (`FreeRehabHub.csproj`/`.sln`, Godot editörü ile üretildi)
@@ -45,7 +47,6 @@
 - SQLCipher paket kombinasyonu Windows/macOS'ta henüz test edilmedi (Faz 2 veya Faz 8'de doğrulanmalı).
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
 - `SessionContext` F2.11'de eklendi. `ModuleRegistryAutoload` hâlâ Faz 4'te.
-- Hasta düzenleme (edit) ve silme UI'si henüz yok — sadece listeleme (F2.13) ve ekleme (F2.15) var.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
 - SQLCipher şifreleme anahtarının nereden geleceği (OS keychain / ilk kurulum parolası) hâlâ çözülmedi — `SqliteConnectionFactory` şu an anahtarı parametre olarak alıyor, kaynağı belirlenmedi (bkz. `clinical-data-handling` skill).
 - `high-contrast.tres` ve `low-stimulation.tres` hâlâ boş (F0.07 sadece `default.tres`'i doldurdu) — Faz 7'de gerçek bir erişilebilirlik tasarım geçişi gerekiyor.

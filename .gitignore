@@ -7,3 +7,6 @@ bin/
 obj/
 *.user
 .vs/
+
+# download_assets.py çalışma zamanı logu
+assets/download_assets.log

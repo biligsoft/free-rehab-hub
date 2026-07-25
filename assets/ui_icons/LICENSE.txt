@@ -1,0 +1,3 @@
+Lucide Icons
+Kaynak: https://github.com/lucide-icons/lucide
+Lisans: ISC (ve Feather'dan türetilen ikonlar için MIT) — atıf zorunlu değil.

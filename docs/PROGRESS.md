@@ -1,15 +1,15 @@
 ## Güncel durum
-- Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — başladı (2026-07-25)
-- Son tamamlanan adım: F6.04
-- Son commit: F6.04 - Hasta ilerleme grafiği ekranı eklendi
-- Sıradaki: F6.05 (PDF rapor export) — henüz başlanmadı
+- Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — tamamlandı (2026-07-25)
+- Son tamamlanan adım: F6.05
+- Son commit: F6.05 - PDF ilerleme raporu export özelliği eklendi
+- Sıradaki: Faz 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — henüz başlanmadı, kullanıcı onayı bekleniyor
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
 
-### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: devam ediyor
+### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)
   hâlâ bir oynatma ekranı yok (F5.10'da not edilmişti), bu yüzden Faz 6 önce sadece
   `ModuleHost` üzerinden geçen Exercise sonuçlarını kalıcı kayda çevirecek; Assessment
@@ -45,6 +45,30 @@
   xUnit testi yok (saf Godot UI, önceki ekranlarla aynı desen). Xvfb+gerçek Godot ile uçtan uca doğrulandı:
   3 kayıt (2 modül) seed edilip gerçek "İlerleme" tıklamasıyla ekran açıldı, modül listesi doğru sırada,
   seçim değişince grafik/kayıt listesi doğru güncellendi.
+- F6.05 - **PDF ilerleme raporu.** Kütüphane seçimi kullanıcıyla konuşuldu: QuestPDF (modern API ama
+  OSI onaylı olmayan "Community" lisans) yerine **PdfSharp** (MIT) seçildi — proje açık kaynak
+  olduğu için lisans netliği önceliklendirildi. PdfSharp 6.x .NET Core'da (GDI+ yok) sistem
+  fontlarını otomatik çözemediği için `LiberationSansFontResolver` (`IFontResolver`) yazıldı;
+  Liberation Sans (OFL-1.1, `assets/fonts/liberation-sans/`) repoya gömülü — hedef makinede hangi
+  fontların kurulu olduğundan bağımsız, tutarlı render için. `ProgressReportService`: hasta/terapist
+  başlığı, `clinical-data-handling` skill § 5 gereği zorunlu "tıbbi tanı değildir" feragatnamesi,
+  modül bazlı kayıt tablosu, sayfa taşınca otomatik yeni sayfa (`EnsureSpace`). Rapor üretimi
+  `AuditAction.Exported` ile loglanıyor (yeni eklenen audit action). Üç ekranda (`ModuleResultPanel`,
+  `ProgressPanel`, rapor) tekrarlanan camelCase→okunabilir metin dönüşümü `MetricKeyFormatter`'a
+  çıkarıldı (rule-of-three). Testler: `ProgressReportServiceTests` — gerçek gömülü fontla PDF üretimi,
+  çok sayfalı rapor (`PdfReader` ile geri açılıp `PageCount` doğrulanıyor), audit log doğrulaması. Tüm
+  çözüm: 109/109 test yeşil. Xvfb+gerçek Godot ile uçtan uca doğrulandı: hasta listesinden gerçek
+  tıklamalarla İlerleme → PDF Rapor → dosya kaydetme akışı çalıştı; üretilen PDF `pdftotext`/`pdftoppm`
+  ile görsel olarak da doğrulandı, Türkçe karakterler (İ, ı, ğ, ş, ü, ö) doğru render ediliyor.
+
+**Faz 6 tamamlandı (2026-07-25).** `ProgressRecord` toplama (Exercise modülleri, `ModuleHost`
+tamamlanınca otomatik kaydediyor) → hasta bazlı grafik/liste ekranı → PDF rapor export, uçtan uca
+çalışıyor. Kullanıcıyla konuşulan bilinçli kapsam kararı: Assessment modülleri (`general-functional
+-checkin`) hâlâ oynatma ekranından yoksun olduğu için (F5.10'dan beri bilinen, Faz 5'in kapsamı
+dışında bırakılan açık) bu faz sadece Exercise sonuçlarını kapsıyor — Assessment entegrasyonu, o
+host ekranı eklendiğinde ayrı bir faz-bağımsız işle ele alınabilir. PdfSharp/font-gömme yaklaşımı bu
+Linux geliştirme makinesinde doğrulandı; Windows/macOS'ta cross-platform font render'ı henüz
+doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kategori, bkz. Açık riskler).
 
 ### Faz 5 — MediaPipe Entegrasyonu + Kamera Tabanlı Modül: tamamlandı (2026-07-25)
 - F5.01 - **Risk-doğrulama spike'ı: MediaPipe native çalışıyor mu?** F1.04/F1.05'teki spike deseniyle, mimariye girmeden önce MediaPipe'ın bu geliştirme makinesinde gerçekten poz tespiti yapıp yapamadığı test edildi. İki ayrı engel bulundu: (1) bu ortamda kamera erişimi yok (`video` grubu izni eksik, kullanıcının kendi aksiyonu gerekiyor), (2) mediapipe pip paketi (0.10.7-0.10.35, hem eski `solutions.pose` hem yeni `tasks.vision.PoseLandmarker` API'si) bu Fedora makinesinde `PoseLandmarker`/`Pose` kurulumunda tutarlı şekilde çöküyor (`TAG:index:name is invalid` — dahili graph isimlendirme hatası, CPU/GPU delegate'ten ve Python sürümünden bağımsız, hem bu ortamda hem kullanıcının kendi makinesinde tekrar üretildi). Aynı test standart bir Debian tabanlı Docker container'ında sorunsuz çalıştı — sorunun mediapipe'ın genelinde değil, bu Fedora'nın araç zincirinde (glibc/libstdc++) olduğu doğrulandı. **Karar:** üretim mimarisi (native process, Docker değil) değişmedi; bu geliştirme makinesinde mediapipe'a dokunan kodun geliştirme/test döngüsü Docker üzerinden yapılacak. Bulgular `CLAUDE.md` §13/§14'e işlendi. Kod değişikliği yok (saf risk-doğrulama adımı, F1.04/F1.05 gibi).
@@ -132,3 +156,5 @@
 - Assessment modüllerinin (`general-functional-checkin`) hâlâ gerçek bir oynatma ekranı yok (F5.10'da bilinçli olarak not edildi) — `FormRenderer`'ı barındırıp `IAssessmentModule.Score()`'u çağıracak bir host ekranı gerekiyor, `ModuleLibraryPanel` şu an sadece `Kind == Exercise` modülleri listeliyor. Faz 5'in yarattığı bir eksiklik değil, ayrı faz-bağımsız bir iş.
 - `AppServices`'in `services/mediapipe-service`'i çözme şekli (`ProjectSettings.GlobalizePath("res://services/mediapipe-service")`, F5.08) sadece dev modunda çalışır — paketlenmiş build'de `res://` bir `.pck` olur, Python kaynak dosyaları oraya export edilmez/çalıştırılamaz. Faz 8'in "MediaPipe binary gömülü" maddesi bunu çözecek, o zaman bu yol çözümlemesi de gözden geçirilmeli.
 - **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
+- **PdfSharp/`LiberationSansFontResolver` sadece bu Linux geliştirme makinesinde doğrulandı** (F6.05) — font baytları repoya gömülü olduğu için teorik olarak platform-bağımsız olmalı (SQLCipher paket kombinasyonuyla aynı kategori risk), ama Windows/macOS'ta gerçek PDF üretimi henüz test edilmedi. En geç Faz 8'de (paketleme) doğrulanmalı.
+- İlerleme/PDF rapor özellikleri (Faz 6) sadece Exercise modüllerini kapsıyor — Assessment modüllerinin (`general-functional-checkin`) hâlâ bir oynatma ekranı olmadığı için (F5.10'dan beri açık) onlardan hiç `ProgressRecord` üretilmiyor. Bu ekran eklendiğinde `ModuleHostController`/`ProgressRecordService` entegrasyonunun Assessment sonuçlarını da kapsayıp kapsamayacağı ayrıca değerlendirilmeli.

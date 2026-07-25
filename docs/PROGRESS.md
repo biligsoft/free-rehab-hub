@@ -1,13 +1,28 @@
 ## Güncel durum
-- Faz: 6 (İlerleme Takibi, Grafikler, PDF Rapor) — tamamlandı (2026-07-25)
-- Son tamamlanan adım: F6.05
-- Son commit: F6.05 - PDF ilerleme raporu export özelliği eklendi
-- Sıradaki: Faz 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — henüz başlanmadı, kullanıcı onayı bekleniyor
+- Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
+- Son tamamlanan adım: F7.01
+- Son commit: F7.01 - KioskPin domain modeli ve IKioskPinRepository sözleşmesi eklendi
+- Sıradaki: F7.02 — `KioskPin` DB şeması + `SqliteKioskPinRepository`
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: devam ediyor
+- Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
+  kilidi, erişilebilirlik temaları, TTS, ödül sistemi) — CLAUDE.md'deki sıralamayla aynı
+  şekilde AccessControlService+kiosk kilidiyle başlanacak, diğerleri sonra ayrı ayrı ele
+  alınacak.
+- Kiosk çıkış tasarım kararı (kullanıcıyla konuşuldu): kiosk kilidinden çıkmak için var olan
+  SQLCipher master parolası değil, ayrı/kısa bir kiosk-çıkış PIN'i istenecek — kiosk günde
+  defalarca kullanılacağı için uzun parolayı her seferinde yazmak pratik değil. PIN app-geneli
+  tek bir PIN (terapist bazlı değil) — "hangi terapist çıkardı" bilgisi zaten kiosk'a girerken
+  set edilmiş olan `SessionContext.ActiveTherapist`'ten geliyor, PIN sadece "bu gerçekten
+  terapist, çocuk değil" doğrulaması.
+- F7.01 - **`KioskPin` domain modeli + `IKioskPinRepository` sözleşmesi.** `Domain`'e eklendi
+  — `PinHash`/`Salt`/`UpdatedAt`. F6.01'deki gibi bilinçli olarak dar: DB şeması, SQLite
+  implementasyonu, hashleme mantığı (`AccessControlService`) veya UI bu adımda yok.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

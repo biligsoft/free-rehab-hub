@@ -19,6 +19,9 @@ public partial class SessionContext : Node
     // bunu set edip ModuleHost sahnesine geçiyor, ActivePatient'la aynı desen.
     public ModuleManifest? ActiveModuleManifest { get; private set; }
 
+    // ModuleHost'un tamamlanan modülün sonucunu ModuleResultPanel'e taşımak için — aynı desen.
+    public ModuleResult? LastModuleResult { get; private set; }
+
     public void SetActiveTherapist(Therapist? therapist)
     {
         ActiveTherapist = therapist;
@@ -40,5 +43,10 @@ public partial class SessionContext : Node
     public void SetActiveModuleManifest(ModuleManifest? manifest)
     {
         ActiveModuleManifest = manifest;
+    }
+
+    public void SetLastModuleResult(ModuleResult? result)
+    {
+        LastModuleResult = result;
     }
 }

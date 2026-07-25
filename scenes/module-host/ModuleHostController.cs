@@ -10,6 +10,7 @@ namespace FreeRehabHub.App.ModuleHost;
 public partial class ModuleHostController : Control
 {
     private const string TherapistShellScenePath = "res://scenes/shells/TherapistShell.tscn";
+    private const string ModuleResultPanelScenePath = "res://scenes/module-result/ModuleResultPanel.tscn";
 
     [Export] private NodePath _statusLabelPath = null!;
     [Export] private NodePath _pauseButtonPath = null!;
@@ -165,26 +166,27 @@ public partial class ModuleHostController : Control
         if (_activeModule is not null && !_isCompleted)
         {
             // IExerciseModule sözleşmesi: Completed tam olarak bir kez tetiklenmeli — modül henüz
-            // tamamlanmadıysa OnDeactivated bunu (varsa kısmi sonuçla) garanti eder.
+            // tamamlanmadıysa OnDeactivated bunu (varsa kısmi sonuçla) garanti eder, bu da
+            // OnModuleCompleted üzerinden sonuç ekranına yönlendirir.
             _activeModule.OnDeactivated();
+            return;
         }
 
+        // Modül hiç kurulamadıysa (StartModuleAsync'teki erken guard'lardan biri devreye girdiyse)
+        // gösterilecek bir sonuç yok, doğrudan ana ekrana dön.
         ExitToTherapistShell();
     }
 
     private void OnModuleCompleted(object? sender, ModuleResult result)
     {
         _isCompleted = true;
-        _pauseButton.Disabled = true;
-        _statusLabel.Text = $"Tamamlandı — skor: {result.NormalizedScore:P0}";
+        CleanUpActiveModule();
 
-        if (_poseAwareModule is not null && _appServices.PoseTrackingService is not null)
-        {
-            _ = _appServices.PoseTrackingService.StopAsync();
-        }
+        _sessionContext.SetLastModuleResult(result);
+        GetTree().ChangeSceneToFile(ModuleResultPanelScenePath);
     }
 
-    private void ExitToTherapistShell()
+    private void CleanUpActiveModule()
     {
         if (_poseAwareModule is not null && _appServices.PoseTrackingService is not null)
         {
@@ -198,7 +200,11 @@ public partial class ModuleHostController : Control
             _activeModule.Completed -= OnModuleCompleted;
             _activeModule.Dispose();
         }
+    }
 
+    private void ExitToTherapistShell()
+    {
+        CleanUpActiveModule();
         _sessionContext.SetActiveModuleManifest(null);
         GetTree().ChangeSceneToFile(TherapistShellScenePath);
     }

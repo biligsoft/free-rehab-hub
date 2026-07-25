@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/module-result/ModuleResultPanelController.cs" id="1"]
+
+[node name="ModuleResultPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_titleLabelPath = NodePath("Card/Content/TitleLabel")
+_scoreLabelPath = NodePath("Card/Content/ScoreLabel")
+_metricsContainerPath = NodePath("Card/Content/MetricsContainer")
+_doneButtonPath = NodePath("Card/Content/DoneButton")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(440, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "Sonuç"
+autowrap_mode = 2
+
+[node name="ScoreLabel" type="Label" parent="Card/Content"]
+text = "Skor: %0"
+
+[node name="MetricsContainer" type="VBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 4
+
+[node name="DoneButton" type="Button" parent="Card/Content"]
+theme_type_variation = &"PrimaryButton"
+text = "Tamam"

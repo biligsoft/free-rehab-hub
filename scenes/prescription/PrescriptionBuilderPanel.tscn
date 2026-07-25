@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/prescription/PrescriptionBuilderPanelController.cs" id="1"]
+
+[node name="PrescriptionBuilderPanel" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_titleLabelPath = NodePath("Card/Content/TitleLabel")
+_errorLabelPath = NodePath("Card/Content/ErrorLabel")
+_libraryItemListPath = NodePath("Card/Content/Columns/LibraryColumn/LibraryItemList")
+_addButtonPath = NodePath("Card/Content/Columns/LibraryColumn/AddButton")
+_selectedItemsContainerPath = NodePath("Card/Content/Columns/SelectedColumn/ScrollContainer/SelectedItemsContainer")
+_notesInputPath = NodePath("Card/Content/NotesInput")
+_saveButtonPath = NodePath("Card/Content/Actions/SaveButton")
+_cancelButtonPath = NodePath("Card/Content/Actions/CancelButton")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(720, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "Egzersiz Reçetesi"
+
+[node name="ErrorLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="Columns" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 20
+
+[node name="LibraryColumn" type="VBoxContainer" parent="Card/Content/Columns"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="LibraryLabel" type="Label" parent="Card/Content/Columns/LibraryColumn"]
+text = "Kütüphane"
+
+[node name="LibraryItemList" type="ItemList" parent="Card/Content/Columns/LibraryColumn"]
+custom_minimum_size = Vector2(0, 220)
+
+[node name="AddButton" type="Button" parent="Card/Content/Columns/LibraryColumn"]
+text = "Ekle →"
+
+[node name="SelectedColumn" type="VBoxContainer" parent="Card/Content/Columns"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SelectedLabel" type="Label" parent="Card/Content/Columns/SelectedColumn"]
+text = "Reçete Öğeleri"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Card/Content/Columns/SelectedColumn"]
+custom_minimum_size = Vector2(0, 220)
+
+[node name="SelectedItemsContainer" type="VBoxContainer" parent="Card/Content/Columns/SelectedColumn/ScrollContainer"]
+anchor_right = 1.0
+theme_override_constants/separation = 8
+
+[node name="NotesInput" type="LineEdit" parent="Card/Content"]
+placeholder_text = "Notlar (opsiyonel)"
+
+[node name="Actions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="SaveButton" type="Button" parent="Card/Content/Actions"]
+theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
+text = "Kaydet"
+
+[node name="CancelButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
+text = "Vazgeç"

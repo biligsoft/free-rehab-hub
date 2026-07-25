@@ -1,6 +1,9 @@
+using System;
+using System.IO;
 using FreeRehabHub.Data;
 using FreeRehabHub.Data.Repositories;
 using FreeRehabHub.Domain.Repositories;
+using FreeRehabHub.Modules.Contracts;
 using FreeRehabHub.Services;
 using Godot;
 
@@ -10,6 +13,7 @@ public partial class AppServices : Node
 {
     private const string DatabaseResourcePath = "user://freerehabhub.db";
     private const string ExerciseLibraryResourcePath = "res://content-packs/exercise-library";
+    private const string MediaPipeServiceResourcePath = "res://services/mediapipe-service";
 
     public PatientService? PatientService { get; private set; }
     public TherapistService? TherapistService { get; private set; }
@@ -17,6 +21,7 @@ public partial class AppServices : Node
     public BackupService? BackupService { get; private set; }
     public PrescriptionService? PrescriptionService { get; private set; }
     public IExerciseLibraryRepository? ExerciseLibraryRepository { get; private set; }
+    public IPoseTrackingService? PoseTrackingService { get; private set; }
 
     public bool IsUnlocked => PatientService is not null;
 
@@ -45,5 +50,21 @@ public partial class AppServices : Node
         // için diğerleriyle aynı anda kuruluyor.
         ExerciseLibraryRepository = new ContentPackExerciseLibraryRepository(
             ProjectSettings.GlobalizePath(ExerciseLibraryResourcePath));
+
+        // Burada da sadece kuruluyor, kamera/süreç bu noktada başlamıyor — IPoseTrackingService.StartAsync
+        // ancak kamera gerektiren bir modül aktive olduğunda (ModuleHost tarafından) çağrılır.
+        var mediaPipeServiceDirectory = ProjectSettings.GlobalizePath(MediaPipeServiceResourcePath);
+        PoseTrackingService = new MediaPipePoseTrackingService(
+            ResolvePythonExecutablePath(mediaPipeServiceDirectory), mediaPipeServiceDirectory);
+    }
+
+    // services/mediapipe-service/.venv, Faz 5'te Docker dışında kurulmadı (bkz. CLAUDE.md §13/§14) —
+    // burada sadece venv'in konvansiyonel konumuna işaret ediyoruz, var olup olmadığını doğrulamıyoruz;
+    // yoksa/bozuksa hata IPoseTrackingService.StartAsync çağrıldığında (fiilen kullanılınca) ortaya çıkar.
+    private static string ResolvePythonExecutablePath(string mediaPipeServiceDirectory)
+    {
+        return OperatingSystem.IsWindows()
+            ? Path.Combine(mediaPipeServiceDirectory, ".venv", "Scripts", "python.exe")
+            : Path.Combine(mediaPipeServiceDirectory, ".venv", "bin", "python");
     }
 }

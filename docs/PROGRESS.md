@@ -1,9 +1,10 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.04
-- Son commit: F7.04 - Kiosk PIN kurulum/değiştirme ekranı eklendi
-- Sıradaki: `ChildKioskShell` ve Terapist↔Çocuk mod geçişi (PIN doğrulamasını kullanarak
-  kiosk kilidinden çıkış) — henüz kullanıcı onayı bekleniyor, adım numarası belirlenmedi
+- Son tamamlanan adım: F7.05
+- Son commit: F7.05 - ChildKioskShell ve PIN korumalı kiosk moduna geçiş eklendi
+- Sıradaki: TTS, erişilebilirlik temaları (`high-contrast.tres`/`low-stimulation.tres`) veya
+  ödül sistemi (Faz 7'nin kalan 3 alt özelliği) — henüz kullanıcı onayı bekleniyor, adım
+  numarası belirlenmedi
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -45,6 +46,22 @@
   tıklamalarıyla kurulmamış durum → eşleşmeyen PIN hatası → boş PIN hatası → başarılı kayıt
   ("PIN kaydedildi", durum güncellendi, alanlar temizlendi) → `AccessControlService` üzerinden
   doğru/yanlış PIN doğrulaması → Geri ile `TherapistShell`'e dönüş, hepsi doğru çalıştı.
+- F7.05 - **`ChildKioskShell` + PIN korumalı kiosk moduna geçiş.** `KioskNavigation` (küçük
+  paylaşılan yardımcı: `UserRole`'e göre ana ekran yolu) eklendi; `ModuleHostController
+  .ExitToHomeScreen` (eski adıyla `ExitToTherapistShell`) ve `ModuleResultPanelController`'ın
+  "Tamam" butonu artık buna göre yönleniyor — `ModuleLibraryPanelController`'a dokunulmadı
+  çünkü kiosk akışı onu hiç kullanmıyor. `ModuleResultPanelController.OnDonePressed`, `Role ==
+  Child` iken `ActivePatient`'ı temizlemiyor (çocuk aynı hasta için başka modül oynatmaya devam
+  edebilsin diye). `scenes/shells/ChildKioskShell.tscn`/Controller — `ModuleLibraryPanel`'in
+  modül listeleme mantığının kiosk'a özel kopyası + "Terapist Girişi" (PIN + Çıkış,
+  `AccessControlService.VerifyPinAsync` ile doğrulanıyor). `PatientListPanel`'e "Kiosk Moduna
+  Geç" butonu eklendi — **fail-closed**: PIN kurulu değilse girişi engelleyip mesaj gösteriyor
+  (terapist PIN kurmadan kiosk'a kilitlenip çıkış yolu olmadan kalmasın diye). Bu ekranlarda
+  yeni xUnit testi yok (saf Godot UI/navigasyon). Xvfb+gerçek Godot ile uçtan uca doğrulandı
+  (17 ayrı kontrol): PIN yokken engelleniyor → PIN kurulunca kiosk'a giriliyor (Role=Child,
+  doğru başlık) → modül seçilip oynanıyor → erken çıkış sonuç ekranına gidiyor → "Tamam"
+  `TherapistShell`'e değil `ChildKioskShell`'e dönüyor, hasta korunuyor → yanlış PIN
+  reddediliyor, doğru PIN ile Role=Therapist'e dönüp hasta temizleniyor.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

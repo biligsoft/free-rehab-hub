@@ -11,6 +11,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FreeRehabHub.Modules.Contracts\FreeRehabHub.Modules.Contracts.csproj" />
+    <ProjectReference Include="..\..\modules\com.freerehabhub.general-functional-checkin\GeneralFunctionalCheckin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ModuleRegistry testleri gerçek bir modül klasör düzenini taramalı; general-functional-checkin'in
+         manifest.json + .csproj'unu (ModuleRegistry, assembly adını .csproj dosya adından türetiyor)
+         test çıktısında ayrı bir "modules kökü" altına kopyalıyoruz. -->
+    <None Include="..\..\modules\com.freerehabhub.general-functional-checkin\manifest.json"
+          Link="TestModulesRoot\com.freerehabhub.general-functional-checkin\manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\modules\com.freerehabhub.general-functional-checkin\GeneralFunctionalCheckin.csproj"
+          Link="TestModulesRoot\com.freerehabhub.general-functional-checkin\GeneralFunctionalCheckin.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

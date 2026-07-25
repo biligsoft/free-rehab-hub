@@ -16,6 +16,7 @@ public partial class PatientListPanelController : Control
     [Export] private NodePath _editButtonPath = null!;
     [Export] private NodePath _deleteButtonPath = null!;
     [Export] private NodePath _prescriptionButtonPath = null!;
+    [Export] private NodePath _modulesButtonPath = null!;
     [Export] private NodePath _emptyStateLabelPath = null!;
     [Export] private NodePath _confirmDeleteDialogPath = null!;
 
@@ -24,6 +25,7 @@ public partial class PatientListPanelController : Control
     private Button _editButton = null!;
     private Button _deleteButton = null!;
     private Button _prescriptionButton = null!;
+    private Button _modulesButton = null!;
     private Label _emptyStateLabel = null!;
     private ConfirmationDialog _confirmDeleteDialog = null!;
     private AppServices _appServices = null!;
@@ -37,6 +39,7 @@ public partial class PatientListPanelController : Control
         _editButton = GetNode<Button>(_editButtonPath);
         _deleteButton = GetNode<Button>(_deleteButtonPath);
         _prescriptionButton = GetNode<Button>(_prescriptionButtonPath);
+        _modulesButton = GetNode<Button>(_modulesButtonPath);
         _emptyStateLabel = GetNode<Label>(_emptyStateLabelPath);
         _confirmDeleteDialog = GetNode<ConfirmationDialog>(_confirmDeleteDialogPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
@@ -45,12 +48,14 @@ public partial class PatientListPanelController : Control
         _editButton.Disabled = true;
         _deleteButton.Disabled = true;
         _prescriptionButton.Disabled = true;
+        _modulesButton.Disabled = true;
 
         _patientList.ItemSelected += _ => OnPatientSelected();
         _newPatientButton.Pressed += OnNewPatientPressed;
         _editButton.Pressed += OnEditPressed;
         _deleteButton.Pressed += OnDeletePressed;
         _prescriptionButton.Pressed += OnPrescriptionPressed;
+        _modulesButton.Pressed += OnModulesPressed;
         _confirmDeleteDialog.Confirmed += OnDeleteConfirmed;
 
         await ReloadPatientsAsync();
@@ -70,6 +75,7 @@ public partial class PatientListPanelController : Control
         _editButton.Disabled = true;
         _deleteButton.Disabled = true;
         _prescriptionButton.Disabled = true;
+        _modulesButton.Disabled = true;
     }
 
     private void OnPatientSelected()
@@ -77,6 +83,7 @@ public partial class PatientListPanelController : Control
         _editButton.Disabled = false;
         _deleteButton.Disabled = false;
         _prescriptionButton.Disabled = false;
+        _modulesButton.Disabled = false;
     }
 
     private void OnNewPatientPressed()
@@ -107,6 +114,18 @@ public partial class PatientListPanelController : Control
 
         _sessionContext.SetActivePatient(_patients[selectedIndices[0]]);
         GetTree().ChangeSceneToFile("res://scenes/prescription/PrescriptionBuilderPanel.tscn");
+    }
+
+    private void OnModulesPressed()
+    {
+        var selectedIndices = _patientList.GetSelectedItems();
+        if (selectedIndices.Length == 0)
+        {
+            return;
+        }
+
+        _sessionContext.SetActivePatient(_patients[selectedIndices[0]]);
+        GetTree().ChangeSceneToFile("res://scenes/module-library/ModuleLibraryPanel.tscn");
     }
 
     private void OnDeletePressed()

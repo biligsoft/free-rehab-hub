@@ -11,6 +11,7 @@ _newPatientButtonPath = NodePath("Card/Content/NewPatientButton")
 _editButtonPath = NodePath("Card/Content/Actions/EditButton")
 _deleteButtonPath = NodePath("Card/Content/Actions/DeleteButton")
 _prescriptionButtonPath = NodePath("Card/Content/Actions/PrescriptionButton")
+_modulesButtonPath = NodePath("Card/Content/Actions/ModulesButton")
 _emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
 _confirmDeleteDialogPath = NodePath("ConfirmDeleteDialog")
 
@@ -59,6 +60,10 @@ text = "Sil"
 [node name="PrescriptionButton" type="Button" parent="Card/Content/Actions"]
 size_flags_horizontal = 3
 text = "Reçete"
+
+[node name="ModulesButton" type="Button" parent="Card/Content/Actions"]
+size_flags_horizontal = 3
+text = "Modüller"
 
 [node name="NewPatientButton" type="Button" parent="Card/Content"]
 theme_type_variation = &"PrimaryButton"

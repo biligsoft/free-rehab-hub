@@ -83,6 +83,14 @@ public sealed class DatabaseInitializer
         );
 
         CREATE INDEX IF NOT EXISTS idx_progressrecordmetrics_progressrecordid ON ProgressRecordMetrics(ProgressRecordId);
+
+        -- Tekil ayar satırı (app-geneli kiosk-çıkış PIN'i) — Id yok, SetAsync eski satırı
+        -- silip yenisini ekliyor (bkz. SqliteKioskPinRepository).
+        CREATE TABLE IF NOT EXISTS KioskPin (
+            PinHash TEXT NOT NULL,
+            Salt TEXT NOT NULL,
+            UpdatedAt TEXT NOT NULL
+        );
         """;
 
     private readonly SqliteConnectionFactory _connectionFactory;

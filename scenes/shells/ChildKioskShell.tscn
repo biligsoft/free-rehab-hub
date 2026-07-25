@@ -1,0 +1,69 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/shells/ChildKioskShellController.cs" id="1"]
+
+[node name="ChildKioskShell" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_titleLabelPath = NodePath("Card/Content/TitleLabel")
+_errorLabelPath = NodePath("Card/Content/ErrorLabel")
+_moduleItemListPath = NodePath("Card/Content/ModuleItemList")
+_startButtonPath = NodePath("Card/Content/StartButton")
+_therapistPinInputPath = NodePath("Card/Content/TherapistExit/TherapistPinInput")
+_therapistExitButtonPath = NodePath("Card/Content/TherapistExit/TherapistExitButton")
+_exitMessageLabelPath = NodePath("Card/Content/ExitMessageLabel")
+
+[node name="Background" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(440, 0)
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"TitleLabel"
+text = "Egzersizler"
+
+[node name="ErrorLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="ModuleItemList" type="ItemList" parent="Card/Content"]
+custom_minimum_size = Vector2(0, 260)
+
+[node name="StartButton" type="Button" parent="Card/Content"]
+theme_type_variation = &"PrimaryButton"
+text = "Başlat"
+
+[node name="Separator" type="HSeparator" parent="Card/Content"]
+
+[node name="TherapistExitLabel" type="Label" parent="Card/Content"]
+theme_type_variation = &"SectionLabel"
+text = "Terapist Girişi"
+
+[node name="TherapistExit" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="TherapistPinInput" type="LineEdit" parent="Card/Content/TherapistExit"]
+size_flags_horizontal = 3
+placeholder_text = "PIN"
+secret = true
+
+[node name="TherapistExitButton" type="Button" parent="Card/Content/TherapistExit"]
+text = "Çıkış"
+
+[node name="ExitMessageLabel" type="Label" parent="Card/Content"]
+text = ""
+autowrap_mode = 2

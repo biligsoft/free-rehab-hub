@@ -1,5 +1,7 @@
 using FreeRehabHub.App.Autoload;
+using FreeRehabHub.App.Shells;
 using FreeRehabHub.Core;
+using FreeRehabHub.Domain;
 using FreeRehabHub.Services;
 using Godot;
 
@@ -8,7 +10,6 @@ namespace FreeRehabHub.App.ModuleResultScreen;
 public partial class ModuleResultPanelController : Control
 {
     private const string EnglishLocale = "en";
-    private const string TherapistShellScenePath = "res://scenes/shells/TherapistShell.tscn";
 
     [Export] private NodePath _titleLabelPath = null!;
     [Export] private NodePath _scoreLabelPath = null!;
@@ -69,8 +70,15 @@ public partial class ModuleResultPanelController : Control
     {
         _sessionContext.SetActiveModuleManifest(null);
         _sessionContext.SetLastModuleResult(null);
-        _sessionContext.SetActivePatient(null);
-        GetTree().ChangeSceneToFile(TherapistShellScenePath);
+
+        // Kiosk modunda (Role == Child) hasta bağlamı korunuyor — çocuk ChildKioskShell'e
+        // dönüp aynı hasta için başka bir modül oynatmaya devam edebilmeli.
+        if (_sessionContext.Role != UserRole.Child)
+        {
+            _sessionContext.SetActivePatient(null);
+        }
+
+        GetTree().ChangeSceneToFile(KioskNavigation.ResolveHomeScenePath(_sessionContext.Role));
     }
 
     private string Localize(LocalizedText text)

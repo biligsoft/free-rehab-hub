@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using FreeRehabHub.App.Autoload;
+using FreeRehabHub.App.Shells;
 using FreeRehabHub.Domain;
 using FreeRehabHub.Modules.Contracts;
 using Godot;
@@ -10,7 +11,6 @@ namespace FreeRehabHub.App.ModuleHost;
 
 public partial class ModuleHostController : Control
 {
-    private const string TherapistShellScenePath = "res://scenes/shells/TherapistShell.tscn";
     private const string ModuleResultPanelScenePath = "res://scenes/module-result/ModuleResultPanel.tscn";
 
     [Export] private NodePath _statusLabelPath = null!;
@@ -175,7 +175,7 @@ public partial class ModuleHostController : Control
 
         // Modül hiç kurulamadıysa (StartModuleAsync'teki erken guard'lardan biri devreye girdiyse)
         // gösterilecek bir sonuç yok, doğrudan ana ekrana dön.
-        ExitToTherapistShell();
+        ExitToHomeScreen();
     }
 
     private async void OnModuleCompleted(object? sender, ModuleResult result)
@@ -220,10 +220,10 @@ public partial class ModuleHostController : Control
         }
     }
 
-    private void ExitToTherapistShell()
+    private void ExitToHomeScreen()
     {
         CleanUpActiveModule();
         _sessionContext.SetActiveModuleManifest(null);
-        GetTree().ChangeSceneToFile(TherapistShellScenePath);
+        GetTree().ChangeSceneToFile(KioskNavigation.ResolveHomeScenePath(_sessionContext.Role));
     }
 }

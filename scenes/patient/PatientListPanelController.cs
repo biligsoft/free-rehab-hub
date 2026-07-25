@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FreeRehabHub.App.Autoload;
+using FreeRehabHub.App.Shells;
 using FreeRehabHub.Domain;
 using Godot;
 
@@ -18,7 +19,9 @@ public partial class PatientListPanelController : Control
     [Export] private NodePath _prescriptionButtonPath = null!;
     [Export] private NodePath _modulesButtonPath = null!;
     [Export] private NodePath _progressButtonPath = null!;
+    [Export] private NodePath _kioskButtonPath = null!;
     [Export] private NodePath _emptyStateLabelPath = null!;
+    [Export] private NodePath _kioskMessageLabelPath = null!;
     [Export] private NodePath _confirmDeleteDialogPath = null!;
 
     private ItemList _patientList = null!;
@@ -28,7 +31,9 @@ public partial class PatientListPanelController : Control
     private Button _prescriptionButton = null!;
     private Button _modulesButton = null!;
     private Button _progressButton = null!;
+    private Button _kioskButton = null!;
     private Label _emptyStateLabel = null!;
+    private Label _kioskMessageLabel = null!;
     private ConfirmationDialog _confirmDeleteDialog = null!;
     private AppServices _appServices = null!;
     private SessionContext _sessionContext = null!;
@@ -43,7 +48,9 @@ public partial class PatientListPanelController : Control
         _prescriptionButton = GetNode<Button>(_prescriptionButtonPath);
         _modulesButton = GetNode<Button>(_modulesButtonPath);
         _progressButton = GetNode<Button>(_progressButtonPath);
+        _kioskButton = GetNode<Button>(_kioskButtonPath);
         _emptyStateLabel = GetNode<Label>(_emptyStateLabelPath);
+        _kioskMessageLabel = GetNode<Label>(_kioskMessageLabelPath);
         _confirmDeleteDialog = GetNode<ConfirmationDialog>(_confirmDeleteDialogPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
@@ -53,6 +60,8 @@ public partial class PatientListPanelController : Control
         _prescriptionButton.Disabled = true;
         _modulesButton.Disabled = true;
         _progressButton.Disabled = true;
+        _kioskButton.Disabled = true;
+        _kioskMessageLabel.Text = string.Empty;
 
         _patientList.ItemSelected += _ => OnPatientSelected();
         _newPatientButton.Pressed += OnNewPatientPressed;
@@ -61,6 +70,7 @@ public partial class PatientListPanelController : Control
         _prescriptionButton.Pressed += OnPrescriptionPressed;
         _modulesButton.Pressed += OnModulesPressed;
         _progressButton.Pressed += OnProgressPressed;
+        _kioskButton.Pressed += OnKioskPressed;
         _confirmDeleteDialog.Confirmed += OnDeleteConfirmed;
 
         await ReloadPatientsAsync();
@@ -82,6 +92,7 @@ public partial class PatientListPanelController : Control
         _prescriptionButton.Disabled = true;
         _modulesButton.Disabled = true;
         _progressButton.Disabled = true;
+        _kioskButton.Disabled = true;
     }
 
     private void OnPatientSelected()
@@ -91,6 +102,7 @@ public partial class PatientListPanelController : Control
         _prescriptionButton.Disabled = false;
         _modulesButton.Disabled = false;
         _progressButton.Disabled = false;
+        _kioskButton.Disabled = false;
     }
 
     private void OnNewPatientPressed()
@@ -145,6 +157,31 @@ public partial class PatientListPanelController : Control
 
         _sessionContext.SetActivePatient(_patients[selectedIndices[0]]);
         GetTree().ChangeSceneToFile("res://scenes/progress/ProgressPanel.tscn");
+    }
+
+    private async void OnKioskPressed()
+    {
+        var selectedIndices = _patientList.GetSelectedItems();
+        if (selectedIndices.Length == 0)
+        {
+            return;
+        }
+
+        _kioskMessageLabel.Text = string.Empty;
+
+        // Fail-closed: PIN kurulu değilse kiosk moduna hiç girilmiyor — aksi halde terapist
+        // kiosk kilidinden çıkacak bir yol olmadan içeride kalabilir.
+        var isPinConfigured = await _appServices.AccessControlService!.IsPinConfiguredAsync();
+        if (!isPinConfigured)
+        {
+            _kioskMessageLabel.Text =
+                "Kiosk moduna geçmeden önce \"Kiosk PIN\" ekranından bir çıkış PIN'i belirlemelisiniz.";
+            return;
+        }
+
+        _sessionContext.SetActivePatient(_patients[selectedIndices[0]]);
+        _sessionContext.SetRole(UserRole.Child);
+        GetTree().ChangeSceneToFile(KioskNavigation.ChildKioskShellScenePath);
     }
 
     private void OnDeletePressed()

@@ -1,9 +1,9 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.06
-- Son commit: F7.06 - Erişilebilirlik temaları (Yüksek Kontrast/Düşük Uyaran) ve tema seçici eklendi
+- Son tamamlanan adım: F7.07
+- Son commit: F7.07 - Çocuk modu için basit görsel ödül sistemi (yıldız + kutlama mesajı) eklendi
 - Sıradaki: kullanıcının belirlediği sıraya göre (erişilebilirlik → ödül sistemi → TTS)
-  erişilebilirlik tamamlandı, sırada **ödül sistemi** var — henüz başlanmadı
+  erişilebilirlik ve ödül sistemi tamamlandı, sırada **TTS** var — henüz başlanmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -80,6 +80,17 @@
   modda hiç tetiklenmiyor (süreç zaman aşımına uğruyor) — çözüm, sadece bu doğrulama script'i
   için `xvfb-run` + headless olmayan gerçek Godot çalıştırması; ürünün/normal test akışının
   kalıcı bir parçası değil.
+- F7.07 - **Ödül sistemi: basit görsel ödül.** Kullanıcıyla kapsam konuşuldu (kalıcı rozet/başarı
+  sistemi ve kümülatif yıldız sayacı seçenekleri yerine): oturum-bazlı, kalıcı kayıt gerektirmeyen
+  en basit yaklaşım seçildi — yeni DB şeması/domain modeli yok. `ModuleResultPanel`e sadece
+  Child/kiosk modunda görünen bir `RewardContainer` eklendi; o modda klinik skor/metrikler
+  gizleniyor (çocuğa anlamlı değil), yerine `ModuleResult.NormalizedScore`'dan türetilen 1-3
+  yıldız (`≥%80`→★★★, `≥%50`→★★☆, altı→★☆☆) + kutlayıcı mesaj gösteriliyor — en düşük skorda
+  bile 0 yıldız yok, mesaj her zaman cesaretlendirici ("Denemeye devam et, başarıyorsun!").
+  Terapist modunda davranış değişmedi. Yeni xUnit testi yok (saf UI). Xvfb+gerçek Godot ile 5
+  senaryo doğrulandı: terapist modu (değişmedi), 3 farklı skor için doğru yıldız/mesaj, sonuç
+  yokken tüm alanların doğru gizlenmesi — ekran görüntüleriyle dolu/boş yıldız karakterlerinin
+  (★/☆) düzgün render edildiği de görsel olarak teyit edildi.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

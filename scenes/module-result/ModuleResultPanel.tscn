@@ -9,6 +9,9 @@ script = ExtResource("1")
 _titleLabelPath = NodePath("Card/Content/TitleLabel")
 _scoreLabelPath = NodePath("Card/Content/ScoreLabel")
 _metricsContainerPath = NodePath("Card/Content/MetricsContainer")
+_rewardContainerPath = NodePath("Card/Content/RewardContainer")
+_starsLabelPath = NodePath("Card/Content/RewardContainer/StarsLabel")
+_rewardMessageLabelPath = NodePath("Card/Content/RewardContainer/RewardMessageLabel")
 _doneButtonPath = NodePath("Card/Content/DoneButton")
 
 [node name="Background" type="Panel" parent="."]
@@ -38,6 +41,22 @@ text = "Skor: %0"
 
 [node name="MetricsContainer" type="VBoxContainer" parent="Card/Content"]
 theme_override_constants/separation = 4
+
+[node name="RewardContainer" type="VBoxContainer" parent="Card/Content"]
+visible = false
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="StarsLabel" type="Label" parent="Card/Content/RewardContainer"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.85, 0.65, 0, 1)
+text = "★★★"
+
+[node name="RewardMessageLabel" type="Label" parent="Card/Content/RewardContainer"]
+horizontal_alignment = 1
+autowrap_mode = 2
+text = "Harika iş çıkardın!"
 
 [node name="DoneButton" type="Button" parent="Card/Content"]
 theme_type_variation = &"PrimaryButton"

@@ -10,15 +10,23 @@ namespace FreeRehabHub.App.ModuleResultScreen;
 public partial class ModuleResultPanelController : Control
 {
     private const string EnglishLocale = "en";
+    private const double ThreeStarScoreThreshold = 0.8;
+    private const double TwoStarScoreThreshold = 0.5;
 
     [Export] private NodePath _titleLabelPath = null!;
     [Export] private NodePath _scoreLabelPath = null!;
     [Export] private NodePath _metricsContainerPath = null!;
+    [Export] private NodePath _rewardContainerPath = null!;
+    [Export] private NodePath _starsLabelPath = null!;
+    [Export] private NodePath _rewardMessageLabelPath = null!;
     [Export] private NodePath _doneButtonPath = null!;
 
     private Label _titleLabel = null!;
     private Label _scoreLabel = null!;
     private VBoxContainer _metricsContainer = null!;
+    private VBoxContainer _rewardContainer = null!;
+    private Label _starsLabel = null!;
+    private Label _rewardMessageLabel = null!;
     private Button _doneButton = null!;
     private SessionContext _sessionContext = null!;
     private LocalizationAutoload _localization = null!;
@@ -28,6 +36,9 @@ public partial class ModuleResultPanelController : Control
         _titleLabel = GetNode<Label>(_titleLabelPath);
         _scoreLabel = GetNode<Label>(_scoreLabelPath);
         _metricsContainer = GetNode<VBoxContainer>(_metricsContainerPath);
+        _rewardContainer = GetNode<VBoxContainer>(_rewardContainerPath);
+        _starsLabel = GetNode<Label>(_starsLabelPath);
+        _rewardMessageLabel = GetNode<Label>(_rewardMessageLabelPath);
         _doneButton = GetNode<Button>(_doneButtonPath);
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
         _localization = GetNode<LocalizationAutoload>("/root/LocalizationAutoload");
@@ -43,6 +54,9 @@ public partial class ModuleResultPanelController : Control
         if (result is null)
         {
             _titleLabel.Text = "Sonuç bulunamadı.";
+            _scoreLabel.Visible = false;
+            _metricsContainer.Visible = false;
+            _rewardContainer.Visible = false;
             return;
         }
 
@@ -53,6 +67,18 @@ public partial class ModuleResultPanelController : Control
         _titleLabel.Text = patient is not null
             ? $"Sonuç — {moduleDisplayName} ({patient.FullName})"
             : $"Sonuç — {moduleDisplayName}";
+
+        var isChildMode = _sessionContext.Role == UserRole.Child;
+        _scoreLabel.Visible = !isChildMode;
+        _metricsContainer.Visible = !isChildMode;
+        _rewardContainer.Visible = isChildMode;
+
+        if (isChildMode)
+        {
+            LoadReward(result.NormalizedScore);
+            return;
+        }
+
         _scoreLabel.Text = $"Skor: {result.NormalizedScore:P0}";
 
         foreach (var child in _metricsContainer.GetChildren())
@@ -64,6 +90,38 @@ public partial class ModuleResultPanelController : Control
         {
             _metricsContainer.AddChild(new Label { Text = $"{MetricKeyFormatter.Humanize(key)}: {value:0.##}" });
         }
+    }
+
+    private void LoadReward(double normalizedScore)
+    {
+        var starCount = CalculateStarCount(normalizedScore);
+        _starsLabel.Text = starCount switch
+        {
+            3 => "★★★",
+            2 => "★★☆",
+            _ => "★☆☆"
+        };
+        _rewardMessageLabel.Text = starCount switch
+        {
+            3 => "Harika iş çıkardın!",
+            2 => "Çok iyi gidiyorsun!",
+            _ => "Denemeye devam et, başarıyorsun!"
+        };
+    }
+
+    private static int CalculateStarCount(double normalizedScore)
+    {
+        if (normalizedScore >= ThreeStarScoreThreshold)
+        {
+            return 3;
+        }
+
+        if (normalizedScore >= TwoStarScoreThreshold)
+        {
+            return 2;
+        }
+
+        return 1;
     }
 
     private void OnDonePressed()

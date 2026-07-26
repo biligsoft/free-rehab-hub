@@ -1,12 +1,12 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.13
-- Son commit: F8.13 - MediaPipePoseTrackingService.StopAsync: CloseAsync yerine
-  CloseOutputAsync kullanılarak ReceiveLoopAsync ile ReceiveAsync çakışması giderildi
-- **GitHub Actions çapraz-platform CI matrisi artık tamamen yeşil** — Windows/Ubuntu/macOS
-  üçü de gerçekten geçiyor (repo ilk kez origin'e push edildi, F1-F8.13 arası 118 commit).
-  SQLCipher'ın Windows/macOS'ta gerçekten çalıştığı ilk kez doğrulandı (Faz 1'den beri açık
-  duran risk kapandı). Sıradaki: PyInstaller ile mediapipe-service paketleme.
+- Son tamamlanan adım: F8.14
+- Son commit: F8.14 - Paketlenmiş build'ler için birleşik path çözümleme (AppContentRoot)
+  eklendi
+- **GitHub Actions çapraz-platform CI matrisi tamamen yeşil** — Windows/Ubuntu/macOS üçü de
+  gerçekten geçiyor (repo ilk kez origin'e push edildi, F1-F8.14 arası 119 commit). SQLCipher'ın
+  Windows/macOS'ta gerçekten çalıştığı ilk kez doğrulandı (Faz 1'den beri açık duran risk
+  kapandı). Sıradaki: PyInstaller ile mediapipe-service paketleme.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -182,6 +182,23 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   kendisi okuyup temiz çıkıyor). Yerel doğrulama: önceden flaky olan test art arda 20 kez
   çalıştırıldı, 20/20 geçti. **Push sonrası CI: Windows/Ubuntu/macOS üçü de tamamen yeşil.**
   GitHub Actions çapraz-platform CI matrisi (F8.08'in asıl amacı) artık gerçekten geçiyor.
+- F8.14 - **Paketlenmiş build'ler için birleşik path çözümleme.** Mediapipe-service yol
+  düzeltmesine bakarken aynı sorunun `content-packs/` (exercise-library), `res://modules`
+  (manifest.json tarama) ve PDF font yolunda da olduğu ortaya çıktı — kullanıcıyla konuşulup
+  hepsi tek bir birleşik çözümle düzeltildi. `autoload/AppContentRoot.cs` eklendi: önce
+  `GlobalizePath("res://...")` deneniyor, sonuç gerçekten diskte varsa kullanılıyor (dev/editör
+  modu); yoksa (export edilmiş build, bu klasörler `.pck` içinde sanal dosya sistemi), çalışan
+  executable'ın yanına düşülüyor. `AppServices` (exercise-library, mediapipe-service, PDF font)
+  ve `ModuleRegistryAutoload` (`res://modules`) bu yardımcıyı kullanacak şekilde güncellendi.
+  `export_presets.cfg`: `content-packs/**`, `services/mediapipe-service/**`,
+  `assets/fonts/liberation-sans/**`, `modules/*/manifest.json` artık `.pck`'e dahil edilmiyor
+  (ham `System.IO` ile okunuyorlar) — modüllerin `.tscn` dosyaları hâlâ paketleniyor (Godot'un
+  `PackedScene` yüklemesi için gerekli). Gerçek export edilmiş Linux binary'siyle uçtan uca
+  doğrulandı: paketleme scriptinin yapacağı kopyalama simüle edilip (klasörler executable'ın
+  yanına kopyalandı), binary **nötr bir çalışma dizininden** (`/tmp`, kaynak ağacıyla
+  çakışmayı önlemek için) çalıştırıldı — 3/3 modül keşfedildi, 3/3 egzersiz kartı yüklendi,
+  mediapipe/font yolları doğru çözülüp var olduğu doğrulandı. Push sonrası CI: Windows/Ubuntu/
+  macOS üçü de yeşil.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

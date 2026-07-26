@@ -1,10 +1,12 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.04
-- Son commit: F8.04 - ConsentService eklendi ve AppServices'e bağlandı
-- Sıradaki: rıza kaydı özelliğine devam — `PatientFormPanel`'e zorunlu rıza alanı entegrasyonu
-  (son adım). Ayrıca hâlâ ele alınmadı: SQLCipher parola/anahtar yönetiminin "her açılışta elle
-  gir" halinde mi kalacağı (OS keychain alternatifi)
+- Son tamamlanan adım: F8.05
+- Son commit: F8.05 - PatientFormPanel'e hasta oluşturmada zorunlu rıza kaydı entegrasyonu
+  eklendi
+- Sıradaki: rıza kaydı özelliği tamamlandı (F8.02-05). Test/güvenlik/KVKK taramasından kalan
+  tek madde: SQLCipher parola/anahtar yönetiminin "her açılışta elle gir" halinde mi kalacağı
+  (OS keychain alternatifi) — henüz kullanıcıyla konuşulmadı. Sonra: Faz 8'in diğer iki alt
+  özelliği (CONTRIBUTING.md, installer+paketleme) henüz başlanmadı.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -78,6 +80,21 @@
   `Viewed` audit log — `PrescriptionService.GetLatestByPatientIdAsync` ile aynı konvansiyon).
   `AppServices.Unlock()`'a diğer servislerle aynı anda bağlandı. 4 yeni test (fake repository
   ile). Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests, diğer tüm test projeleri yeşil.
+- F8.05 - **`PatientFormPanel`e zorunlu rıza alanı entegrasyonu.** Yeni hasta oluşturma
+  akışına "Rıza Bilgisi" bölümü eklendi: "Rıza Veren Adı (Hasta veya Veli/Vasi)" + "Veli/vasi
+  adına veriliyor" onay kutusu; rıza adı boşken kaydetme engelleniyor. Başarılı kaydette
+  `PatientService.AddAsync`'ten sonra `ConsentService.AddAsync` çağrılıyor. Hasta **düzenleme**
+  modunda rıza bölümü tamamen gizli — rıza sadece oluşturmada isteniyor (F8.02'nin kapsam
+  kararı), mevcut hastayı düzenlerken tekrar sorulmuyor. Xvfb+gerçek Godot ile gerçek UI'dan 3
+  senaryo doğrulandı: rıza adı boşken engellendi (hasta oluşmadı), dolu+veli/vasi işaretiyle
+  hasta+rıza kaydı birlikte oluştu (doğru alanlarla), düzenleme modunda rıza bölümü gizli,
+  rıza istemeden normal düzenleme çalıştı. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests.
+
+**Rıza kaydı özelliği tamamlandı (F8.02-05).** Hasta oluşturmada zorunlu, minimal (kim verdi +
+ne zaman) bir rıza kaydı — CLAUDE.md'nin "Faz 2'de temel atılır" dediği ama hiç yapılmamış olan
+KVKK boşluğunu kapatıyor (bkz. F8.01'in tarama notu). Geri çekme (`WithdrawnAt` alanı modelde
+var ama UI/repository güncelleme metodu yok) ve mevcut/geçmiş hastalar için geriye dönük kayıt
+girme, bilinçli olarak bu kapsamın dışında bırakıldı — ayrı bir iş olarak ele alınabilir.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

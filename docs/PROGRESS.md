@@ -1,55 +1,11 @@
 ## Güncel durum
-- CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
-  konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
-  önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.25 (henüz commit edilmedi)
-- Son commit: F8.24 - Modul manifest.json ve C# Manifest tutarlilik testi eklendi (push
-  sonrası CI: 9/10 job yeşil — `build (macos-latest)`'te ilgisiz bir test bug'ı bulundu,
-  bkz. F8.25)
-- **Modül manifest.json ↔ C# Manifest tutarlılık testi eklendi (F8.24).** Açık risk
-  listesindeki küçük maddelerden biri ele alındı: Assessment modülleri için xUnit testi,
-  Exercise modülleri için (Node-türevi oldukları için) yeni bir sahne testi — birlikte 3
-  gerçek modülün tamamını kapsıyor. Her iki test de bilerek bozulan bir alanla (version,
-  difficultyRange.max) doğrulanıp doğru şekilde başarısız olduğu, sonra düzeltilip temiz
-  duruma döndüğü teyit edildi.
-- **Gerçek bug bulundu ve düzeltildi: `FakeMediaPipeServer.Dispose()` macOS'ta "Address
-  already in use" fırlatıyordu (F8.25, henüz commit edilmedi).** F8.24 push'u sonrası CI'da
-  `build (macos-latest)`'in `Test` adımı başarısız oldu — ama bu, yeni eklenen manifest
-  tutarlılık testleriyle hiç ilgisi olmayan, önceden var olan bir test yardımcı sınıfındaki
-  gerçek bir bug'dı (kullanıcının paylaştığı log ile teşhis edildi). Detay: bkz. aşağıdaki
-  Faz 8 sonrası girdisi.
-- **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
-  olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
-  kapatıldı.
-- **GUT kurulumu, "kurulum" yerine "değiştirme" olarak tamamlandı.** GUT sadece GDScript
-  destekliyor, bu proje tamamen C# olduğu için kullanılamadı — bunun yerine F8.19'da özel bir
-  C# sahne-test harness'ı yazıldı (bkz. Faz 8 sonrası bölümü, `testing-approach` skill'i).
-- **Rıza kaydı geri çekme akışı eklendi (F8.20).** Kapsam kullanıcıyla konuşuldu ("Minimal:
-  sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama getirmiyor (yeni
-  seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve UI'da gösteriliyor;
-  terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
-- **TTS Türkçe ses paketi doğrulaması TAMAMLANDI (F8.21 Linux, F8.23 Windows/macOS).**
-  F8.21'de iki gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature
-  (TextToSpeech)` platform fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma
-  şart; (2) `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa Linux'ta dahili bir Godot
-  hatası logluyor ama non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese
-  düşüyor. F8.23'te Godot'un gerçek Windows/macOS mono zip asset adları GitHub releases
-  API'sinden çekilip doğrulandı (tahmin edilmedi), `tts-check` job'u 3 platforma genişletildi
-  — **üçünde de ilk denemede başarılı**: `HasFeature = true`, `Speak()`/`Stop()` çökmedi.
-- **Kamera/PipeWire sorunu derinleştirildi ama tam çözülemedi (F8.22, sistem-seviyesi —
-  commit edilecek bir kod değişikliği yok).** `wpctl`/`pw-cli` ile daha derin incelendi:
-  WirePlumber aynı fiziksel kamerayı hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda
-  yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla düzeltildi (kalıcı olarak
-  bırakıldı), ama asıl "meşgul" hatasını ÇÖZMEDİ: PipeWire'ın kendi v4l2 monitörü cihazı sadece
-  var olduğu için sürekli açık tutuyor, bu spesifik kameranın sürücüsü hiçbir ikinci açma
-  denemesine izin vermiyor (PipeWire'ın KENDİ `pipewiresrc`'i dahil). Kesin çözüm
-  (`monitor.v4l2`'yi de kapatmak) bulundu ama kullanıcıyla konuşulup bilinçli olarak
-  uygulanmadı — bu günlük kullanılan masaüstü makinede tarayıcı/görüşme gibi diğer kamera
-  kullanımlarını kalıcı olarak bozardı. Bkz. aşağıdaki Faz 8 sonrası girdisi ve CLAUDE.md §14.
-  Sıradaki: TTS'i Windows/macOS'a genişletme (henüz kullanıcıyla konuşulmadı).
-- Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
-  responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
-  ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
+- CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
+  açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
+  (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
+- Son tamamlanan adım: F8.27 (henüz commit edilmedi)
+- Son commit: F8.26 - SQLCipher parola yonetimi karari kalicilastirildi: elle giris korunuyor
+- Sıradaki: metrik etiketlerinin yerelleştirilmemesi (F8.27'de keşfedildi, henüz kullanıcıyla
+  konuşulmadı) — bkz. § Açık riskler.
 
 ## Faz geçmişi
 
@@ -530,6 +486,27 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   test assertion'larını geçersiz kılmamalı). Yerel doğrulama: Linux'ta bu bug hiç
   reprodüklenmedi (muhtemelen platform-özel timing farkı), ama düzeltme sonrası 5x arka
   arkaya çalıştırılıp hep 48/48 geçti — asıl doğrulama macOS CI'da.
+- F8.26 - **SQLCipher parola yönetimi kararı kalıcılaştırıldı: elle giriş korunuyor.**
+  Detay için bkz. § Açık riskler'deki ilgili madde — kod değişikliği yok, sadece
+  `docs/PROGRESS.md`'de kararın gerekçesi kayıt altına alındı.
+- F8.27 - **İlerleme/PDF rapor akışının Assessment modülleriyle çalıştığı gerçek UI'dan
+  uçtan uca doğrulandı.** Açık risk listesindeki "sadece kod okumasıyla teyit edildi" notu
+  kapatıldı. Yeni bir sahne testi eklendi: `tests/scene-tests/ProgressPanelAssessmentSceneTest.cs`
+  — bir Assessment modülünden (general-functional-checkin) gelen gerçek bir `ProgressRecord`
+  ekleyip `ProgressPanel`'i açıyor, modül listesinde doğru görünen adın (`Genel Fonksiyonel
+  Değerlendirme`) çıktığını, kayıt satırının doğru skoru gösterdiğini doğruluyor, sonra PDF
+  Rapor butonunu tetikleyip (`FileDialog.FileSelected` sinyalini doğrudan emit ederek) gerçek
+  bir PDF dosyasının diskte oluştuğunu, geçerli bir `%PDF-` başlığı taşıdığını ve durum
+  etiketinin başarı mesajı gösterdiğini teyit ediyor. İlk denemede geçti (4/4 sahne testi).
+  Xvfb + gerçek Godot ile ekran görüntüsüyle de görsel olarak doğrulandı — iki kayıtlı bir
+  hasta için grafik doğru yükseliş eğilimini çiziyor, kayıt satırları doğru görünüyor.
+  **Yol boyunca gerçek bir küçük bulgu çıktı** (bkz. § Açık riskler'deki yeni madde): metrik
+  etiketleri (`painLevel` → "Pain Level") hiç yerelleştirilmiyor — `MetricKeyFormatter.Humanize()`
+  sadece camelCase'i mekanik olarak Title Case'e çeviriyor, çeviri tablosu yok, bu yüzden TR
+  arayüzde bile İngilizce görünüyor. Kullanıcıya bildirildi, henüz kapsam/öncelik konuşulmadı.
+  Bu vesileyle `docs/PROGRESS.md`'nin "Güncel durum" bölümü de sadeleştirildi — zamanla
+  `phase-workflow` skill'inin öngördüğü kısa 3 satırlık özetten (Faz/adım/commit) uzaklaşıp
+  bir değişiklik geçmişine dönüşmüştü; detaylar zaten bu "Faz 8 sonrası" bölümünde var.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -787,4 +764,5 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). F8.22'de daha derin incelendi ve tanı netleşti: `wpctl`/`pw-cli` ile bakıldığında WirePlumber aynı fiziksel USB kamerayı (Azurewave `ov9734`) hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla kalıcı olarak düzeltildi (`~/.config/wireplumber/wireplumber.conf.d/51-disable-libcamera-monitor.conf`, `monitor.libcamera = disabled`), ama asıl "meşgul" hatasını ÇÖZMEDİ. Tamamen temiz bir durumda bile (fuser hiçbir işlem göstermiyor, `pipewire`/`pipewire-pulse` de tam yeniden başlatılmış) hem `ffmpeg -f v4l2` hem PipeWire'ın KENDİ `gst-launch-1.0 pipewiresrc`'i aynı `-16 (Device or resource busy)` hatasını veriyor — yani sorun iki sürecin çakışması değil, PipeWire'ın kendi v4l2 monitörünün cihazı sadece var olduğu için sürekli açık tutması ve bu spesifik kameranın sürücüsünün ikinci HİÇBİR açma denemesine (PipeWire'ın kendisi dahil) izin vermemesi. **Kesin çözüm yolu bulundu ama uygulanmadı:** `monitor.v4l2`'yi de devre dışı bırakmak muhtemelen çözerdi, ama kullanıcıyla konuşulup bilinçli olarak durduruldu — bu günlük kullanılan masaüstü makinede tarayıcı/video görüşme gibi PipeWire-tabanlı diğer kamera kullanımlarını kalıcı olarak bozardı, kapsam bu projenin ihtiyacına göre orantısız büyük bir tradeoff. **Sonuç:** hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir Fedora-özel bulgu, üretim mimarisini etkilemiyor; bu makinede gerçek kamerayla test hâlâ mümkün değil, sentetik/statik görüntüyle pipeline testi (F5.12) geçerli yol olmaya devam ediyor.
 - ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
 - **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
-- ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — F8.18'den beri Assessment modülleri de `ProgressRecord` üretiyor, ve `ProgressPanelController`/rapor kodu `Kind`'a göre hiç filtrelemiyor (grep ile doğrulandı) — yani Assessment sonuçları da grafik/PDF'e otomatik dahil olmalı. Gerçek UI'dan uçtan uca doğrulanmadı, sadece kod okumasıyla teyit edildi.
+- ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — **F8.27'de gerçek UI'dan uçtan uca doğrulandı** (önceden sadece kod okumasıyla teyit edilmişti). Bkz. aşağıdaki Faz 8 sonrası girdisi.
+- **YENİ (F8.27'de gerçek UI doğrulaması sırasında keşfedildi): metrik etiketleri hiç yerelleştirilmiyor.** `MetricKeyFormatter.Humanize()` (`ModuleResultPanel`/`ProgressPanel`/PDF rapor — üçünde de kullanılıyor) camelCase metrik anahtarlarını (`painLevel`, `functionalDifficulty`) sadece mekanik olarak boşluklu Title Case'e çeviriyor ("Pain Level", "Functional Difficulty") — hiçbir çeviri tablosu yok, bu yüzden arayüz Türkçe olsa bile metrik etiketleri her zaman İngilizce (modül kodundaki hardcoded field id'lerinden türetildiği için) görünüyor. Ekran görüntüsüyle doğrulandı (bkz. F8.27). CLAUDE.md §14'teki "klinik ölçek normlarının yerelleştirilmesi ayrı, çözülmemiş bir problem" notuyla aynı aile ama tam olarak aynı şey değil (bu, ölçek normu değil, sade bir alan etiketi sorunu). Henüz kullanıcıyla kapsam/öncelik konuşulmadı — muhtemel çözüm: her modülün `manifest.json`'una TR/EN metrik etiket sözlüğü eklemek, ama bu gerçek bir tasarım kararı gerektiriyor.

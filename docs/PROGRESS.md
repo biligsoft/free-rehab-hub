@@ -2,14 +2,12 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.21
-- Son commit: F8.20 - Riza kaydi geri cekme akisi eklendi (backend + UI) (push sonrası CI:
-  7/7 job yeşil)
+- Son tamamlanan adım: F8.22 (kod içermez — sadece sistem/dokümantasyon, bkz. aşağıda)
+- Son commit: F8.21 - TTS Turkce ses paketi dogrulamasi (kismi, sadece ubuntu-latest) (push
+  sonrası CI: 8/8 job yeşil — yeni tts-check job'u dahil, ilk denemede sorunsuz)
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
-  kapatıldı. Kamera erişimi (Açık risk incelemesinin diğer maddesi) araştırıldı ama gerçek kök
-  nedeni (video grubu değil, muhtemelen PipeWire) bulunup belgelendi, çözülemedi — bkz. § Açık
-  riskler.
+  kapatıldı.
 - **GUT kurulumu, "kurulum" yerine "değiştirme" olarak tamamlandı.** GUT sadece GDScript
   destekliyor, bu proje tamamen C# olduğu için kullanılamadı — bunun yerine F8.19'da özel bir
   C# sahne-test harness'ı yazıldı (bkz. Faz 8 sonrası bölümü, `testing-approach` skill'i).
@@ -17,15 +15,24 @@
   sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama getirmiyor (yeni
   seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve UI'da gösteriliyor;
   terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
-- **TTS Türkçe ses paketi doğrulaması kısmen ilerletildi (F8.21, henüz commit edilmedi).**
-  Yerel bir spike'la iki gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature
-  (TextToSpeech)` platform fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma
-  şart; (2) `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa dahili bir Godot hatası
-  logluyor ama non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese düşüyor.
-  Kullanıcıyla konuşulup kapsam şimdilik ubuntu-latest'le sınırlandı (Windows/macOS Godot
-  binary asset adları yerel doğrulanamadığından). Bkz. aşağıdaki Faz 8 sonrası girdisi.
-  Sıradaki: Windows/macOS'a genişletme, veya kamera/PipeWire sorunu (henüz kullanıcıyla
-  konuşulmadı).
+- **TTS Türkçe ses paketi doğrulaması kısmen ilerletildi (F8.21).** Yerel bir spike'la iki
+  gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature(TextToSpeech)` platform
+  fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma şart; (2)
+  `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa dahili bir Godot hatası logluyor ama
+  non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese düşüyor. Kullanıcıyla
+  konuşulup kapsam şimdilik ubuntu-latest'le sınırlandı. CI: yeni `tts-check` job'u ilk
+  denemede başarılı, 8/8 job yeşil.
+- **Kamera/PipeWire sorunu derinleştirildi ama tam çözülemedi (F8.22, sistem-seviyesi —
+  commit edilecek bir kod değişikliği yok).** `wpctl`/`pw-cli` ile daha derin incelendi:
+  WirePlumber aynı fiziksel kamerayı hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda
+  yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla düzeltildi (kalıcı olarak
+  bırakıldı), ama asıl "meşgul" hatasını ÇÖZMEDİ: PipeWire'ın kendi v4l2 monitörü cihazı sadece
+  var olduğu için sürekli açık tutuyor, bu spesifik kameranın sürücüsü hiçbir ikinci açma
+  denemesine izin vermiyor (PipeWire'ın KENDİ `pipewiresrc`'i dahil). Kesin çözüm
+  (`monitor.v4l2`'yi de kapatmak) bulundu ama kullanıcıyla konuşulup bilinçli olarak
+  uygulanmadı — bu günlük kullanılan masaüstü makinede tarayıcı/görüşme gibi diğer kamera
+  kullanımlarını kalıcı olarak bozardı. Bkz. aşağıdaki Faz 8 sonrası girdisi ve CLAUDE.md §14.
+  Sıradaki: TTS'i Windows/macOS'a genişletme (henüz kullanıcıyla konuşulmadı).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -413,6 +420,37 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   env var + pencereli (Xvfb, `--headless` yok) → exit 0, `HasFeature = True`, `tr` ses
   sayısı = 0 (bu makinede Türkçe paket yok, beklenen), `Speak()`/`Stop()` hatasız. Mevcut
   `scene-tests` de yeni autoload'la birlikte hâlâ 2/2 geçiyor (regresyon yok).
+- F8.22 - **Kamera/PipeWire sorunu derinleştirildi (sistem-seviyesi, repoya commit edilecek
+  kod yok).** Önceki turda ("video grubu değil, muhtemelen PipeWire") yarım kalan hipotezi
+  test etmek için `wpctl status`/`pw-cli ls Device`/`ls Node` ile daha derin incelendi:
+  - **Gerçek bulgu #1:** WirePlumber aynı fiziksel USB kamerayı (Azurewave `ov9734`,
+    `13d3:56f9`) HEM `monitor.v4l2` (iki ayrı Device: `/dev/video0`, `/dev/video1`) HEM
+    `monitor.libcamera` ile aynı anda yönetiyordu — ikisi de `wireplumber.conf`'un
+    `hardware.video-capture` profilinde `wants = [ monitor.v4l2, monitor.libcamera ]` olarak
+    tanımlı, kasıtlı ama bu donanımda gereksiz bir çift-yönetim.
+  - **Düzeltme (kullanıcının onayıyla uygulandı, kalıcı bırakıldı):**
+    `~/.config/wireplumber/wireplumber.conf.d/51-disable-libcamera-monitor.conf` — WirePlumber
+    `main` profilinde `monitor.libcamera = disabled`. `systemctl --user restart wireplumber`
+    ile uygulandı; `wpctl status`'ta libcamera Device'ı gerçekten kayboldu.
+  - **Ama asıl "meşgul" hatası ÇÖZÜLMEDİ.** `fuser`/`lsof` düzeltmeden önce `/dev/video0`'ı
+    `pipewire` daemon'unun (fd 68u) açık tuttuğunu gösterdi — libcamera temizliğinden sonra
+    bile (hatta `pipewire`/`pipewire-pulse` servisleri de tam yeniden başlatılıp fuser'ın HİÇBİR
+    işlem göstermediği tamamen temiz bir durumdan başlanınca bile), hem `ffmpeg -f v4l2 -i
+    /dev/video0` hem `gst-launch-1.0 pipewiresrc` (PipeWire'ın KENDİ yolu, `target-object` ile
+    doğru Source'a yönlendirilmiş hâliyle) aynı `-16 (Device or resource busy)` hatasını verdi.
+    Bu, sorunun iki farklı SÜRECİN çakışması olmadığını, PipeWire'ın kendi v4l2 monitörünün
+    cihazı sadece graph'a açığa çıkarmak için sürekli açık tuttuğunu VE bu spesifik kameranın
+    V4L2/UVC sürücüsünün (ya da SPA v4l2 eklentisinin) ikinci HİÇBİR açma/stream-negotiate
+    denemesine (kendi `pipewiresrc`'i dahil) izin vermediğini gösteriyor.
+  - **Kesin çözüm yolu bulundu ama uygulanmadı:** `monitor.v4l2`'yi de aynı şekilde devre dışı
+    bırakmak muhtemelen `ffmpeg`/OpenCV'nin doğrudan erişimini açardı. Kullanıcıya soruldu
+    ("PipeWire'ın v4l2 monitörünü TAMAMEN devre dışı bırakmayı deneyeyim mi?") → "Hayır, burada
+    duralım (Recommended)" — çünkü bu, günlük kullanılan bu masaüstü makinede tarayıcı/video
+    görüşme gibi PipeWire-tabanlı diğer kamera kullanımlarını da kalıcı olarak bozardı; kapsam
+    bu projenin ihtiyacına göre orantısız büyük bir tradeoff.
+  - `CLAUDE.md` §14 güncellendi (daha kesin teşhis, aynı sonuç: hedef donanım Windows olduğu
+    için bu Fedora-özel bulgu üretim mimarisini etkilemiyor). `docs/PROGRESS.md` § Açık
+    riskler'deki eski (daha belirsiz) madde bu daha kesin bulguyla değiştirildi.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -667,7 +705,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - SQLCipher şifreleme anahtarının kaynağı kullanıcıyla konuşuldu (Faz 8, F8.05 sonrası) — **şimdilik elle giriş kalıyor** (LockScreen'de her açılışta soruluyor, hiçbir yere kaydedilmiyor, F2.12'nin kararı korundu). OS keychain alternatifine Faz 8'in sonunda, paketleme aşamasına yakın tekrar bakılacak — o zamana kadar `SqliteConnectionFactory` anahtarı parametre olarak almaya devam edecek (bkz. `clinical-data-handling` skill).
 - `assets/.gdignore` mevcut — bir modül `assets/` altındaki ikon/2D/3D varlıklarından birini gerçekten kullanmaya başladığında bu dosya kaldırılmalı (veya sadece kullanılan alt klasör için daraltılmalı), yoksa Godot editörü o varlığı içe aktarmaz.
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
-- **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). Faz 8'de (installer sonrası) bu tekrar denendi — **eski teşhis ("video grubunda değil") yanlış çıktı**: kullanıcı `sudo usermod -aG video` yaptıktan sonra kontrol edilince `/dev/video0`'da zaten `user:emre:rw-` ACL'i olduğu görüldü (muhtemelen systemd-logind'in "uaccess" mekanizmasıyla, video grubundan bağımsız olarak baştan beri vardı). Cihaz gerçek (format sorgularına doğru yanıt veriyor — MJPEG/YUYV, 1280x720'ye kadar), ama **ham V4L2 erişimi** (hem `ffmpeg` hem `cv2.VideoCapture(0)` ile — ikincisi `pose_tracker.py`'nin fiilen kullandığı yöntemin birebir aynısı) sürekli "Device or resource busy" / "can't open camera by index" hatası veriyor — kamera uygulaması (Cheese) kapalıyken bile. Bu makinede `pipewire`/`wireplumber` çalışıyor; en olası açıklama PipeWire'ın kamerayı kendi üzerinden yönetip ham V4L2 erişimini engellemesi (GNOME/Cheese gibi PipeWire-uyumlu uygulamalar çalışırken, PipeWire'ı bypass eden ham erişim bloke oluyor) — ama bu **kesin olarak doğrulanamadı** (bu oturumda `sudo`/`journalctl` tam erişimi yok). **Sonuç:** `mediapipe-service`'in şu anki haliyle (ham `cv2.VideoCapture`) bu spesifik Fedora/GNOME/PipeWire masaüstünde çalışmayabileceği — hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir bulgu, ama gerçek bir Linux/GNOME kliniğinde de karşılaşılabilir. İleride ele alınabilecek yol: OpenCV'yi `cv2.CAP_GSTREAMER` + `pipewiresrc` pipeline'ıyla PipeWire üzerinden kameraya erişecek şekilde denemek (kod değişikliği gerektirir, henüz denenmedi).
+- **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). F8.22'de daha derin incelendi ve tanı netleşti: `wpctl`/`pw-cli` ile bakıldığında WirePlumber aynı fiziksel USB kamerayı (Azurewave `ov9734`) hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla kalıcı olarak düzeltildi (`~/.config/wireplumber/wireplumber.conf.d/51-disable-libcamera-monitor.conf`, `monitor.libcamera = disabled`), ama asıl "meşgul" hatasını ÇÖZMEDİ. Tamamen temiz bir durumda bile (fuser hiçbir işlem göstermiyor, `pipewire`/`pipewire-pulse` de tam yeniden başlatılmış) hem `ffmpeg -f v4l2` hem PipeWire'ın KENDİ `gst-launch-1.0 pipewiresrc`'i aynı `-16 (Device or resource busy)` hatasını veriyor — yani sorun iki sürecin çakışması değil, PipeWire'ın kendi v4l2 monitörünün cihazı sadece var olduğu için sürekli açık tutması ve bu spesifik kameranın sürücüsünün ikinci HİÇBİR açma denemesine (PipeWire'ın kendisi dahil) izin vermemesi. **Kesin çözüm yolu bulundu ama uygulanmadı:** `monitor.v4l2`'yi de devre dışı bırakmak muhtemelen çözerdi, ama kullanıcıyla konuşulup bilinçli olarak durduruldu — bu günlük kullanılan masaüstü makinede tarayıcı/video görüşme gibi PipeWire-tabanlı diğer kamera kullanımlarını kalıcı olarak bozardı, kapsam bu projenin ihtiyacına göre orantısız büyük bir tradeoff. **Sonuç:** hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir Fedora-özel bulgu, üretim mimarisini etkilemiyor; bu makinede gerçek kamerayla test hâlâ mümkün değil, sentetik/statik görüntüyle pipeline testi (F5.12) geçerli yol olmaya devam ediyor.
 - ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
 - **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
 - ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — F8.18'den beri Assessment modülleri de `ProgressRecord` üretiyor, ve `ProgressPanelController`/rapor kodu `Kind`'a göre hiç filtrelemiyor (grep ile doğrulandı) — yani Assessment sonuçları da grafik/PDF'e otomatik dahil olmalı. Gerçek UI'dan uçtan uca doğrulanmadı, sadece kod okumasıyla teyit edildi.

@@ -28,3 +28,81 @@ jobs:
 
       - name: Test
         run: dotnet test FreeRehabHub.sln --no-build --configuration Debug
+
+  mediapipe-package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: services/mediapipe-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: System dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libxcb1 libxext6 libsm6 libgles2 libegl1
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-build.txt
+
+      - name: Build executable
+        run: python build_exe.py
+
+      - name: Smoke test (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          ./dist/mediapipe-service/mediapipe-service --host 127.0.0.1 --port 8123 &
+          SERVER_PID=$!
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8123/health 2>/dev/null | grep -q 200; then
+              echo "Health check OK"
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          kill $SERVER_PID 2>/dev/null || true
+          if [ "$ok" -ne 1 ]; then
+            echo "Health check failed"
+            exit 1
+          fi
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath ".\dist\mediapipe-service\mediapipe-service.exe" -ArgumentList "--host 127.0.0.1 --port 8123" -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 30; $i++) {
+            try {
+              $response = Invoke-WebRequest -Uri "http://127.0.0.1:8123/health" -UseBasicParsing -TimeoutSec 2
+              if ($response.StatusCode -eq 200) {
+                Write-Host "Health check OK"
+                $ok = $true
+                break
+              }
+            } catch {}
+            Start-Sleep -Seconds 1
+          }
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+          if (-not $ok) {
+            Write-Host "Health check failed"
+            exit 1
+          }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mediapipe-service-${{ matrix.os }}
+          path: services/mediapipe-service/dist/mediapipe-service
+          retention-days: 7

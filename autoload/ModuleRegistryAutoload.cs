@@ -6,13 +6,13 @@ namespace FreeRehabHub.App.Autoload;
 
 public partial class ModuleRegistryAutoload : Node
 {
-    private const string ModulesResourcePath = "res://modules";
+    private const string ModulesRelativePath = "modules";
 
     public IModuleRegistry Registry { get; private set; } = null!;
 
     public override void _Ready()
     {
-        var modulesRootPath = ProjectSettings.GlobalizePath(ModulesResourcePath);
+        var modulesRootPath = AppContentRoot.Resolve(ModulesRelativePath);
         Registry = new ModuleRegistry(modulesRootPath, AppContext.BaseDirectory);
     }
 }

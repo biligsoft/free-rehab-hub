@@ -12,9 +12,9 @@ namespace FreeRehabHub.App.Autoload;
 public partial class AppServices : Node
 {
     private const string DatabaseResourcePath = "user://freerehabhub.db";
-    private const string ExerciseLibraryResourcePath = "res://content-packs/exercise-library";
-    private const string MediaPipeServiceResourcePath = "res://services/mediapipe-service";
-    private const string ReportFontResourcePath = "res://assets/fonts/liberation-sans";
+    private const string ExerciseLibraryRelativePath = "content-packs/exercise-library";
+    private const string MediaPipeServiceRelativePath = "services/mediapipe-service";
+    private const string ReportFontRelativePath = "assets/fonts/liberation-sans";
 
     public PatientService? PatientService { get; private set; }
     public TherapistService? TherapistService { get; private set; }
@@ -55,18 +55,18 @@ public partial class AppServices : Node
         PrescriptionService = new PrescriptionService(prescriptionRepository, auditLogRepository);
         ProgressRecordService = new ProgressRecordService(progressRecordRepository, auditLogRepository);
         ProgressReportService = new ProgressReportService(
-            ProjectSettings.GlobalizePath(ReportFontResourcePath), auditLogRepository);
+            AppContentRoot.Resolve(ReportFontRelativePath), auditLogRepository);
         AccessControlService = new AccessControlService(kioskPinRepository, auditLogRepository);
         ConsentService = new ConsentService(consentRecordRepository, auditLogRepository);
 
         // Statik içerik, DB parolasına bağımlı değil ama tek "kurulum kapısı" (IsUnlocked) tutarlılığı
         // için diğerleriyle aynı anda kuruluyor.
         ExerciseLibraryRepository = new ContentPackExerciseLibraryRepository(
-            ProjectSettings.GlobalizePath(ExerciseLibraryResourcePath));
+            AppContentRoot.Resolve(ExerciseLibraryRelativePath));
 
         // Burada da sadece kuruluyor, kamera/süreç bu noktada başlamıyor — IPoseTrackingService.StartAsync
         // ancak kamera gerektiren bir modül aktive olduğunda (ModuleHost tarafından) çağrılır.
-        var mediaPipeServiceDirectory = ProjectSettings.GlobalizePath(MediaPipeServiceResourcePath);
+        var mediaPipeServiceDirectory = AppContentRoot.Resolve(MediaPipeServiceRelativePath);
         PoseTrackingService = new MediaPipePoseTrackingService(
             ResolvePythonExecutablePath(mediaPipeServiceDirectory), mediaPipeServiceDirectory);
     }

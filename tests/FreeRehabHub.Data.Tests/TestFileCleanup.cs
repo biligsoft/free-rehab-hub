@@ -7,8 +7,12 @@ namespace FreeRehabHub.Data.Tests;
 // sonrası aynı dosyayı silme) kullanılmıyor.
 internal static class TestFileCleanup
 {
-    private const int MaxAttempts = 5;
-    private const int RetryDelayMilliseconds = 50;
+    // F8.10'da 5 deneme × 50ms (200ms toplam) Windows CI runner'ında yetersiz kaldı — native
+    // handle serbest bırakma gecikmesi bundan uzun sürebiliyor. 30 × 200ms = 6 saniyeye kadar
+    // güvenli bir üst sınır; gerçek gecikme genelde çok daha kısa, retry ilk başarılı denemede
+    // çıkıyor.
+    private const int MaxAttempts = 30;
+    private const int RetryDelayMilliseconds = 200;
 
     public static void DeleteFile(string path)
     {

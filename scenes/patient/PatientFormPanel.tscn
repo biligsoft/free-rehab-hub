@@ -9,6 +9,9 @@ script = ExtResource("1")
 _titleLabelPath = NodePath("Card/Content/TitleLabel")
 _fullNameInputPath = NodePath("Card/Content/FullNameInput")
 _dateOfBirthInputPath = NodePath("Card/Content/DateOfBirthInput")
+_consentSectionPath = NodePath("Card/Content/ConsentSection")
+_consentGivenByNameInputPath = NodePath("Card/Content/ConsentSection/ConsentGivenByNameInput")
+_guardianConsentCheckBoxPath = NodePath("Card/Content/ConsentSection/GuardianConsentCheckBox")
 _saveButtonPath = NodePath("Card/Content/Actions/SaveButton")
 _cancelButtonPath = NodePath("Card/Content/Actions/CancelButton")
 _errorLabelPath = NodePath("Card/Content/ErrorLabel")
@@ -39,6 +42,19 @@ placeholder_text = "Ad Soyad"
 
 [node name="DateOfBirthInput" type="LineEdit" parent="Card/Content"]
 placeholder_text = "Doğum Tarihi (YYYY-AA-GG)"
+
+[node name="ConsentSection" type="VBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 8
+
+[node name="ConsentSectionLabel" type="Label" parent="Card/Content/ConsentSection"]
+theme_type_variation = &"SectionLabel"
+text = "Rıza Bilgisi"
+
+[node name="ConsentGivenByNameInput" type="LineEdit" parent="Card/Content/ConsentSection"]
+placeholder_text = "Rıza Veren Adı (Hasta veya Veli/Vasi)"
+
+[node name="GuardianConsentCheckBox" type="CheckBox" parent="Card/Content/ConsentSection"]
+text = "Veli/vasi adına veriliyor"
 
 [node name="Actions" type="HBoxContainer" parent="Card/Content"]
 theme_override_constants/separation = 10

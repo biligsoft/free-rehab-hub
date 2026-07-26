@@ -13,6 +13,9 @@ public partial class PatientFormPanelController : Control
     [Export] private NodePath _titleLabelPath = null!;
     [Export] private NodePath _fullNameInputPath = null!;
     [Export] private NodePath _dateOfBirthInputPath = null!;
+    [Export] private NodePath _consentSectionPath = null!;
+    [Export] private NodePath _consentGivenByNameInputPath = null!;
+    [Export] private NodePath _guardianConsentCheckBoxPath = null!;
     [Export] private NodePath _saveButtonPath = null!;
     [Export] private NodePath _cancelButtonPath = null!;
     [Export] private NodePath _errorLabelPath = null!;
@@ -20,6 +23,9 @@ public partial class PatientFormPanelController : Control
     private Label _titleLabel = null!;
     private LineEdit _fullNameInput = null!;
     private LineEdit _dateOfBirthInput = null!;
+    private Control _consentSection = null!;
+    private LineEdit _consentGivenByNameInput = null!;
+    private CheckBox _guardianConsentCheckBox = null!;
     private Button _saveButton = null!;
     private Button _cancelButton = null!;
     private Label _errorLabel = null!;
@@ -32,6 +38,9 @@ public partial class PatientFormPanelController : Control
         _titleLabel = GetNode<Label>(_titleLabelPath);
         _fullNameInput = GetNode<LineEdit>(_fullNameInputPath);
         _dateOfBirthInput = GetNode<LineEdit>(_dateOfBirthInputPath);
+        _consentSection = GetNode<Control>(_consentSectionPath);
+        _consentGivenByNameInput = GetNode<LineEdit>(_consentGivenByNameInputPath);
+        _guardianConsentCheckBox = GetNode<CheckBox>(_guardianConsentCheckBoxPath);
         _saveButton = GetNode<Button>(_saveButtonPath);
         _cancelButton = GetNode<Button>(_cancelButtonPath);
         _errorLabel = GetNode<Label>(_errorLabelPath);
@@ -47,6 +56,11 @@ public partial class PatientFormPanelController : Control
             _titleLabel.Text = "Hastayı Düzenle";
             _fullNameInput.Text = _editingPatient.FullName;
             _dateOfBirthInput.Text = _editingPatient.DateOfBirth.ToString(DateFormat, CultureInfo.InvariantCulture);
+
+            // Rıza sadece hasta oluşturulurken alınıyor — mevcut bir hastayı düzenlerken tekrar
+            // istenmiyor (bkz. docs/PROGRESS.md F8.02 kapsam kararı). Geri çekme/görüntüleme
+            // ayrı bir adımda ele alınacak.
+            _consentSection.Visible = false;
         }
     }
 
@@ -64,6 +78,13 @@ public partial class PatientFormPanelController : Control
                 out var dateOfBirth))
         {
             _errorLabel.Text = "Doğum tarihi YYYY-AA-GG formatında olmalı.";
+            return;
+        }
+
+        var consentGivenByName = _consentGivenByNameInput.Text;
+        if (_editingPatient is null && string.IsNullOrWhiteSpace(consentGivenByName))
+        {
+            _errorLabel.Text = "Rıza veren adı boş olamaz.";
             return;
         }
 
@@ -90,6 +111,15 @@ public partial class PatientFormPanelController : Control
                 CreatedAt = DateTime.UtcNow
             };
             await _appServices.PatientService!.AddAsync(patient, activeTherapist.Id);
+            await _appServices.ConsentService!.AddAsync(
+                new ConsentRecord
+                {
+                    PatientId = patient.Id,
+                    ConsentGivenByName = consentGivenByName,
+                    IsGuardianConsent = _guardianConsentCheckBox.ButtonPressed,
+                    ConsentedAt = DateTime.UtcNow
+                },
+                activeTherapist.Id);
         }
 
         _sessionContext.SetActivePatient(null);

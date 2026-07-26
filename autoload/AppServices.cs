@@ -24,6 +24,7 @@ public partial class AppServices : Node
     public ProgressRecordService? ProgressRecordService { get; private set; }
     public ProgressReportService? ProgressReportService { get; private set; }
     public AccessControlService? AccessControlService { get; private set; }
+    public ConsentService? ConsentService { get; private set; }
     public IExerciseLibraryRepository? ExerciseLibraryRepository { get; private set; }
     public IPoseTrackingService? PoseTrackingService { get; private set; }
 
@@ -45,6 +46,7 @@ public partial class AppServices : Node
         IPrescriptionRepository prescriptionRepository = new SqlitePrescriptionRepository(connectionFactory);
         IProgressRecordRepository progressRecordRepository = new SqliteProgressRecordRepository(connectionFactory);
         IKioskPinRepository kioskPinRepository = new SqliteKioskPinRepository(connectionFactory);
+        IConsentRecordRepository consentRecordRepository = new SqliteConsentRecordRepository(connectionFactory);
 
         PatientService = new PatientService(patientRepository, auditLogRepository);
         TherapistService = new TherapistService(therapistRepository, auditLogRepository);
@@ -55,6 +57,7 @@ public partial class AppServices : Node
         ProgressReportService = new ProgressReportService(
             ProjectSettings.GlobalizePath(ReportFontResourcePath), auditLogRepository);
         AccessControlService = new AccessControlService(kioskPinRepository, auditLogRepository);
+        ConsentService = new ConsentService(consentRecordRepository, auditLogRepository);
 
         // Statik içerik, DB parolasına bağımlı değil ama tek "kurulum kapısı" (IsUnlocked) tutarlılığı
         // için diğerleriyle aynı anda kuruluyor.

@@ -8,5 +8,6 @@ public enum AuditRecordType
     Database,
     Prescription,
     ProgressRecord,
-    KioskPin
+    KioskPin,
+    ConsentRecord
 }

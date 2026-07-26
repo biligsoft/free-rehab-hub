@@ -1,15 +1,15 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.15
-- Son commit: F8.15 - mediapipe-service için PyInstaller paketleme (build_exe.py,
-  run_server.py) eklendi, MediaPipePoseTrackingService paketlenmiş binary'yi algılayacak
-  şekilde güncellendi
-- GitHub Actions çapraz-platform CI matrisi tamamen yeşil (Windows/Ubuntu/macOS). SQLCipher'ın
-  Windows/macOS'ta gerçekten çalıştığı doğrulandı (Faz 1'den beri açık duran risk kapandı).
-  mediapipe-service Linux'ta Docker üzerinden gerçek PyInstaller build'i ile doğrulandı
-  (`/health` yanıt verdi). Sıradaki: son paketleme scripti (Godot export çıktısı + mediapipe
-  binary'sini tek bir klasör/zip'te birleştiren script) — Windows/macOS PyInstaller build'leri
-  için de GitHub Actions'a bakılması gerekebilir (PyInstaller cross-compile desteklemiyor).
+- Son tamamlanan adım: F8.16
+- Son commit: F8.16 - CI'a mediapipe-service icin PyInstaller paketleme + smoke-test job'u
+  eklendi (Windows/Ubuntu/macOS)
+- **CI'da artık 6/6 job yeşil** (`build` × 3 platform + `mediapipe-package` × 3 platform).
+  SQLCipher'ın Windows/macOS'ta çalıştığı (Faz 1'den beri açık risk) VE mediapipe'ın
+  Windows/macOS'ta gerçekten import edilip PyInstaller ile paketlenip çalıştırılabildiği
+  (F5.01'den beri sadece Linux/Docker'da doğrulanmıştı) ilk kez doğrulandı — kamera/gerçek
+  poz-tespiti hâlâ test edilemedi (donanım yok), ama "mediapipe bu platformda hiç
+  başlamıyor" riski artık kapandı. Sıradaki: son paketleme scripti (Godot export çıktısı +
+  mediapipe binary'sini tek bir klasör/zip'te birleştiren script).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -221,6 +221,16 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   sonrası CI: Windows/Ubuntu/macOS üçü de yeşil. Windows/macOS için PyInstaller cross-compile
   desteklemediğinden buradan üretilemedi — gerçek Windows/macOS binary'leri ayrı bir işle
   GitHub Actions runner'larında üretilmeli.
+- F8.16 - **CI'a `mediapipe-package` job'u eklendi.** `.github/workflows/ci.yml`'e yeni bir
+  job — `windows-latest`/`macos-latest`/`ubuntu-latest` matrisinde Python 3.10 kurup
+  `build_exe.py`'ı gerçekten çalıştırıyor, ardından üretilen binary'yi başlatıp `/health`'e
+  istek atarak `200` yanıtını doğruluyor (Linux/macOS: bash+curl, Windows: PowerShell+
+  `Invoke-WebRequest` — platforma özgü ayrı adımlar), sonra `dist/` çıktısını build artifact
+  olarak yüklüyor (7 gün saklama). **CI'da 6/6 job yeşil** (`build` × 3 + `mediapipe-package`
+  × 3) — SQLCipher'ın ardından mediapipe'ın da Windows/macOS'ta gerçekten import edilip
+  PyInstaller ile paketlenip çalıştırılabildiği ilk kez doğrulandı (F5.01'den beri sadece
+  Linux/Docker'da biliniyordu). Kamera/gerçek poz-tespiti hâlâ test edilemedi (donanım yok),
+  ama "mediapipe bu platformda hiç başlamıyor" riski kapandı.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

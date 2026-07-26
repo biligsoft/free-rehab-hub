@@ -1,9 +1,13 @@
 ## Güncel durum
 - Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.07
-- Son commit: F7.07 - Çocuk modu için basit görsel ödül sistemi (yıldız + kutlama mesajı) eklendi
-- Sıradaki: kullanıcının belirlediği sıraya göre (erişilebilirlik → ödül sistemi → TTS)
-  erişilebilirlik ve ödül sistemi tamamlandı, sırada **TTS** var — henüz başlanmadı
+- Son tamamlanan adım: F7.08
+- Son commit: F7.08 - TtsAutoload (Godot yerleşik DisplayServer TTS) ve ChildKioskShell'e Dinle
+  butonu eklendi
+- Sıradaki: kullanıcının belirlediği sırayla (erişilebilirlik → ödül sistemi → TTS) Faz 7'nin
+  dört alt özelliği de tamamlandı (kiosk kilidi F7.01-05, erişilebilirlik F7.06, ödül sistemi
+  F7.07, TTS F7.08) — Faz 7'nin tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla
+  konuşulmadı (TTS şu an sadece ChildKioskShell'deki modül adı okumayla sınırlı, başka
+  ekranlara/metinlere genişletilip genişletilmeyeceği açık)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -91,6 +95,25 @@
   senaryo doğrulandı: terapist modu (değişmedi), 3 farklı skor için doğru yıldız/mesaj, sonuç
   yokken tüm alanların doğru gizlenmesi — ekran görüntüleriyle dolu/boş yıldız karakterlerinin
   (★/☆) düzgün render edildiği de görsel olarak teyit edildi.
+- F7.08 - **TTS: `TtsAutoload` + ChildKioskShell "Dinle" butonu.** Kütüphane seçimi kullanıcıyla
+  konuşuldu (Godot'un yerleşik `DisplayServer` TTS'i / bundled Piper nöral TTS / bundled
+  espeak-ng arasında) — **Godot'un yerleşik `DisplayServer` TTS'i** seçildi: sıfır yeni
+  bağımlılık/native süreç, MediaPipe'daki gibi ikinci bir paketleme yükü yok. Karardan önce bu
+  makinede fiilen spike'landı: Linux'ta speech-dispatcher/espeak-ng üzerinden gerçek Türkçe
+  konuşma ürettiği doğrulandı (`TtsIsSpeaking()=true`). **Yol boyunca bulunan gerçek bug:**
+  `DisplayServer.TtsGetVoices()` (tüm sesleri listeleyen genel çağrı) Linux'ta Godot 4.7'de
+  içeride hata veriyor (`Parameter "synth" is null`) ve boş liste dönüyor — dil-filtreli
+  `TtsGetVoicesForLanguage()` sorunsuz çalışıyor, `TtsAutoload` bu yüzden hep onu kullanıyor.
+  `autoload/TtsAutoload.cs` (6. autoload): `Speak(text)` aktif dile göre ses seçip `TtsSpeak`
+  çağırıyor, `Stop()`, `IsAvailable`. `ChildKioskShell`e "Dinle" butonu eklendi (Başlat'ın
+  yanında, aynı seçim-sonrası-aktifleşme deseniyle) — seçili modülün adını okuyor, okuma
+  zorluğu olan/henüz okuma bilmeyen çocuklar için. Yeni xUnit testi yok (Godot API'sine sarılı
+  saf UI). Xvfb+gerçek Godot ile gerçek buton tıklamalarıyla doğrulandı: seçim öncesi
+  Dinle/Başlat ikisi de devre dışı, seçim sonrası ikisi de aktif, doğru modül adı okunuyor,
+  Dinle'ye basınca `TtsIsSpeaking()` false'tan true'ya geçiyor. **Bilinen risk:** sadece
+  Linux'ta (speech-dispatcher/espeak-ng kurulu) doğrulandı; Windows'ta SAPI5'e, macOS'ta
+  NSSpeechSynthesizer/AVSpeechSynthesizer'a sarılıyor — hedef klinik bilgisayarda Türkçe ses
+  paketi kurulu olmayabilir, gerçek donanımda doğrulanmalı (bkz. CLAUDE.md §14).
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

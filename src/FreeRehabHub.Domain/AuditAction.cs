@@ -6,5 +6,6 @@ public enum AuditAction
     Created,
     Updated,
     Deleted,
-    Exported
+    Exported,
+    Withdrawn
 }

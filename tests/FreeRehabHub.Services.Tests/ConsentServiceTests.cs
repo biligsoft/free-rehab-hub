@@ -74,4 +74,49 @@ public sealed class ConsentServiceTests
             new ConsentRecord { PatientId = _patientId, ConsentGivenByName = "   ", ConsentedAt = DateTime.UtcNow },
             _therapistId));
     }
+
+    [Fact]
+    public async Task WithdrawAsync_ExistingRecord_SetsWithdrawnAtAndLogsWithdrawn()
+    {
+        await _service.AddAsync(
+            new ConsentRecord
+            {
+                PatientId = _patientId,
+                ConsentGivenByName = "Ayşe Yılmaz",
+                ConsentedAt = DateTime.UtcNow
+            },
+            _therapistId);
+
+        await _service.WithdrawAsync(_patientId, _therapistId);
+
+        var fetched = await _consentRecordRepository.GetByPatientIdAsync(_patientId);
+        Assert.NotNull(fetched!.WithdrawnAt);
+
+        var withdrawnEntry = Assert.Single(_auditLogRepository.Entries, e => e.Action == AuditAction.Withdrawn);
+        Assert.Equal(AuditRecordType.ConsentRecord, withdrawnEntry.RecordType);
+        Assert.Equal(_patientId, withdrawnEntry.RecordId);
+        Assert.Equal(_therapistId, withdrawnEntry.TherapistId);
+    }
+
+    [Fact]
+    public async Task WithdrawAsync_NoRecord_Throws()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.WithdrawAsync(_patientId, _therapistId));
+    }
+
+    [Fact]
+    public async Task WithdrawAsync_AlreadyWithdrawn_Throws()
+    {
+        await _service.AddAsync(
+            new ConsentRecord
+            {
+                PatientId = _patientId,
+                ConsentGivenByName = "Ayşe Yılmaz",
+                ConsentedAt = DateTime.UtcNow
+            },
+            _therapistId);
+        await _service.WithdrawAsync(_patientId, _therapistId);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.WithdrawAsync(_patientId, _therapistId));
+    }
 }

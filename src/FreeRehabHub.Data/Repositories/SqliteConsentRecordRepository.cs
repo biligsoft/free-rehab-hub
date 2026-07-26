@@ -61,4 +61,15 @@ public sealed class SqliteConsentRecordRepository : IConsentRecordRepository
 
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
+
+    public async Task WithdrawAsync(Guid patientId, DateTime withdrawnAt, CancellationToken cancellationToken = default)
+    {
+        using var connection = _connectionFactory.CreateOpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "UPDATE ConsentRecords SET WithdrawnAt = $withdrawnAt WHERE PatientId = $patientId";
+        command.Parameters.AddWithValue("$withdrawnAt", withdrawnAt.ToString("O", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$patientId", patientId.ToString());
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
 }

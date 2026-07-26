@@ -17,4 +17,14 @@ public sealed class FakeConsentRecordRepository : IConsentRecordRepository
         _records[record.PatientId] = record;
         return Task.CompletedTask;
     }
+
+    public Task WithdrawAsync(Guid patientId, DateTime withdrawnAt, CancellationToken cancellationToken = default)
+    {
+        if (_records.TryGetValue(patientId, out var record))
+        {
+            record.WithdrawnAt = withdrawnAt;
+        }
+
+        return Task.CompletedTask;
+    }
 }

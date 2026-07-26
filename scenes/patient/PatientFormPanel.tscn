@@ -12,6 +12,9 @@ _dateOfBirthInputPath = NodePath("Card/Content/DateOfBirthInput")
 _consentSectionPath = NodePath("Card/Content/ConsentSection")
 _consentGivenByNameInputPath = NodePath("Card/Content/ConsentSection/ConsentGivenByNameInput")
 _guardianConsentCheckBoxPath = NodePath("Card/Content/ConsentSection/GuardianConsentCheckBox")
+_consentStatusSectionPath = NodePath("Card/Content/ConsentStatusSection")
+_consentStatusLabelPath = NodePath("Card/Content/ConsentStatusSection/ConsentStatusLabel")
+_withdrawConsentButtonPath = NodePath("Card/Content/ConsentStatusSection/WithdrawConsentButton")
 _saveButtonPath = NodePath("Card/Content/Actions/SaveButton")
 _cancelButtonPath = NodePath("Card/Content/Actions/CancelButton")
 _errorLabelPath = NodePath("Card/Content/ErrorLabel")
@@ -55,6 +58,17 @@ placeholder_text = "Rıza Veren Adı (Hasta veya Veli/Vasi)"
 
 [node name="GuardianConsentCheckBox" type="CheckBox" parent="Card/Content/ConsentSection"]
 text = "Veli/vasi adına veriliyor"
+
+[node name="ConsentStatusSection" type="VBoxContainer" parent="Card/Content"]
+visible = false
+theme_override_constants/separation = 8
+
+[node name="ConsentStatusLabel" type="Label" parent="Card/Content/ConsentStatusSection"]
+autowrap_mode = 2
+text = ""
+
+[node name="WithdrawConsentButton" type="Button" parent="Card/Content/ConsentStatusSection"]
+text = "Rızayı Geri Çek"
 
 [node name="Actions" type="HBoxContainer" parent="Card/Content"]
 theme_override_constants/separation = 10

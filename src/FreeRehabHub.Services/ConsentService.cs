@@ -25,6 +25,23 @@ public sealed class ConsentService
         await LogAsync(actingTherapistId, record.PatientId, AuditAction.Created, cancellationToken);
     }
 
+    public async Task WithdrawAsync(Guid patientId, Guid actingTherapistId, CancellationToken cancellationToken = default)
+    {
+        var record = await _consentRecordRepository.GetByPatientIdAsync(patientId, cancellationToken);
+        if (record is null)
+        {
+            throw new InvalidOperationException("Bu hasta için rıza kaydı bulunamadı.");
+        }
+
+        if (record.WithdrawnAt is not null)
+        {
+            throw new InvalidOperationException("Rıza zaten geri çekilmiş.");
+        }
+
+        await _consentRecordRepository.WithdrawAsync(patientId, DateTime.UtcNow, cancellationToken);
+        await LogAsync(actingTherapistId, patientId, AuditAction.Withdrawn, cancellationToken);
+    }
+
     public async Task<ConsentRecord?> GetByPatientIdAsync(
         Guid patientId, Guid actingTherapistId, CancellationToken cancellationToken = default)
     {

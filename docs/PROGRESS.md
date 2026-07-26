@@ -2,9 +2,9 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.19
-- Son commit (henüz onaylanmadı/yapılmadı): F8.19 - GUT yerine ozel C# sahne-test harness'i
-  eklendi, CI'a scene-tests job'u eklendi
+- Son tamamlanan adım: F8.20
+- Son commit: F8.19 - GUT yerine ozel C# sahne-test harness'i eklendi, CI'a scene-tests job'u
+  eklendi (push sonrası CI: 7/7 job yeşil, yeni scene-tests job'u dahil, ilk denemede sorunsuz)
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı. Kamera erişimi (Açık risk incelemesinin diğer maddesi) araştırıldı ama gerçek kök
@@ -13,8 +13,12 @@
 - **GUT kurulumu, "kurulum" yerine "değiştirme" olarak tamamlandı.** GUT sadece GDScript
   destekliyor, bu proje tamamen C# olduğu için kullanılamadı — bunun yerine F8.19'da özel bir
   C# sahne-test harness'ı yazıldı (bkz. Faz 8 sonrası bölümü, `testing-approach` skill'i).
-  Sıradaki: TTS Türkçe ses paketi Windows/macOS doğrulaması, veya rıza kaydı geri çekme akışı
-  (henüz kullanıcıyla konuşulmadı).
+- **Rıza kaydı geri çekme akışı eklendi (F8.20, henüz commit edilmedi).** Kapsam kullanıcıyla
+  konuşuldu ("Minimal: sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama
+  getirmiyor (yeni seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve
+  UI'da gösteriliyor; terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
+  Bkz. aşağıdaki Faz 8 sonrası girdisi. Sıradaki: TTS Türkçe ses paketi Windows/macOS
+  doğrulaması, veya kamera/PipeWire sorunu (henüz kullanıcıyla konuşulmadı).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -334,7 +338,35 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   henüz eklenmedi (Xvfb Linux'a özgü; o platformlarda headless çalıştırma zaten sanal
   framebuffer gerektirmiyor ama bu iddia henüz CI'da doğrulanmadı — ihtiyaç doğarsa ayrı bir
   adımda ele alınır). `CLAUDE.md` § 11 ve `testing-approach` skill'i GUT yerine bu harness'ı
-  belgeleyecek şekilde güncellendi.
+  belgeleyecek şekilde güncellendi. Push sonrası CI: 7/7 job yeşil (yeni `scene-tests` job'u
+  dahil), ilk denemede (taze checkout, hiç `.godot/` cache'i olmadan) sorunsuz çalıştı.
+- F8.20 - **Rıza kaydı geri çekme akışı.** Kapsam kullanıcıyla konuşuldu ("Rıza geri
+  çekildiğinde uygulama davranışı ne olmalı?" → "Minimal: sadece kayıt (Recommended)") —
+  geri çekme hiçbir işlevsel kısıtlama getirmiyor (yeni terapi seansı/modül başlatma
+  engellenmiyor, hasta pasif sayılmıyor), sadece bir zaman damgası kaydediliyor; terapist
+  isterse ayrıca F8.01'in cascade-delete akışıyla hastayı elle silebilir. İki alt adımda
+  yapıldı:
+  - **Backend (Domain/Data/Services):** `IConsentRecordRepository.WithdrawAsync(patientId,
+    withdrawnAt)` + SQLite implementasyonu (`UPDATE ConsentRecords SET WithdrawnAt = ...`).
+    `AuditAction`'a yeni bir `Withdrawn` değeri eklendi — "Updated" ile karıştırılmasın diye,
+    KVKK denetim izinde geri çekme anının ayrı görünmesi için. `ConsentService.WithdrawAsync`:
+    rıza kaydı yoksa veya zaten geri çekilmişse `InvalidOperationException`, aksi halde
+    `WithdrawnAt` set edilip `Withdrawn` audit log'u yazılıyor. Testler: 3 yeni
+    Services.Tests (başarılı + audit log, kayıt yok, zaten geri çekilmiş), 1 yeni Data.Tests
+    entegrasyon testi (gerçek SQLite round-trip). Services.Tests 48/48, Data.Tests 48/48.
+  - **UI:** `PatientFormPanelController` düzenleme modunda artık `ConsentSection`'ı (yeni
+    hasta girişi) gizlediği gibi, yeni bir `ConsentStatusSection` gösteriyor: rıza kimin
+    tarafından ne zaman verildiğini (`"Rıza: {isim} tarafından {tarih} verildi."`) veya geri
+    çekilmişse ne zaman geri çekildiğini (`"Rıza {tarih} tarihinde geri çekildi."`) yazan bir
+    etiket + henüz geri çekilmemişse görünen bir "Rızayı Geri Çek" butonu. Buton
+    `ConsentService.WithdrawAsync`'i çağırıp durumu yeniden çekiyor (`RefreshConsentStatusAsync`),
+    çift tıklamadan doğabilecek `InvalidOperationException`'ı yakalayıp hata etiketinde
+    gösteriyor. Yeni bir sahne testi eklendi: `PatientConsentWithdrawalSceneTest` — hasta
+    düzenleme ekranını açıp rıza durumunu doğruluyor, geri çekme butonuna basıyor, hem UI'ın
+    hem veritabanının (gerçek `ConsentService.GetByPatientIdAsync` ile) güncellendiğini
+    doğruluyor. Xvfb + gerçek Godot ile ekran görüntüsüyle de görsel olarak doğrulandı (geri
+    çekmeden önce/sonra iki ekran görüntüsü, düzen bozulmadı, buton doğru kayboldu). Tüm sahne
+    testleri: 2/2 geçti (`AssessmentHostSceneTest` + yeni test).
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

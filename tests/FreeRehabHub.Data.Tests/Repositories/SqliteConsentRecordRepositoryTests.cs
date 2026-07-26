@@ -71,6 +71,24 @@ public sealed class SqliteConsentRecordRepositoryTests : IDisposable
         Assert.Equal(consent.WithdrawnAt, fetched.WithdrawnAt);
     }
 
+    [Fact]
+    public async Task WithdrawAsync_ExistingRecord_SetsWithdrawnAt()
+    {
+        var patient = await AddPatientAsync();
+        await _repository.AddAsync(new ConsentRecord
+        {
+            PatientId = patient.Id,
+            ConsentGivenByName = "Ayşe Yılmaz",
+            ConsentedAt = new DateTime(2026, 6, 1, 9, 0, 0, DateTimeKind.Utc)
+        });
+
+        var withdrawnAt = new DateTime(2026, 7, 26, 12, 0, 0, DateTimeKind.Utc);
+        await _repository.WithdrawAsync(patient.Id, withdrawnAt);
+
+        var fetched = await _repository.GetByPatientIdAsync(patient.Id);
+        Assert.Equal(withdrawnAt, fetched!.WithdrawnAt);
+    }
+
     private async Task<Patient> AddPatientAsync()
     {
         var patient = new Patient

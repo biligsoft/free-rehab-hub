@@ -21,7 +21,7 @@ public partial class PatientListPanelController : Control
     [Export] private NodePath _progressButtonPath = null!;
     [Export] private NodePath _kioskButtonPath = null!;
     [Export] private NodePath _emptyStateLabelPath = null!;
-    [Export] private NodePath _kioskMessageLabelPath = null!;
+    [Export] private NodePath _messageLabelPath = null!;
     [Export] private NodePath _confirmDeleteDialogPath = null!;
 
     private ItemList _patientList = null!;
@@ -33,7 +33,7 @@ public partial class PatientListPanelController : Control
     private Button _progressButton = null!;
     private Button _kioskButton = null!;
     private Label _emptyStateLabel = null!;
-    private Label _kioskMessageLabel = null!;
+    private Label _messageLabel = null!;
     private ConfirmationDialog _confirmDeleteDialog = null!;
     private AppServices _appServices = null!;
     private SessionContext _sessionContext = null!;
@@ -50,7 +50,7 @@ public partial class PatientListPanelController : Control
         _progressButton = GetNode<Button>(_progressButtonPath);
         _kioskButton = GetNode<Button>(_kioskButtonPath);
         _emptyStateLabel = GetNode<Label>(_emptyStateLabelPath);
-        _kioskMessageLabel = GetNode<Label>(_kioskMessageLabelPath);
+        _messageLabel = GetNode<Label>(_messageLabelPath);
         _confirmDeleteDialog = GetNode<ConfirmationDialog>(_confirmDeleteDialogPath);
         _appServices = GetNode<AppServices>("/root/AppServices");
         _sessionContext = GetNode<SessionContext>("/root/SessionContext");
@@ -61,7 +61,7 @@ public partial class PatientListPanelController : Control
         _modulesButton.Disabled = true;
         _progressButton.Disabled = true;
         _kioskButton.Disabled = true;
-        _kioskMessageLabel.Text = string.Empty;
+        _messageLabel.Text = string.Empty;
 
         _patientList.ItemSelected += _ => OnPatientSelected();
         _newPatientButton.Pressed += OnNewPatientPressed;
@@ -167,14 +167,14 @@ public partial class PatientListPanelController : Control
             return;
         }
 
-        _kioskMessageLabel.Text = string.Empty;
+        _messageLabel.Text = string.Empty;
 
         // Fail-closed: PIN kurulu değilse kiosk moduna hiç girilmiyor — aksi halde terapist
         // kiosk kilidinden çıkacak bir yol olmadan içeride kalabilir.
         var isPinConfigured = await _appServices.AccessControlService!.IsPinConfiguredAsync();
         if (!isPinConfigured)
         {
-            _kioskMessageLabel.Text =
+            _messageLabel.Text =
                 "Kiosk moduna geçmeden önce \"Kiosk PIN\" ekranından bir çıkış PIN'i belirlemelisiniz.";
             return;
         }
@@ -213,7 +213,18 @@ public partial class PatientListPanelController : Control
         }
 
         var patient = _patients[selectedIndices[0]];
-        await _appServices.PatientService!.DeleteAsync(patient.Id, activeTherapist.Id);
+        _messageLabel.Text = string.Empty;
+
+        try
+        {
+            await _appServices.PatientService!.DeleteAsync(patient.Id, activeTherapist.Id);
+        }
+        catch (Exception exception)
+        {
+            _messageLabel.Text = $"Silme başarısız: {exception.Message}";
+            return;
+        }
+
         await ReloadPatientsAsync();
     }
 }

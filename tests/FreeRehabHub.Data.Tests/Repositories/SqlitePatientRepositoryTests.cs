@@ -1,3 +1,4 @@
+using FreeRehabHub.Core;
 using FreeRehabHub.Data;
 using FreeRehabHub.Data.Repositories;
 using FreeRehabHub.Domain;
@@ -80,6 +81,63 @@ public sealed class SqlitePatientRepositoryTests : IDisposable
         var fetched = await _repository.GetByIdAsync(patient.Id);
 
         Assert.Null(fetched);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_PatientWithSessionsPrescriptionsAndProgressRecords_CascadesInsteadOfThrowing()
+    {
+        var connectionFactory = new SqliteConnectionFactory(_databasePath, "test-password");
+        var therapistRepository = new SqliteTherapistRepository(connectionFactory);
+        var sessionRepository = new SqliteTherapySessionRepository(connectionFactory);
+        var prescriptionRepository = new SqlitePrescriptionRepository(connectionFactory);
+        var progressRecordRepository = new SqliteProgressRecordRepository(connectionFactory);
+
+        var therapist = new Therapist
+        {
+            Id = Guid.NewGuid(),
+            FullName = "Dr. Terapist",
+            Discipline = Discipline.Physiotherapy,
+            CreatedAt = DateTime.UtcNow
+        };
+        await therapistRepository.AddAsync(therapist);
+
+        var patient = NewPatient("Can Yıldız");
+        await _repository.AddAsync(patient);
+
+        await sessionRepository.AddAsync(new TherapySession
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patient.Id,
+            TherapistId = therapist.Id,
+            StartedAt = DateTime.UtcNow
+        });
+
+        await prescriptionRepository.AddAsync(new ExercisePrescription
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patient.Id,
+            CreatedByTherapistId = therapist.Id,
+            CreatedAt = DateTime.UtcNow,
+            Items = [new PrescriptionItem { ExerciseCardId = "ankle-pumps", Repetitions = 10, Sets = 2 }]
+        });
+
+        await progressRecordRepository.AddAsync(new ProgressRecord
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patient.Id,
+            ModuleId = "com.freerehabhub.arm-raise",
+            SessionId = Guid.NewGuid(),
+            CompletedAt = DateTime.UtcNow,
+            NormalizedScore = 1.0,
+            Metrics = new Dictionary<string, double> { ["completedReps"] = 10 }
+        });
+
+        await _repository.DeleteAsync(patient.Id);
+
+        Assert.Null(await _repository.GetByIdAsync(patient.Id));
+        Assert.Empty(await sessionRepository.GetByPatientIdAsync(patient.Id));
+        Assert.Empty(await prescriptionRepository.GetHistoryByPatientIdAsync(patient.Id));
+        Assert.Empty(await progressRecordRepository.GetHistoryByPatientIdAsync(patient.Id));
     }
 
     private static Patient NewPatient(string fullName)

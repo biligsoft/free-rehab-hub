@@ -15,7 +15,7 @@ _modulesButtonPath = NodePath("Card/Content/Actions/ModulesButton")
 _progressButtonPath = NodePath("Card/Content/Actions/ProgressButton")
 _kioskButtonPath = NodePath("Card/Content/Actions/KioskButton")
 _emptyStateLabelPath = NodePath("Card/Content/EmptyStateLabel")
-_kioskMessageLabelPath = NodePath("Card/Content/KioskMessageLabel")
+_messageLabelPath = NodePath("Card/Content/MessageLabel")
 _confirmDeleteDialogPath = NodePath("ConfirmDeleteDialog")
 
 [node name="Background" type="Panel" parent="."]
@@ -76,7 +76,7 @@ text = "İlerleme"
 size_flags_horizontal = 3
 text = "Kiosk Moduna Geç"
 
-[node name="KioskMessageLabel" type="Label" parent="Card/Content"]
+[node name="MessageLabel" type="Label" parent="Card/Content"]
 text = ""
 autowrap_mode = 2
 

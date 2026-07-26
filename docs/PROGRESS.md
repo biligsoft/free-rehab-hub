@@ -1,11 +1,16 @@
 ## Güncel durum
-- **CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı** (Faz 8, 2026-07-26'da
-  kullanıcıyla konuşulup tamamlanmış sayıldı — bkz. aşağıdaki Faz 8 kapanış notu).
-- Son tamamlanan adım: F8.17
-- Son commit: F8.17 - Son paketleme scripti (scripts/package_release.py) eklendi
-- Sıradaki: henüz kullanıcıyla konuşulmadı — projenin bilinen açık riskleri (bu dosyanın
-  sonundaki "Açık riskler" bölümü) hâlâ geçerli, "8 faz bitti" onların hepsinin çözüldüğü
-  anlamına gelmiyor.
+- CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
+  konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
+  önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
+- Son tamamlanan adım: F8.18
+- Son commit: F8.18 - Assessment modulu oynatma ekrani eklendi (AssessmentHost),
+  ModuleLibraryPanel artik tum modul turlerini listeliyor
+- **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
+  olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
+  kapatıldı. Kamera erişimi (Açık risk incelemesinin diğer maddesi) araştırıldı ama gerçek kök
+  nedeni (video grubu değil, muhtemelen PipeWire) bulunup belgelendi, çözülemedi — bkz. § Açık
+  riskler. Sıradaki: TTS Türkçe ses paketi Windows/macOS doğrulaması, GUT kurulumu, veya rıza
+  kaydı geri çekme akışı (henüz kullanıcıyla konuşulmadı).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -253,6 +258,43 @@ kurulmadı (sahne/UI testleri hâlâ elle/Xvfb ile yapılıyor), rıza kaydını
 gerçek bir installer sihirbazı (v1 sadece export+zip) yok, code signing yok. Sekiz fazın
 tamamlanması, "planlanan iskelet uçtan uca çalışıyor ve gerçek platformlarda (CI ile) doğrulandı"
 anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
+
+### Faz 8 sonrası — Açık risk takibi (F8.18+, faz numarası kullanıcının tercihiyle korundu)
+- Kullanıcıyla açık riskler listesi gözden geçirilip önceliklendirildi. Bu arada birkaç madde
+  Faz 8 çalışmasıyla zaten çözülmüş olduğu için temizlendi (SQLCipher/PdfSharp/mediapipe path
+  çözümleme Windows/macOS notları — hepsi F8.08-F8.14'te fiilen doğrulanmıştı).
+- **Kamera erişimi araştırıldı ama çözülemedi.** Kullanıcı `sudo usermod -aG video` yapıp
+  yeniden oturum açtı; kontrol edilince `/dev/video0`'da zaten `user:emre:rw-` ACL'i olduğu
+  görüldü (video grubundan bağımsız, muhtemelen systemd-logind "uaccess") — yani **eski teşhis
+  ("video grubunda değil") yanlış çıktı**, izin hiç asıl engel değilmiş. Cihaz gerçek (format
+  sorgularına doğru yanıt veriyor), ama ham V4L2 erişimi (`ffmpeg` ve `cv2.VideoCapture(0)` —
+  `pose_tracker.py`'nin fiilen kullandığı yöntem) sürekli "meşgul" hatası veriyor, kamera
+  uygulaması (Cheese, guvcview) kapalıyken bile; `guvcview`'ın kendi hatası aslında ilgisiz bir
+  GTK3 çökmesiymiş (kamera erişimiyle ilgisi yok). Bu makinede `pipewire`/`wireplumber`
+  çalıştığı doğrulandı — en olası açıklama PipeWire'ın kamerayı kendi üzerinden yönetip ham
+  erişimi engellemesi, ama kesin doğrulanamadı (bu ortamda tam `sudo`/`journalctl` erişimi
+  yok). Kullanıcıyla konuşulup bu konuda durduruldu — hedef donanım zaten çoğunlukla Windows
+  (PipeWire yok), ileride GStreamer/`pipewiresrc` backend'i denenebilir (kod değişikliği
+  gerektirir, henüz yapılmadı). Detay için CLAUDE.md § 14.
+- F8.18 - **Assessment modülü oynatma ekranı.** F5.10'dan beri bilinçli olarak açık bırakılan
+  boşluk kapatıldı: `scenes/assessment-host/AssessmentHost.tscn`/Controller eklendi —
+  `ModuleRegistry.CreateInstance()` ile `IAssessmentModule`'ü reflection'la kurup mevcut
+  `FormRenderer.tscn`'i (F3.04) alt sahne olarak gömüyor, form şemasını
+  `manifest.FormSchemaPath`'ten (F8.14'ün `AppContentRoot.Resolve()` deseniyle) yüklüyor.
+  Gönderilince `Score()` çağrılıp `ModuleResult` → `ProgressRecord`'a çevrilip kaydediliyor
+  (Exercise akışındaki `ModuleHostController.OnModuleCompleted` ile birebir aynı desen), sonra
+  mevcut `ModuleResultPanel`'e yönleniyor (zaten rol-farkında, değişiklik gerekmedi).
+  `ModuleLibraryPanelController` artık sadece Exercise değil tüm modülleri listeliyor, seçilen
+  modülün `Kind`'ına göre `ModuleHost`/`AssessmentHost`'a yönlendiriyor. **Bilinçli olarak
+  dokunulmadı:** `ChildKioskShellController` hâlâ sadece Exercise modülleri listeliyor —
+  çocuğun kiosk modunda gözetimsiz bir öz-bildirim formu doldurması ayrı bir klinik/ürün kararı,
+  henüz konuşulmadı. Xvfb+gerçek Godot ile gerçek UI'dan uçtan uca doğrulandı: modül kütüphanesi
+  artık 3 modül listeliyor (2 Exercise + 1 Assessment), Assessment seçilip Başlat'a basılınca
+  gerçekten `AssessmentHost`'a gidip formu doğru başlık ve 5 alanla render ediyor; gerçek form
+  etkileşimi (slider/seçim/checkbox/metin) + Gönder → `ModuleResultPanel`'e yönleniyor; skor
+  hesaplaması elle doğrulanan beklenen değerle (0.30) birebir eşleşti, `ProgressRecord`
+  gerçekten veritabanına kaydedildi. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests. Push
+  sonrası CI: 6/6 job yeşil.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

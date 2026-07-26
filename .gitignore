@@ -3,6 +3,9 @@
 /android/
 *.uid
 
+# Godot export çıktıları (export_presets.cfg ile üretilen build'ler, commit edilmez)
+/build/
+
 # .NET build çıktıları
 bin/
 obj/

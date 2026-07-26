@@ -1,15 +1,13 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.16
-- Son commit: F8.16 - CI'a mediapipe-service icin PyInstaller paketleme + smoke-test job'u
-  eklendi (Windows/Ubuntu/macOS)
-- **CI'da artık 6/6 job yeşil** (`build` × 3 platform + `mediapipe-package` × 3 platform).
-  SQLCipher'ın Windows/macOS'ta çalıştığı (Faz 1'den beri açık risk) VE mediapipe'ın
-  Windows/macOS'ta gerçekten import edilip PyInstaller ile paketlenip çalıştırılabildiği
-  (F5.01'den beri sadece Linux/Docker'da doğrulanmıştı) ilk kez doğrulandı — kamera/gerçek
-  poz-tespiti hâlâ test edilemedi (donanım yok), ama "mediapipe bu platformda hiç
-  başlamıyor" riski artık kapandı. Sıradaki: son paketleme scripti (Godot export çıktısı +
-  mediapipe binary'sini tek bir klasör/zip'te birleştiren script).
+- Son tamamlanan adım: F8.17
+- Son commit: F8.17 - Son paketleme scripti (scripts/package_release.py) eklendi
+- **Installer+paketleme alt özelliği tamamlandı** (F8.07-F8.17): export preset'leri → CI
+  matrisi (6/6 job yeşil, Windows/Ubuntu/macOS) → paketlenmiş build path çözümleme →
+  PyInstaller mediapipe paketleme → son birleştirme scripti. Uçtan uca gerçek bir zip
+  paketi üretilip tamamen ayrı bir dizinde açılıp çalıştırılarak doğrulandı. Faz 8'in üç alt
+  özelliğinin üçü de bitti (test/güvenlik/KVKK taraması, CONTRIBUTING.md, installer+paketleme)
+  — Faz 8'in tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla konuşulmadı.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -231,6 +229,21 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   PyInstaller ile paketlenip çalıştırılabildiği ilk kez doğrulandı (F5.01'den beri sadece
   Linux/Docker'da biliniyordu). Kamera/gerçek poz-tespiti hâlâ test edilemedi (donanım yok),
   ama "mediapipe bu platformda hiç başlamıyor" riski kapandı.
+- F8.17 - **Son paketleme scripti.** `scripts/package_release.py` eklendi — Godot export
+  çıktısını (`build/<platform>/`), loose-file içeriği (F8.14: `content-packs/`,
+  `assets/fonts/liberation-sans/`, modül `manifest.json`'ları) ve PyInstaller ile paketlenmiş
+  mediapipe-service binary'sini (F8.15) birleştirip tek bir dağıtılabilir zip üretiyor. Ön
+  koşulları (Godot export + mediapipe build) kendisi çalıştırmıyor, ikisi de ayrı adımlarda
+  zaten var — sadece son birleştirme/paketleme. Uçtan uca doğrulandı: gerçek Godot Linux
+  export'u yapılıp script çalıştırıldı, tüm beklenen dosyalar zip'e doğru girdi; zip
+  **tamamen ayrı, temiz bir dizine** açılıp gerçek binary çalıştırıldı — LockScreen doğru
+  temayla render edildi, tıpkı bir kullanıcının indirip çalıştırması gibi. Bu, orijinal 5
+  maddelik installer+paketleme planının tamamını bitiriyor.
+
+**Installer+paketleme alt özelliği tamamlandı (F8.07-F8.17).** Faz 8'in üç alt özelliğinin
+üçü de bitti: test/güvenlik/KVKK taraması (F8.01-F8.05), CONTRIBUTING.md (F8.06),
+installer+paketleme (F8.07-F8.17). Faz 8'in (ve dolayısıyla CLAUDE.md § Yol Haritası'ndaki
+son fazın) tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla konuşulmadı.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

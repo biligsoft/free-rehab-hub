@@ -30,9 +30,13 @@ public partial class AppServices : Node
 
     public bool IsUnlocked => PatientService is not null;
 
-    public void Unlock(string password)
+    // databasePathOverride sadece SceneTestRunner (tests/scene-tests/) tarafından, gerçek
+    // user://freerehabhub.db'ye hiç dokunmadan izole/geçici bir veritabanıyla test çalıştırmak
+    // için kullanılıyor — normal uygulama akışında (LockScreenController) hep null, varsayılan
+    // user:// yolu kullanılır.
+    public void Unlock(string password, string? databasePathOverride = null)
     {
-        var databasePath = ProjectSettings.GlobalizePath(DatabaseResourcePath);
+        var databasePath = databasePathOverride ?? ProjectSettings.GlobalizePath(DatabaseResourcePath);
         var connectionFactory = new SqliteConnectionFactory(databasePath, password);
 
         // Yanlış parola burada (Initialize -> CreateOpenConnection -> Open) SqliteException fırlatır.

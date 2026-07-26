@@ -33,6 +33,13 @@
          çünkü ne "*Controller.cs" adında bir dosyaları ne de bir Scoring/ klasörleri var. -->
     <Compile Include="modules\**\*Controller.cs" Exclude="modules\**\Tests\**\*.cs" />
     <Compile Include="modules\**\Scoring\*.cs" Exclude="modules\**\Tests\**\*.cs" />
+    <!-- tests/scene-tests/: GUT (Godot Unit Test) sadece GDScript içindir, bu tamamen C# proje
+         için kullanılmadı (kullanıcıyla konuşuldu) — bunun yerine burada, sahne/controller
+         davranışını gerçek Godot çalışma zamanında (headless) doğrulayan özel bir C# test
+         harness'ı var. Ana derlemeye dahil olması gerekiyor çünkü SceneTestRunner bir autoload
+         script'i (bkz. project.godot [autoload] ve yukarıdaki .tscn script kısıtlaması
+         açıklaması) ve testler autoload'lara/sahne ağacına doğrudan erişmeli. -->
+    <Compile Include="tests\scene-tests\**\*.cs" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>

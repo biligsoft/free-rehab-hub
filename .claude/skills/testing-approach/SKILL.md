@@ -1,6 +1,6 @@
 ---
 name: testing-approach
-description: Katmana göre test stratejisi — hangi katman xUnit ile (Godot'suz), hangisi GUT ile (Godot içinde) test edilir. Yeni kod yazarken, test eklerken veya "bunu nasıl test ederim" sorusunda oku.
+description: Katmana göre test stratejisi — hangi katman xUnit ile (Godot'suz), hangisi özel sahne-test harness'ıyla (Godot içinde) test edilir. Yeni kod yazarken, test eklerken veya "bunu nasıl test ederim" sorusunda oku.
 ---
 
 # Test Yaklaşımı — FreeRehabHub
@@ -12,10 +12,31 @@ description: Katmana göre test stratejisi — hangi katman xUnit ile (Godot'suz
 | `Core`, `Domain`, `Data`, `Modules.Contracts`, `Services` | Hayır | xUnit | CI'da saniyeler içinde, Godot editörü gerekmez |
 | Modül scoring sınıfları (`modules/*/Scoring/`) | Hayır | xUnit | Aynı şekilde |
 | `IAssessmentModule.Score()` implementasyonları | Hayır (saf fonksiyon) | xUnit | Aynı şekilde |
-| Sahneler, `*Controller.cs` (Node-türevi), autoload'lar | Evet | GUT (Godot Unit Test addon) | Godot headless modda |
-| UI etkileşimi (buton tıklama, form akışı uçtan uca) | Evet | Manuel test (Godot editöründe çalıştırarak) + varsa GUT senaryosu | Godot editörü |
+| Sahneler, `*Controller.cs` (Node-türevi), autoload'lar | Evet | Özel C# sahne-test harness'ı (`tests/scene-tests/`) | Godot headless modda |
+| UI etkileşimi (buton tıklama, form akışı uçtan uca) | Evet | Manuel test (Godot editöründe çalıştırarak) + varsa sahne-test senaryosu | Godot editörü |
 
 Bu tablo `godot-csharp-standards` skill'indeki katman kuralının doğal sonucu: Godot-bağımsız katmanlar zaten Godot'suz test edilebilir durumda tasarlandığı için, test etmek için Godot açmaya gerek yok.
+
+**GUT neden kullanılmıyor:** GUT (Godot Unit Test) sadece GDScript içindir — resmi belgelerinde C# desteğinden hiç bahsedilmez. Bu proje tamamen C# olduğu için (bkz. CLAUDE.md §2) GUT mimari olarak uyumsuz; bu yüzden Faz 8 sonrası açık-risk taramasında GUT yerine özel bir C# sahne-test harness'ı yazıldı (bkz. § 3a).
+
+### 3a. Sahne-test harness'ı nasıl çalışır
+
+`tests/scene-tests/` içinde:
+- `ISceneTest` — `string Name`, `Task RunAsync(SceneTree sceneTree)`.
+- `SceneAssert` — statik `True`/`False`/`Equal<T>`/`NotNull`, başarısızlıkta `SceneAssertionException` fırlatır.
+- `SceneTestRunner` — reflection ile `ISceneTest` implementasyonlarını keşfeder (`Assembly.GetExecutingAssembly()`), her birini çalıştırır, `[GEÇTİ]`/`[BAŞARISIZ]` yazdırır, sonunda `GetTree().Quit(...)` ile tüm testler geçtiyse 0, en az biri başarısızsa 1 döner.
+
+**Kritik mimari kural:** `SceneTestRunner` `project.godot`'ta **kalıcı bir autoload**'dır (`SceneTestRunner="*res://tests/scene-tests/SceneTestRunner.cs"`), ana sahne DEĞİLDİR. Normal uygulama çalışırken tamamen etkisizdir — sadece `FREEREHABHUB_RUN_SCENE_TESTS` ortam değişkeni set edilmişse devreye girer. Bunun nedeni: eğer runner ana sahne olsaydı, bir testin kendi `ChangeSceneToFile` çağrısı ana sahneyi (yani runner'ın kendisini) yok ederdi — bu gerçekten yaşanmış bir bug, ilk denemede standalone-sahne yaklaşımıyla keşfedildi (`ObjectDisposedException`, test kendi assertion'larını geçtikten SONRA runner çökerken).
+
+Her sahne testi, `AppServices.Unlock(password, databasePathOverride)` ile izole bir geçici SQLite dosyası açar (`Path.GetTempPath()` altında, `finally` bloğunda silinir) — gerçek `user://freerehabhub.db` dosyasına hiç dokunulmaz, elle yedek/geri yükleme dansına gerek kalmaz.
+
+**Çalıştırma:**
+```bash
+FREEREHABHUB_RUN_SCENE_TESTS=1 godot --headless --path .
+```
+Linux geliştirme makinesinde ekran sunucusu yoksa `xvfb-run -a` ile sarılmalı (bkz. CI job'u, `.github/workflows/ci.yml` → `scene-tests`).
+
+Yeni bir sahne testi eklemek için `tests/scene-tests/` altına `ISceneTest` implemente eden yeni bir `.cs` dosyası eklemek yeterli — elle kayıt gerekmez, `SceneTestRunner` reflection'la otomatik keşfeder (bkz. `AssessmentHostSceneTest.cs` örneği).
 
 ## 2. Temel kural: test edemiyorsan, mimari yanlış yerde
 
@@ -29,7 +50,7 @@ tests/FreeRehabHub.Core.Tests/
 tests/FreeRehabHub.Domain.Tests/
 tests/FreeRehabHub.Data.Tests/
 tests/FreeRehabHub.Modules.Contracts.Tests/
-tests/gut/                          # Godot-bağımlı sahne testleri
+tests/scene-tests/                  # Godot-bağımlı sahne testleri (özel harness, bkz. § 3a)
 ```
 Her modülün kendi scoring testleri modül klasörünün içinde kalır (`modules/<id>/Scoring/Tests/` veya `modules/<id>/Tests/`) — modül kendi kendine yeten bir birim olduğu için testleri de yanında taşır, merkezi `tests/` klasörüne dağıtılmaz.
 
@@ -38,7 +59,7 @@ Her modülün kendi scoring testleri modül klasörünün içinde kalır (`modul
 - Her `IAssessmentModule.Score()`: geçerli girdi, sınır değer (min/max skor), eksik/geçersiz form girdisi — en az 3 senaryo.
 - Her modül scoring sınıfı: en az bir "normal" ve bir "uç durum" testi.
 - `Data` katmanı repository'leri: gerçek SQLite (in-memory veya geçici dosya) üzerinden entegrasyon testi — mock DB kullanma, SQLCipher davranışı mock ile yakalanamaz.
-- `IExerciseModule.Completed` event'inin tam bir kez tetiklendiği en az bir GUT senaryosuyla doğrulanmalı (çift tetikleme veya hiç tetiklenmeme, ilerleme kaydının bozulmasına yol açar).
+- `IExerciseModule.Completed` event'inin tam bir kez tetiklendiği en az bir sahne-test senaryosuyla doğrulanmalı (çift tetikleme veya hiç tetiklenmeme, ilerleme kaydının bozulmasına yol açar).
 
 ## 5. Ne test edilmez
 
@@ -48,4 +69,4 @@ Her modülün kendi scoring testleri modül klasörünün içinde kalır (`modul
 
 ## 6. CI
 
-`Core/Domain/Data/Modules.Contracts/Services` + tüm modül scoring testleri her push'ta CI'da xUnit ile koşar (Godot gerekmediği için hızlı). GUT testleri Godot headless kurulumu gerektirdiğinden ayrı, daha yavaş bir CI adımı olarak tasarlanır — bu ayrım Faz 1'de CI iskeleti kurulurken netleşecek.
+`Core/Domain/Data/Modules.Contracts/Services` + tüm modül scoring testleri her push'ta CI'da (`build` job) xUnit ile koşar (Godot gerekmediği için hızlı). Sahne testleri ayrı bir job'da (`scene-tests`, şimdilik sadece `ubuntu-latest`) koşar: Godot .NET/Mono binary'si indirilir, proje kaynakları içe aktarılır (`--import`), sonra `FREEREHABHUB_RUN_SCENE_TESTS=1` ile Xvfb altında headless çalıştırılır. Xvfb Linux'a özgü olduğu için Windows/macOS'a henüz eklenmedi (headless çalıştırma o platformlarda zaten sanal framebuffer gerektirmiyor, ama şimdilik doğrulanmadı).

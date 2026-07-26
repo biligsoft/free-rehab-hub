@@ -150,7 +150,7 @@ F<faz>.<adım> - <kısa özet>
 
 ## 11. Test Yaklaşımı (özet)
 
-`Core/Domain/Data/Modules.Contracts/Services` + modül scoring sınıfları → xUnit (Godot'suz, hızlı). Sahneler/controller'lar → GUT. `IAssessmentModule.Score()` ve her modül scoring sınıfı için test zorunlu. Detay: `.claude/skills/testing-approach/`.
+`Core/Domain/Data/Modules.Contracts/Services` + modül scoring sınıfları → xUnit (Godot'suz, hızlı). Sahneler/controller'lar → özel C# sahne-test harness'ı (`tests/scene-tests/`, Godot headless modda; GUT değil — GUT sadece GDScript içindir, bu proje tamamen C#). `IAssessmentModule.Score()` ve her modül scoring sınıfı için test zorunlu. Detay: `.claude/skills/testing-approach/`.
 
 ## 12. Skill Dosyaları
 

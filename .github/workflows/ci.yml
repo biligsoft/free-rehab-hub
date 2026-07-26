@@ -29,6 +29,48 @@ jobs:
       - name: Test
         run: dotnet test FreeRehabHub.sln --no-build --configuration Debug
 
+  # GUT (Godot Unit Test) sadece GDScript içindir, bu proje tamamen C# olduğu için kullanılmadı
+  # (bkz. tests/scene-tests/SceneTestRunner.cs). Bunun yerine gerçek Godot çalışma zamanında
+  # (headless, Xvfb altında) sahne/controller davranışını doğrulayan özel test harness'ı burada
+  # çalıştırılıyor. Şimdilik sadece ubuntu-latest: Xvfb Linux'a özgü bir araç, Windows/macOS
+  # headless çalıştırma zaten sanal framebuffer gerektirmiyor — ihtiyaç olursa ayrıca eklenir.
+  scene-tests:
+    runs-on: ubuntu-latest
+    env:
+      GODOT_ZIP_URL: https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_x86_64.zip
+      GODOT_BIN: godot-bin/Godot_v4.7-stable_mono_linux_x86_64/Godot_v4.7-stable_mono_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore FreeRehabHub.sln
+
+      - name: Build
+        run: dotnet build FreeRehabHub.sln --no-restore --configuration Debug
+
+      - name: Install Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb
+
+      - name: Download Godot (.NET/Mono)
+        run: |
+          curl -L -o godot.zip "$GODOT_ZIP_URL"
+          unzip -q godot.zip -d godot-bin
+          chmod +x "$GODOT_BIN"
+
+      - name: Import project resources
+        run: xvfb-run -a "$GODOT_BIN" --headless --import --quit
+
+      - name: Run scene tests
+        env:
+          FREEREHABHUB_RUN_SCENE_TESTS: "1"
+        run: xvfb-run -a "$GODOT_BIN" --headless --path .
+
   mediapipe-package:
     strategy:
       fail-fast: false

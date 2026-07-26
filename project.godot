@@ -23,6 +23,7 @@ LocalizationAutoload="*res://autoload/LocalizationAutoload.cs"
 ThemeManager="*res://autoload/ThemeManager.cs"
 ModuleRegistryAutoload="*res://autoload/ModuleRegistryAutoload.cs"
 TtsAutoload="*res://autoload/TtsAutoload.cs"
+SceneTestRunner="*res://tests/scene-tests/SceneTestRunner.cs"
 
 [display]
 

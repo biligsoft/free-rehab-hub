@@ -2,15 +2,19 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.18
-- Son commit: F8.18 - Assessment modulu oynatma ekrani eklendi (AssessmentHost),
-  ModuleLibraryPanel artik tum modul turlerini listeliyor
+- Son tamamlanan adım: F8.19
+- Son commit (henüz onaylanmadı/yapılmadı): F8.19 - GUT yerine ozel C# sahne-test harness'i
+  eklendi, CI'a scene-tests job'u eklendi
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı. Kamera erişimi (Açık risk incelemesinin diğer maddesi) araştırıldı ama gerçek kök
   nedeni (video grubu değil, muhtemelen PipeWire) bulunup belgelendi, çözülemedi — bkz. § Açık
-  riskler. Sıradaki: TTS Türkçe ses paketi Windows/macOS doğrulaması, GUT kurulumu, veya rıza
-  kaydı geri çekme akışı (henüz kullanıcıyla konuşulmadı).
+  riskler.
+- **GUT kurulumu, "kurulum" yerine "değiştirme" olarak tamamlandı.** GUT sadece GDScript
+  destekliyor, bu proje tamamen C# olduğu için kullanılamadı — bunun yerine F8.19'da özel bir
+  C# sahne-test harness'ı yazıldı (bkz. Faz 8 sonrası bölümü, `testing-approach` skill'i).
+  Sıradaki: TTS Türkçe ses paketi Windows/macOS doğrulaması, veya rıza kaydı geri çekme akışı
+  (henüz kullanıcıyla konuşulmadı).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -295,6 +299,42 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   hesaplaması elle doğrulanan beklenen değerle (0.30) birebir eşleşti, `ProgressRecord`
   gerçekten veritabanına kaydedildi. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests. Push
   sonrası CI: 6/6 job yeşil.
+- F8.19 - **GUT yerine özel C# sahne-test harness'ı.** "GUT kurulumuyla devam et" talimatıyla
+  başlandı, ama GUT'un kendi README'si incelenince ("allows you to write tests for your
+  gdscript in gdscript", C# hiç geçmiyor) GUT'un sadece GDScript için olduğu doğrulandı — bu
+  proje tamamen C# olduğu için mimari olarak uyumsuz. Kullanıcıya sorulup ("Özel bir C#
+  sahne-test harness'ı yaz (Recommended)") GUT yerine `tests/scene-tests/` altında yeni bir
+  harness yazıldı: `ISceneTest` (arayüz), `SceneAssert` (statik assertion yardımcıları,
+  `SceneAssertionException` fırlatır), `SceneTestRunner` (reflection'la `ISceneTest`
+  implementasyonlarını keşfeder, çalıştırır, `[GEÇTİ]`/`[BAŞARISIZ]` yazdırır, tüm testler
+  geçerse exit 0 / en az biri başarısızsa exit 1 döner). İlk gerçek test:
+  `AssessmentHostSceneTest` — F8.18'in tüm akışını uçtan uca doğruluyor (modül kütüphanesi →
+  form doldurma → skorlama → `ProgressRecord` kalıcılığı → sonuç ekranı).
+  **Mimari düzeltme (görev sırasında bulunan gerçek bug):** `SceneTestRunner` ilk denemede
+  bağımsız bir sahne olarak `godot ... res://tests/scene-tests/SceneTestRunner.tscn` şeklinde
+  çalıştırılıyordu (project.godot'a hiç dokunmamak için). Boş (0 test) çalıştırmada işe yaradı,
+  ama gerçek `AssessmentHostSceneTest` (kendi assertion'larını GEÇTİKTEN sonra bile)
+  `System.ObjectDisposedException` fırlattı — çünkü test kendi içinde `ChangeSceneToFile`
+  çağırınca, runner ANA SAHNE olduğu için kendi kendini yok etmiş oluyordu. Çözüm:
+  `SceneTestRunner.tscn` silindi, `SceneTestRunner` **kalıcı bir autoload**'a çevrildi
+  (`project.godot` → `SceneTestRunner="*res://tests/scene-tests/SceneTestRunner.cs"`),
+  `FREEREHABHUB_RUN_SCENE_TESTS` ortam değişkeni set edilmemişse `_Ready()` içinde erkenden
+  `return` ediyor — yani normal uygulama çalışırken (env var yokken) tamamen etkisiz, elle
+  autoload ekleme/çıkarma dansına hiç gerek kalmadı. Her sahne testi
+  `AppServices.Unlock(password, databasePathOverride)` ile izole bir geçici SQLite dosyası
+  kullanıyor (`finally`'de silinir) — gerçek `user://freerehabhub.db`'ye hiç dokunulmuyor,
+  daha önceki manuel yedek/geri yükleme dansına artık gerek yok. Doğrulama: (1) gerçek test
+  ile çalıştırıldığında exit 0, `[GEÇTİ]`; (2) env var yokken sıfır "SCENE-TESTS" çıktısı,
+  uygulama öncekiyle birebir aynı davranıyor; (3) geçici bir "bilerek başarısız" test eklenip
+  çalıştırıldığında exit 1 ve `[BAŞARISIZ]` doğru raporlandı, sonra bu geçici dosya silinip
+  temiz 1/1 durumuna dönüldüğü teyit edildi. `.github/workflows/ci.yml`'e yeni bir
+  `scene-tests` job'u eklendi (şimdilik sadece `ubuntu-latest`): Godot .NET/Mono binary'sini
+  indirip `--headless --import` ile proje kaynaklarını içe aktarıyor, sonra
+  `FREEREHABHUB_RUN_SCENE_TESTS=1` ile Xvfb altında headless çalıştırıyor. Windows/macOS'a
+  henüz eklenmedi (Xvfb Linux'a özgü; o platformlarda headless çalıştırma zaten sanal
+  framebuffer gerektirmiyor ama bu iddia henüz CI'da doğrulanmadı — ihtiyaç doğarsa ayrı bir
+  adımda ele alınır). `CLAUDE.md` § 11 ve `testing-approach` skill'i GUT yerine bu harness'ı
+  belgeleyecek şekilde güncellendi.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -540,7 +580,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - F1.06 - i18n/tema autoload iskeleti (`LocalizationAutoload`, `ThemeManager`, TR/EN CSV, tema `.tres` iskeletleri); ana projede gerçek bir yapısal build hatası (obj/ glob çakışması) bulunup düzeltildi
 
 ## Açık riskler / bir sonraki fazda hatırlanacaklar
-- **GUT (Godot Unit Test) hiç kurulmadı** (F8.06'da fark edildi) — `CLAUDE.md` ve `testing-approach` skill'i sahne/controller testleri için GUT öngörüyor, `tests/gut/` klasör planı var, ama gerçekte hiç oluşturulmadı; CI (`.github/workflows/ci.yml`) sadece xUnit katmanlarını çalıştırıyor, hiç Godot-seviyeli test adımı yok. Şimdiye kadarki tüm sahne/UI doğrulamaları bu oturumlarda geçici, commit edilmeyen Xvfb autopilot script'leriyle yapıldı (bkz. bu dosyadaki F0.07'den beri tekrarlanan doğrulama deseni). Kalıcı bir GUT kurulumu + CI adımı henüz planlanmadı, ayrı bir faz-bağımsız iş olarak ele alınabilir.
+- ~~GUT (Godot Unit Test) hiç kurulmadı~~ — **F8.19'da çözüldü.** GUT sadece GDScript içindir (README'sinde C# hiç geçmiyor), bu proje tamamen C# olduğu için kullanılamayacağı doğrulandı. Bunun yerine `tests/scene-tests/` altında özel bir C# sahne-test harness'ı yazıldı (`ISceneTest`/`SceneAssert`/`SceneTestRunner`, kalıcı env-var-gated autoload) ve `.github/workflows/ci.yml`'e `scene-tests` job'u (şimdilik sadece `ubuntu-latest`) eklendi. Detay: `testing-approach` skill'i § 3a, PROGRESS.md F8.19.
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
 - `SessionContext` F2.11'de, `ModuleRegistryAutoload` F4.03'te eklendi.
 - Modül `manifest.json` dosyaları hâlâ her modülün C# sınıfındaki hardcoded `ModuleManifest`'le aynı içeriği taşıyor (bilinçli ikilik — bkz. F4.02: `manifest.json` hafif keşif/katalog için, C# `Manifest` çalışma zamanında otorite). İkisi elle senkron tutulmalı; ileride bir tutarlılık testi (manifest.json ↔ C# Manifest) eklenebilir ama henüz yok.
@@ -550,6 +590,6 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - `assets/.gdignore` mevcut — bir modül `assets/` altındaki ikon/2D/3D varlıklarından birini gerçekten kullanmaya başladığında bu dosya kaldırılmalı (veya sadece kullanılan alt klasör için daraltılmalı), yoksa Godot editörü o varlığı içe aktarmaz.
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
 - **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). Faz 8'de (installer sonrası) bu tekrar denendi — **eski teşhis ("video grubunda değil") yanlış çıktı**: kullanıcı `sudo usermod -aG video` yaptıktan sonra kontrol edilince `/dev/video0`'da zaten `user:emre:rw-` ACL'i olduğu görüldü (muhtemelen systemd-logind'in "uaccess" mekanizmasıyla, video grubundan bağımsız olarak baştan beri vardı). Cihaz gerçek (format sorgularına doğru yanıt veriyor — MJPEG/YUYV, 1280x720'ye kadar), ama **ham V4L2 erişimi** (hem `ffmpeg` hem `cv2.VideoCapture(0)` ile — ikincisi `pose_tracker.py`'nin fiilen kullandığı yöntemin birebir aynısı) sürekli "Device or resource busy" / "can't open camera by index" hatası veriyor — kamera uygulaması (Cheese) kapalıyken bile. Bu makinede `pipewire`/`wireplumber` çalışıyor; en olası açıklama PipeWire'ın kamerayı kendi üzerinden yönetip ham V4L2 erişimini engellemesi (GNOME/Cheese gibi PipeWire-uyumlu uygulamalar çalışırken, PipeWire'ı bypass eden ham erişim bloke oluyor) — ama bu **kesin olarak doğrulanamadı** (bu oturumda `sudo`/`journalctl` tam erişimi yok). **Sonuç:** `mediapipe-service`'in şu anki haliyle (ham `cv2.VideoCapture`) bu spesifik Fedora/GNOME/PipeWire masaüstünde çalışmayabileceği — hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir bulgu, ama gerçek bir Linux/GNOME kliniğinde de karşılaşılabilir. İleride ele alınabilecek yol: OpenCV'yi `cv2.CAP_GSTREAMER` + `pipewiresrc` pipeline'ıyla PipeWire üzerinden kameraya erişecek şekilde denemek (kod değişikliği gerektirir, henüz denenmedi).
-- Assessment modüllerinin (`general-functional-checkin`) hâlâ gerçek bir oynatma ekranı yok (F5.10'da bilinçli olarak not edildi) — `FormRenderer`'ı barındırıp `IAssessmentModule.Score()`'u çağıracak bir host ekranı gerekiyor, `ModuleLibraryPanel` şu an sadece `Kind == Exercise` modülleri listeliyor. Faz 5'in yarattığı bir eksiklik değil, ayrı faz-bağımsız bir iş.
+- ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
 - **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
-- İlerleme/PDF rapor özellikleri (Faz 6) sadece Exercise modüllerini kapsıyor — Assessment modüllerinin (`general-functional-checkin`) hâlâ bir oynatma ekranı olmadığı için (F5.10'dan beri açık) onlardan hiç `ProgressRecord` üretilmiyor. Bu ekran eklendiğinde `ModuleHostController`/`ProgressRecordService` entegrasyonunun Assessment sonuçlarını da kapsayıp kapsamayacağı ayrıca değerlendirilmeli.
+- ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — F8.18'den beri Assessment modülleri de `ProgressRecord` üretiyor, ve `ProgressPanelController`/rapor kodu `Kind`'a göre hiç filtrelemiyor (grep ile doğrulandı) — yani Assessment sonuçları da grafik/PDF'e otomatik dahil olmalı. Gerçek UI'dan uçtan uca doğrulanmadı, sadece kod okumasıyla teyit edildi.

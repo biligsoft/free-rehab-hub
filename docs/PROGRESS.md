@@ -1,9 +1,12 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.06
-- Son commit: F8.06 - MIT LICENSE ve CONTRIBUTING.md eklendi
-- Sıradaki: CONTRIBUTING.md tamamlandı. Sırada Faz 8'in son alt özelliği: installer +
-  paketleme (MediaPipe binary gömülü) — henüz başlanmadı.
+- Son tamamlanan adım: F8.07
+- Son commit: F8.07 - Godot export preset'leri eklendi (Linux/Windows/macOS), Linux export
+  Xvfb ile doğrulandı
+- Sıradaki: installer+paketleme kapsam/sıralama kararı kullanıcıyla konuşuldu — Windows/macOS
+  doğrulaması için GitHub Actions matrix CI kullanılacak (yerel donanım yok), v1 installer
+  basit export+zip olacak (sihirbaz yok). Sıradaki adım: GitHub Actions çapraz-platform build
+  matrisi (SQLCipher/export/PyInstaller'ı windows-latest/macos-latest'te gerçekten test etmek).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -110,6 +113,32 @@ yakın tekrar bakılacak.
   oluşturulmadı, CI hiç Godot-seviyeli test çalıştırmıyor — şimdiye kadarki tüm sahne
   doğrulamaları geçici Xvfb script'leriyle yapıldı (bkz. Açık riskler). CONTRIBUTING.md bunu
   olduğu gibi (GUT kurulu değil, elle test edin) yazdı, kurulumuna girilmedi.
+
+**Installer+paketleme kapsam/sıralama kararı (kullanıcıyla konuşuldu):** bu ortamda Windows/
+macOS makine ve kamera yok — SQLCipher/TTS/MediaPipe'ın gerçek Windows/macOS'ta çalışması hiç
+doğrulanamaz. Karar: gerçek Windows/macOS doğrulaması için GitHub Actions'ın `windows-latest`/
+`macos-latest` runner'ları kullanılacak (kamerasız otomatik smoke-test); v1 installer basit
+export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonraki bir iş).
+
+- F8.07 - **Godot export preset'leri (Linux/Windows/macOS).** `export_presets.cfg` eklendi —
+  üç platform için `.NET` export config'i. Export template'leri (1.2GB) indirilip kuruldu.
+  **Yol boyunca bulunan altyapı sorunu:** `/tmp` sadece 3.4GB'lık bir tmpfs — 1.2GB indirme +
+  açma işlemi bunu doldurup shell'i geçici olarak kilitledi (temel komutlar bile exit code 1
+  ile başarısız oldu); çözüm indirme/açmayı `/home` partisyonunda (327GB boş) yapmak oldu —
+  büyük tek seferlik indirmeler için scratchpad kuralının bir istisnası. **Linux:** gerçekten
+  export edildi, Xvfb'de gerçek ekran görüntüsüyle doğrulandı (LockScreen doğru temayla render
+  ediliyor). **Yol boyunca bulunan gerçek bug:** ilk denemede `export_filter="all_resources"`
+  test kaynak kodunu, `bin/`/`obj/` derleme çıktılarını, `.claude/` skill dosyalarını da pakete
+  dahil ediyordu — `exclude_filter` eklendi, `.pck` 3.45MB'tan 105KB'a indi, temiz build tekrar
+  ekran görüntüsüyle doğrulandı. **Windows:** export edildi, gerçek bir "PE32+ executable for MS
+  Windows" üretildiği `file` komutuyla teyit edildi (çalıştırılamadı, donanım yok). **macOS:**
+  ilk denemede gerçek bir config hatası bulundu (universal/arm64 export'un ETC2 ASTC doku
+  formatını proje ayarlarında etkin gerektirdiği) — `project.godot`'a
+  `textures/vram_compression/import_etc2_astc=true` eklenerek düzeltildi, tekrar denendi, gerçek
+  bir `.app` bundle (Info.plist, PkgInfo, arm64 .dll'ler) içeren zip üretildi. `/build/`
+  `.gitignore`'a eklendi. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests — `project.godot`
+  değişikliği regresyona yol açmadı. Bilinçli olarak dışarıda bırakılan: gerçek Windows/macOS'ta
+  çalıştırma doğrulaması (sıradaki adım — CI matrisi — bunu kısmen çözecek), code signing/icon.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

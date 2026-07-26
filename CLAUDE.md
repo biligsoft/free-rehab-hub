@@ -175,7 +175,6 @@ Göreve başlamadan önce ilgili skill'i oku:
 Mimari tartışmasında tespit edilip henüz çözülmemiş, ilgili fazda ele alınacak noktalar:
 
 - **KVKK/sağlık verisi uyumluluğu** (rıza kaydı, tam audit log, veri saklama/silme politikası) — Faz 2'de temel atılır, Faz 8'de tam taranır.
-- **Kiosk kilit mekanizması** platform bazlı zorluk farkları — Faz 7.
 - **Hedef donanım/performans baseline'ı** tanımlı değil — Faz 5'te (en ağır işlemsel faz) netleşecek. F5.01'de bu geliştirme makinesinin (Fedora) MediaPipe'ı native çalıştıramadığı doğrulandı (bkz. §13) — gerçek performans baseline'ı Windows/macOS/standart Linux hedef donanımında alınmalı, bu Fedora makinesi baseline için kullanılamaz.
 - **Kamera erişimi bu geliştirme makinesinde yok** — kullanıcı `video` grubunda değil (`sudo usermod -aG video $USER` + yeniden oturum gerekiyor, henüz yapılmadı). Faz 5'in kamera-tabanlı modülü, bu adım atılana kadar bu makinede uçtan uca (gerçek kamera görüntüsüyle) test edilemez; sentetik/statik görüntü ile pipeline testi yapılabilir.
 - **Çoklu cihaz/terapist senkronizasyonu yok** — bilinçli varsayım, tek makine/tek kurulum. İleride değişirse mimari yeniden gözden geçirilir.

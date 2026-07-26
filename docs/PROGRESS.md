@@ -1,20 +1,17 @@
 ## Güncel durum
-- Faz: 7 (Çocuk Modu / Kiosk + Erişilebilirlik) — devam ediyor
-- Son tamamlanan adım: F7.08
-- Son commit: F7.08 - TtsAutoload (Godot yerleşik DisplayServer TTS) ve ChildKioskShell'e Dinle
-  butonu eklendi
-- Sıradaki: kullanıcının belirlediği sırayla (erişilebilirlik → ödül sistemi → TTS) Faz 7'nin
-  dört alt özelliği de tamamlandı (kiosk kilidi F7.01-05, erişilebilirlik F7.06, ödül sistemi
-  F7.07, TTS F7.08) — Faz 7'nin tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla
-  konuşulmadı (TTS şu an sadece ChildKioskShell'deki modül adı okumayla sınırlı, başka
-  ekranlara/metinlere genişletilip genişletilmeyeceği açık)
+- Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — henüz başlanmadı
+- Son tamamlanan adım: F7.08 (Faz 7'nin son adımı)
+- Son commit: F0.27 - docs/PROGRESS.md F7.08 ile ve CLAUDE.md §14 TTS platform riskiyle
+  güncellendi
+- Sıradaki: Faz 8'in hangi alt özelliğiyle (CONTRIBUTING.md / installer+paketleme (MediaPipe
+  binary gömülü) / test-güvenlik-KVKK taraması) başlanacağı henüz kullanıcıyla konuşulmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
 
-### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: devam ediyor
+### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
   kilidi, erişilebilirlik temaları, TTS, ödül sistemi) — CLAUDE.md'deki sıralamayla aynı
   şekilde AccessControlService+kiosk kilidiyle başlanacak, diğerleri sonra ayrı ayrı ele
@@ -114,6 +111,16 @@
   Linux'ta (speech-dispatcher/espeak-ng kurulu) doğrulandı; Windows'ta SAPI5'e, macOS'ta
   NSSpeechSynthesizer/AVSpeechSynthesizer'a sarılıyor — hedef klinik bilgisayarda Türkçe ses
   paketi kurulu olmayabilir, gerçek donanımda doğrulanmalı (bkz. CLAUDE.md §14).
+
+**Faz 7 tamamlandı (2026-07-26).** CLAUDE.md'de listelenen dört alt özellik de bitti:
+`AccessControlService` + PIN korumalı kiosk kilidi (F7.01-05), erişilebilirlik temaları
+(F7.06), ödül sistemi (F7.07), TTS (F7.08) — kullanıcıyla konuşulup bu şekilde tamamlanmış
+sayıldı. Bilinçli olarak dar bırakılan kapsam: TTS şu an sadece `ChildKioskShell`'deki
+modül adını okuyor (form alanları/talimat metinleri gibi başka yerlere genişletilmedi) —
+ihtiyaç doğarsa ayrı bir faz-bağımsız işle ele alınabilir, `TtsAutoload.Speak()` zaten genel
+amaçlı. Kiosk kilit mekanizmasının platform bazlı zorluk farkları (CLAUDE.md §14'te bilinen
+risk olarak işaretliydi) bu fazda ayrıca ele alınmadı — PIN tabanlı çözüm platform bağımsız
+olduğu için bu riski by-design ortadan kaldırdı.
 
 ### Faz 6 — İlerleme Takibi, Grafikler, PDF Rapor: tamamlandı (2026-07-25)
 - Kapsam kararı (kullanıcıyla konuşuldu): Assessment modüllerinin (`general-functional-checkin`)

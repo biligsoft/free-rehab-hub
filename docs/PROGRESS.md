@@ -1,12 +1,15 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.14
-- Son commit: F8.14 - Paketlenmiş build'ler için birleşik path çözümleme (AppContentRoot)
-  eklendi
-- **GitHub Actions çapraz-platform CI matrisi tamamen yeşil** — Windows/Ubuntu/macOS üçü de
-  gerçekten geçiyor (repo ilk kez origin'e push edildi, F1-F8.14 arası 119 commit). SQLCipher'ın
-  Windows/macOS'ta gerçekten çalıştığı ilk kez doğrulandı (Faz 1'den beri açık duran risk
-  kapandı). Sıradaki: PyInstaller ile mediapipe-service paketleme.
+- Son tamamlanan adım: F8.15
+- Son commit: F8.15 - mediapipe-service için PyInstaller paketleme (build_exe.py,
+  run_server.py) eklendi, MediaPipePoseTrackingService paketlenmiş binary'yi algılayacak
+  şekilde güncellendi
+- GitHub Actions çapraz-platform CI matrisi tamamen yeşil (Windows/Ubuntu/macOS). SQLCipher'ın
+  Windows/macOS'ta gerçekten çalıştığı doğrulandı (Faz 1'den beri açık duran risk kapandı).
+  mediapipe-service Linux'ta Docker üzerinden gerçek PyInstaller build'i ile doğrulandı
+  (`/health` yanıt verdi). Sıradaki: son paketleme scripti (Godot export çıktısı + mediapipe
+  binary'sini tek bir klasör/zip'te birleştiren script) — Windows/macOS PyInstaller build'leri
+  için de GitHub Actions'a bakılması gerekebilir (PyInstaller cross-compile desteklemiyor).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -199,6 +202,25 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   çakışmayı önlemek için) çalıştırıldı — 3/3 modül keşfedildi, 3/3 egzersiz kartı yüklendi,
   mediapipe/font yolları doğru çözülüp var olduğu doğrulandı. Push sonrası CI: Windows/Ubuntu/
   macOS üçü de yeşil.
+- F8.15 - **`mediapipe-service` için PyInstaller paketleme.**
+  `services/mediapipe-service/run_server.py` eklendi (PyInstaller giriş noktası — dev modda
+  kullanılan `python -m uvicorn app.main:app ...` CLI çağrısı PyInstaller'da dondurulamıyor,
+  `--host`/`--port` argümanlarını uvicorn'a aktaran tek bir betik gerekiyordu).
+  `build_exe.py`: `pyinstaller --onedir --collect-all mediapipe` (onedir — mediapipe gibi çok
+  sayıda native ikili içeren büyük bağımlılıklar için onefile'dan daha güvenilir/hızlı);
+  `models/` klasörü bilinçli olarak pakete dahil edilmiyor (F8.14'teki "loose file" deseniyle
+  tutarlı). `requirements-build.txt` (sadece `pyinstaller`, çalışma zamanı bağımlılığı değil).
+  `MediaPipePoseTrackingService`'in constructor'ı `argumentsTemplate` parametresi alacak
+  şekilde genişletildi (dev modda `-m uvicorn ...`, paketlenmiş modda `run_server.py`'ın kendi
+  `--host`/`--port` sözleşmesi); 3 test çağrısı güncellendi. `AppServices
+  .ResolveMediaPipeCommand`: `dist/mediapipe-service/mediapipe-service(.exe)` varsa onu
+  kullanıyor, yoksa dev-mode `.venv` python'a düşüyor. Doğrulama F5.01'de kurulan Docker/Debian
+  yolu üzerinden gerçek yapıldı: PyInstaller build'i Docker'da gerçekten tamamlandı (370MB,
+  mediapipe'ın native ikilileri dahil), üretilen binary gerçekten çalıştırıldı, `/health`
+  `{"status":"ok"}` ile yanıt verdi. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests. Push
+  sonrası CI: Windows/Ubuntu/macOS üçü de yeşil. Windows/macOS için PyInstaller cross-compile
+  desteklemediğinden buradan üretilemedi — gerçek Windows/macOS binary'leri ayrı bir işle
+  GitHub Actions runner'larında üretilmeli.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

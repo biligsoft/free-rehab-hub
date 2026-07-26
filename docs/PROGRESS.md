@@ -1,12 +1,11 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.02
-- Son commit: F8.02 - ConsentRecord domain modeli ve IConsentRecordRepository sözleşmesi
-  eklendi
-- Sıradaki: rıza kaydı (consent record) özelliğine devam — DB şeması +
-  `SqliteConsentRecordRepository`. Sonra: `PatientFormPanel`'e zorunlu rıza alanı entegrasyonu.
-  Ayrıca hâlâ ele alınmadı: SQLCipher parola/anahtar yönetiminin "her açılışta elle gir"
-  halinde mi kalacağı (OS keychain alternatifi)
+- Son tamamlanan adım: F8.03
+- Son commit: F8.03 - ConsentRecords DB şeması ve SqliteConsentRecordRepository eklendi
+- Sıradaki: rıza kaydı özelliğine devam — `PatientFormPanel`'e zorunlu rıza alanı entegrasyonu
+  (ConsentService + AppServices bağlantısı önce gerekebilir). Ayrıca hâlâ ele alınmadı:
+  SQLCipher parola/anahtar yönetiminin "her açılışta elle gir" halinde mi kalacağı (OS keychain
+  alternatifi)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -64,6 +63,16 @@
   adımda yok, ayrı bir sonraki adımda eklenecek). `IConsentRecordRepository`:
   `GetByPatientIdAsync`, `AddAsync` — sadece hasta oluşturmada tek seferlik kayıt için gereken
   iki metot. DB şeması, SQLite implementasyonu, `PatientFormPanel` entegrasyonu bu adımda yok.
+- F8.03 - **`ConsentRecords` DB şeması + `SqliteConsentRecordRepository`.** `PatientId` doğal
+  anahtar (primary key, hasta başına tek kayıt — geri çekme yeni satır değil, aynı kayıt
+  üzerinde `WithdrawnAt` güncellemesiyle olacak, `KioskPin`'in tekil-satır fikrine benzer ama
+  hasta bazlı). **Yol boyunca bulunan risk:** `ConsentRecords` de `Patients`'a FK ile bağlı
+  olacağından, F8.01'in cascade-delete listesine eklenmezse rıza kaydı olan hastalar için aynı
+  FK bug'ı geri gelirdi — `SqlitePatientRepository.DeleteAsync`'e `DELETE FROM ConsentRecords`
+  adımı eklenerek erken yakalandı. 3 yeni test (round-trip, kayıt yokken null, veli rızası +
+  geri çekme tarihi birlikte); F8.01'in cascade-delete testi de genişletilip rıza kaydı olan
+  bir hastanın hatasız silindiği ve `ConsentRecords` satırının gerçekten gittiği doğrulandı.
+  Tüm çözüm: 47/47 Data.Tests, 41/41 Services.Tests, diğer tüm test projeleri yeşil.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

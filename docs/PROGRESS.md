@@ -1,11 +1,10 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.03
-- Son commit: F8.03 - ConsentRecords DB şeması ve SqliteConsentRecordRepository eklendi
+- Son tamamlanan adım: F8.04
+- Son commit: F8.04 - ConsentService eklendi ve AppServices'e bağlandı
 - Sıradaki: rıza kaydı özelliğine devam — `PatientFormPanel`'e zorunlu rıza alanı entegrasyonu
-  (ConsentService + AppServices bağlantısı önce gerekebilir). Ayrıca hâlâ ele alınmadı:
-  SQLCipher parola/anahtar yönetiminin "her açılışta elle gir" halinde mi kalacağı (OS keychain
-  alternatifi)
+  (son adım). Ayrıca hâlâ ele alınmadı: SQLCipher parola/anahtar yönetiminin "her açılışta elle
+  gir" halinde mi kalacağı (OS keychain alternatifi)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -73,6 +72,12 @@
   geri çekme tarihi birlikte); F8.01'in cascade-delete testi de genişletilip rıza kaydı olan
   bir hastanın hatasız silindiği ve `ConsentRecords` satırının gerçekten gittiği doğrulandı.
   Tüm çözüm: 47/47 Data.Tests, 41/41 Services.Tests, diğer tüm test projeleri yeşil.
+- F8.04 - **`ConsentService` + `AppServices` bağlantısı.** `AuditRecordType`'a `ConsentRecord`
+  eklendi. `AddAsync` (boş isimde `ArgumentException`, `Created` audit log — `RecordId=
+  PatientId`, `ConsentRecord`'un doğal anahtarı bu), `GetByPatientIdAsync` (kayıt bulunursa
+  `Viewed` audit log — `PrescriptionService.GetLatestByPatientIdAsync` ile aynı konvansiyon).
+  `AppServices.Unlock()`'a diğer servislerle aynı anda bağlandı. 4 yeni test (fake repository
+  ile). Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests, diğer tüm test projeleri yeşil.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

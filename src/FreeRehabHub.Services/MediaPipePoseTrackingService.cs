@@ -82,19 +82,26 @@ public sealed class MediaPipePoseTrackingService : IPoseTrackingService, IDispos
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        _receiveLoopCancellation?.Cancel();
-
+        // Sıra önemli: _receiveLoopCancellation.Cancel() bekleyen bir ReceiveAsync'i iptal ederse
+        // .NET'in ClientWebSocket'i soketi otomatik "aborted" durumuna sokuyor (belgelenmiş
+        // davranış) — CloseAsync sonra çağrılırsa zaten-abort-edilmiş soket üzerinde
+        // ObjectDisposedException fırlatıyordu (CI'da F8.09'da yakalandı). Bu yüzden önce
+        // soket hâlâ canlıyken CloseAsync deneniyor, Cancel() döngüyü zorla durdurmak için
+        // sadece bir güvenlik ağı olarak ondan sonra çağrılıyor.
         if (_webSocket is { State: WebSocketState.Open })
         {
             try
             {
                 await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "İstemci durdurdu.", cancellationToken);
             }
-            catch (WebSocketException)
+            catch (Exception exception) when (
+                exception is WebSocketException or OperationCanceledException or ObjectDisposedException)
             {
-                // Karşı taraf zaten kapatmış olabilir, durdurma işlemini engellemiyoruz.
+                // Karşı taraf zaten kapatmış/abort etmiş olabilir, durdurma işlemini engellemiyoruz.
             }
         }
+
+        _receiveLoopCancellation?.Cancel();
 
         if (_receiveLoopTask is not null)
         {

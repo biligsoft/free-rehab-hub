@@ -32,14 +32,26 @@ public sealed class SqliteConnectionFactory
         }.ToString();
 
         var connection = new SqliteConnection(connectionString);
-        connection.Open();
 
-        using (var pragma = connection.CreateCommand())
+        // Open() (ör. yanlış parola) veya PRAGMA başarısız olursa connection burada dispose
+        // edilmezse native handle sızıyor — Linux/macOS'ta gözlemlenmiyor ama Windows dosya
+        // silmeyi tamamen engelliyor (CI'da F8.09'da yakalandı, bkz. docs/PROGRESS.md).
+        try
         {
-            pragma.CommandText = "PRAGMA foreign_keys = ON;";
-            pragma.ExecuteNonQuery();
-        }
+            connection.Open();
 
-        return connection;
+            using (var pragma = connection.CreateCommand())
+            {
+                pragma.CommandText = "PRAGMA foreign_keys = ON;";
+                pragma.ExecuteNonQuery();
+            }
+
+            return connection;
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
     }
 }

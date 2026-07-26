@@ -84,15 +84,24 @@ public sealed class MediaPipePoseTrackingService : IPoseTrackingService, IDispos
     {
         // Sıra önemli: _receiveLoopCancellation.Cancel() bekleyen bir ReceiveAsync'i iptal ederse
         // .NET'in ClientWebSocket'i soketi otomatik "aborted" durumuna sokuyor (belgelenmiş
-        // davranış) — CloseAsync sonra çağrılırsa zaten-abort-edilmiş soket üzerinde
+        // davranış) — kapanış denemesi sonra çağrılırsa zaten-abort-edilmiş soket üzerinde
         // ObjectDisposedException fırlatıyordu (CI'da F8.09'da yakalandı). Bu yüzden önce
-        // soket hâlâ canlıyken CloseAsync deneniyor, Cancel() döngüyü zorla durdurmak için
+        // soket hâlâ canlıyken kapanış deneniyor, Cancel() döngüyü zorla durdurmak için
         // sadece bir güvenlik ağı olarak ondan sonra çağrılıyor.
+        //
+        // CloseAsync değil CloseOutputAsync kullanılıyor: CloseAsync, karşı taraftan gelecek
+        // kapanış onayını okumak için kendi içinde ayrı bir ReceiveAsync çalıştırıyor — bu,
+        // ReceiveLoopAsync'in zaten bekleyen kendi ReceiveAsync'iyle çakışıp
+        // InvalidOperationException fırlatıyordu (ReceiveLoopAsync bunu yakalayıp durumu
+        // Error'a çeviriyordu, CI'da F8.12'de yakalandı — Ubuntu/macOS'ta tutarlı şekilde
+        // tekrar üretildi). CloseOutputAsync sadece kapanış çerçevesini gönderip hiç okuma
+        // yapmadan dönüyor; karşı tarafın kapanış mesajını ReceiveLoopAsync'in kendisi okuyup
+        // döngüden temiz çıkıyor (bkz. aşağıdaki "MessageType == Close" kontrolü).
         if (_webSocket is { State: WebSocketState.Open })
         {
             try
             {
-                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "İstemci durdurdu.", cancellationToken);
+                await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "İstemci durdurdu.", cancellationToken);
             }
             catch (Exception exception) when (
                 exception is WebSocketException or OperationCanceledException or ObjectDisposedException)

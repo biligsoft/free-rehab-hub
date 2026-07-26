@@ -1,4 +1,5 @@
 using FreeRehabHub.Data.Repositories;
+using FreeRehabHub.Data.Tests;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
@@ -57,14 +58,7 @@ public sealed class SqliteBackupRepositoryTests : IDisposable
     public void Dispose()
     {
         SqliteConnection.ClearAllPools();
-        if (File.Exists(_databasePath))
-        {
-            File.Delete(_databasePath);
-        }
-
-        if (Directory.Exists(_backupDirectory))
-        {
-            Directory.Delete(_backupDirectory, recursive: true);
-        }
+        TestFileCleanup.DeleteFile(_databasePath);
+        TestFileCleanup.DeleteDirectory(_backupDirectory);
     }
 }

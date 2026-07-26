@@ -51,9 +51,6 @@ public sealed class SqliteConnectionFactoryTests : IDisposable
     public void Dispose()
     {
         SqliteConnection.ClearAllPools();
-        if (File.Exists(_databasePath))
-        {
-            File.Delete(_databasePath);
-        }
+        TestFileCleanup.DeleteFile(_databasePath);
     }
 }

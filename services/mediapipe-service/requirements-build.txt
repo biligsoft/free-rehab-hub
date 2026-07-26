@@ -1,0 +1,2 @@
+# build_exe.py için — çalışma zamanı bağımlılığı değil, sadece paketleme aracı.
+pyinstaller>=6.0,<7.0

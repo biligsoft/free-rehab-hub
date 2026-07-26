@@ -20,3 +20,8 @@ services/mediapipe-service/.venv/
 services/mediapipe-service/models/
 services/mediapipe-service/__pycache__/
 services/mediapipe-service/**/__pycache__/
+
+# mediapipe-service — build_exe.py'nin (PyInstaller) ürettiği çıktılar, commit edilmez
+services/mediapipe-service/build/
+services/mediapipe-service/dist/
+services/mediapipe-service/*.spec

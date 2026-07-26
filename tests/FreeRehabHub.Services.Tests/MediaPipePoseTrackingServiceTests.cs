@@ -22,8 +22,9 @@ public sealed class MediaPipePoseTrackingServiceTests
             ]}]}
             """;
         using var fakeServer = new FakeMediaPipeServer(port, [framePayload]);
-        var (fileName, arguments) = PlaceholderProcessCommand();
-        using var service = new MediaPipePoseTrackingService(fileName, arguments, port, ShortHealthCheckTimeout);
+        var (fileName, argumentsTemplate, workingDirectory) = PlaceholderProcessCommand();
+        using var service = new MediaPipePoseTrackingService(
+            fileName, argumentsTemplate, workingDirectory, port, ShortHealthCheckTimeout);
 
         PoseFrame? receivedFrame = null;
         using var frameReceivedSignal = new SemaphoreSlim(0);
@@ -52,8 +53,9 @@ public sealed class MediaPipePoseTrackingServiceTests
     public async Task StartAsync_HealthCheckNeverSucceeds_ThrowsAndSetsErrorStatus()
     {
         var unusedPort = GetFreeTcpPort();
-        var (fileName, arguments) = PlaceholderProcessCommand();
-        using var service = new MediaPipePoseTrackingService(fileName, arguments, unusedPort, ShortHealthCheckTimeout);
+        var (fileName, argumentsTemplate, workingDirectory) = PlaceholderProcessCommand();
+        using var service = new MediaPipePoseTrackingService(
+            fileName, argumentsTemplate, workingDirectory, unusedPort, ShortHealthCheckTimeout);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.StartAsync());
 
@@ -66,8 +68,9 @@ public sealed class MediaPipePoseTrackingServiceTests
     {
         var port = GetFreeTcpPort();
         using var fakeServer = new FakeMediaPipeServer(port, []);
-        var (fileName, arguments) = PlaceholderProcessCommand();
-        using var service = new MediaPipePoseTrackingService(fileName, arguments, port, ShortHealthCheckTimeout);
+        var (fileName, argumentsTemplate, workingDirectory) = PlaceholderProcessCommand();
+        using var service = new MediaPipePoseTrackingService(
+            fileName, argumentsTemplate, workingDirectory, port, ShortHealthCheckTimeout);
 
         var observedStatuses = new List<PoseTrackingStatus>();
         service.StatusChanged += (_, status) => observedStatuses.Add(status);
@@ -80,14 +83,14 @@ public sealed class MediaPipePoseTrackingServiceTests
             observedStatuses);
     }
 
-    private static (string PythonExecutablePath, string WorkingDirectory) PlaceholderProcessCommand()
+    private static (string ExecutablePath, string ArgumentsTemplate, string WorkingDirectory) PlaceholderProcessCommand()
     {
-        // MediaPipePoseTrackingService, verilen yürütülebiliri her zaman "-m uvicorn ..." argümanlarıyla
-        // çağırıyor — testte gerçek uvicorn'a ihtiyacımız yok (health-check/WS trafiği ayrıca
+        // MediaPipePoseTrackingService, verilen çalıştırılabiliri argumentsTemplate ile çağırıyor —
+        // testte gerçek uvicorn'a ihtiyacımız yok (health-check/WS trafiği ayrıca
         // FakeMediaPipeServer'a gidiyor), sadece Process.Start()'ın başarıyla bir OS süreci başlatması
-        // yeterli; python3/python modül bulunamayınca hızlıca çıkacak ama bu testleri etkilemiyor.
+        // yeterli; python3/python geçersiz argümanlarla hızlıca çıkacak ama bu testleri etkilemiyor.
         var pythonExecutablePath = OperatingSystem.IsWindows() ? "python" : "python3";
-        return (pythonExecutablePath, Environment.CurrentDirectory);
+        return (pythonExecutablePath, "--version", Environment.CurrentDirectory);
     }
 
     private static int GetFreeTcpPort()

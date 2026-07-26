@@ -67,17 +67,29 @@ public partial class AppServices : Node
         // Burada da sadece kuruluyor, kamera/süreç bu noktada başlamıyor — IPoseTrackingService.StartAsync
         // ancak kamera gerektiren bir modül aktive olduğunda (ModuleHost tarafından) çağrılır.
         var mediaPipeServiceDirectory = AppContentRoot.Resolve(MediaPipeServiceRelativePath);
-        PoseTrackingService = new MediaPipePoseTrackingService(
-            ResolvePythonExecutablePath(mediaPipeServiceDirectory), mediaPipeServiceDirectory);
+        var (executablePath, argumentsTemplate) = ResolveMediaPipeCommand(mediaPipeServiceDirectory);
+        PoseTrackingService = new MediaPipePoseTrackingService(executablePath, argumentsTemplate, mediaPipeServiceDirectory);
     }
 
-    // services/mediapipe-service/.venv, Faz 5'te Docker dışında kurulmadı (bkz. CLAUDE.md §13/§14) —
-    // burada sadece venv'in konvansiyonel konumuna işaret ediyoruz, var olup olmadığını doğrulamıyoruz;
-    // yoksa/bozuksa hata IPoseTrackingService.StartAsync çağrıldığında (fiilen kullanılınca) ortaya çıkar.
-    private static string ResolvePythonExecutablePath(string mediaPipeServiceDirectory)
+    // Paketlenmiş build'de mediapipe-service, build_exe.py'nin (PyInstaller) ürettiği tek
+    // çalıştırılabilir olarak çalışır (bkz. services/mediapipe-service/run_server.py) — bu ikili
+    // varsa öncelik ona verilir. Yoksa (dev/editör modu) services/mediapipe-service/.venv,
+    // Faz 5'te Docker dışında kurulmadı (bkz. CLAUDE.md §13/§14) — burada sadece venv'in
+    // konvansiyonel konumuna işaret ediyoruz, var olup olmadığını doğrulamıyoruz; yoksa/bozuksa
+    // hata IPoseTrackingService.StartAsync çağrıldığında (fiilen kullanılınca) ortaya çıkar.
+    private static (string ExecutablePath, string ArgumentsTemplate) ResolveMediaPipeCommand(
+        string mediaPipeServiceDirectory)
     {
-        return OperatingSystem.IsWindows()
+        var bundledExecutableName = OperatingSystem.IsWindows() ? "mediapipe-service.exe" : "mediapipe-service";
+        var bundledExecutablePath = Path.Combine(mediaPipeServiceDirectory, "dist", "mediapipe-service", bundledExecutableName);
+        if (File.Exists(bundledExecutablePath))
+        {
+            return (bundledExecutablePath, "--host 127.0.0.1 --port {0}");
+        }
+
+        var pythonExecutablePath = OperatingSystem.IsWindows()
             ? Path.Combine(mediaPipeServiceDirectory, ".venv", "Scripts", "python.exe")
             : Path.Combine(mediaPipeServiceDirectory, ".venv", "bin", "python");
+        return (pythonExecutablePath, "-m uvicorn app.main:app --host 127.0.0.1 --port {0}");
     }
 }

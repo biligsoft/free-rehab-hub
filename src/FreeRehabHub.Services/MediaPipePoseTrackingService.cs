@@ -17,7 +17,8 @@ public sealed class MediaPipePoseTrackingService : IPoseTrackingService, IDispos
     private const int ReceiveBufferSize = 16 * 1024;
 
     private readonly ProcessManagerService _processManager = new();
-    private readonly string _pythonExecutablePath;
+    private readonly string _executablePath;
+    private readonly string _argumentsTemplate;
     private readonly string _serviceWorkingDirectory;
     private readonly int _port;
     private readonly TimeSpan _healthCheckTimeout;
@@ -26,10 +27,16 @@ public sealed class MediaPipePoseTrackingService : IPoseTrackingService, IDispos
     private CancellationTokenSource? _receiveLoopCancellation;
     private Task? _receiveLoopTask;
 
+    // argumentsTemplate, {0} yerine port numarasının konacağı bir format string'i — dev modunda
+    // (.venv'deki python) "-m uvicorn app.main:app --host 127.0.0.1 --port {0}", paketlenmiş
+    // modunda (PyInstaller'ın ürettiği run_server.py binary'si) "--host 127.0.0.1 --port {0}"
+    // (bkz. AppServices.ResolveMediaPipeCommand ve services/mediapipe-service/run_server.py).
     public MediaPipePoseTrackingService(
-        string pythonExecutablePath, string serviceWorkingDirectory, int port = 8000, TimeSpan? healthCheckTimeout = null)
+        string executablePath, string argumentsTemplate, string serviceWorkingDirectory,
+        int port = 8000, TimeSpan? healthCheckTimeout = null)
     {
-        _pythonExecutablePath = pythonExecutablePath;
+        _executablePath = executablePath;
+        _argumentsTemplate = argumentsTemplate;
         _serviceWorkingDirectory = serviceWorkingDirectory;
         _port = port;
         _healthCheckTimeout = healthCheckTimeout ?? DefaultHealthCheckTimeout;
@@ -50,8 +57,8 @@ public sealed class MediaPipePoseTrackingService : IPoseTrackingService, IDispos
             if (!_processManager.IsRunning)
             {
                 _processManager.Start(
-                    _pythonExecutablePath,
-                    $"-m uvicorn app.main:app --host 127.0.0.1 --port {_port}",
+                    _executablePath,
+                    string.Format(_argumentsTemplate, _port),
                     _serviceWorkingDirectory);
             }
 

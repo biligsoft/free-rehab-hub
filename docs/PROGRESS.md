@@ -2,9 +2,9 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.20
-- Son commit: F8.19 - GUT yerine ozel C# sahne-test harness'i eklendi, CI'a scene-tests job'u
-  eklendi (push sonrası CI: 7/7 job yeşil, yeni scene-tests job'u dahil, ilk denemede sorunsuz)
+- Son tamamlanan adım: F8.21
+- Son commit: F8.20 - Riza kaydi geri cekme akisi eklendi (backend + UI) (push sonrası CI:
+  7/7 job yeşil)
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı. Kamera erişimi (Açık risk incelemesinin diğer maddesi) araştırıldı ama gerçek kök
@@ -13,12 +13,19 @@
 - **GUT kurulumu, "kurulum" yerine "değiştirme" olarak tamamlandı.** GUT sadece GDScript
   destekliyor, bu proje tamamen C# olduğu için kullanılamadı — bunun yerine F8.19'da özel bir
   C# sahne-test harness'ı yazıldı (bkz. Faz 8 sonrası bölümü, `testing-approach` skill'i).
-- **Rıza kaydı geri çekme akışı eklendi (F8.20, henüz commit edilmedi).** Kapsam kullanıcıyla
-  konuşuldu ("Minimal: sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama
-  getirmiyor (yeni seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve
-  UI'da gösteriliyor; terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
-  Bkz. aşağıdaki Faz 8 sonrası girdisi. Sıradaki: TTS Türkçe ses paketi Windows/macOS
-  doğrulaması, veya kamera/PipeWire sorunu (henüz kullanıcıyla konuşulmadı).
+- **Rıza kaydı geri çekme akışı eklendi (F8.20).** Kapsam kullanıcıyla konuşuldu ("Minimal:
+  sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama getirmiyor (yeni
+  seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve UI'da gösteriliyor;
+  terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
+- **TTS Türkçe ses paketi doğrulaması kısmen ilerletildi (F8.21, henüz commit edilmedi).**
+  Yerel bir spike'la iki gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature
+  (TextToSpeech)` platform fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma
+  şart; (2) `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa dahili bir Godot hatası
+  logluyor ama non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese düşüyor.
+  Kullanıcıyla konuşulup kapsam şimdilik ubuntu-latest'le sınırlandı (Windows/macOS Godot
+  binary asset adları yerel doğrulanamadığından). Bkz. aşağıdaki Faz 8 sonrası girdisi.
+  Sıradaki: Windows/macOS'a genişletme, veya kamera/PipeWire sorunu (henüz kullanıcıyla
+  konuşulmadı).
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -367,6 +374,45 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
     doğruluyor. Xvfb + gerçek Godot ile ekran görüntüsüyle de görsel olarak doğrulandı (geri
     çekmeden önce/sonra iki ekran görüntüsü, düzen bozulmadı, buton doğru kayboldu). Tüm sahne
     testleri: 2/2 geçti (`AssessmentHostSceneTest` + yeni test).
+- F8.21 - **TTS Türkçe ses paketi doğrulaması (kısmi — sadece ubuntu-latest).** CI'da gerçek
+  Godot ile pencereli bir doğrulama eklemeden önce yerel bir spike yapıldı, iki gerçek bulgu
+  çıktı:
+  1. **`--headless` modda TTS hiç görünmüyor.** `DisplayServer.HasFeature(TextToSpeech)`
+     platform fark etmeksizin `--headless`'ta hep `false` dönüyor (bu dev makinesinde hem
+     headless hem pencereli/Xvfb ile karşılaştırmalı test edildi) — mevcut `scene-tests` job'u
+     (headless) bu yüzden TTS'i asla test edemez, ayrı, pencereli bir mekanizma gerekiyordu.
+  2. **Yeni bir gerçek motor bulgusu:** `DisplayServer.TtsGetVoicesForLanguage(dil)`, istenen
+     dilde HİÇ ses yoksa dahili bir Godot hatası logluyor (`ERROR: Parameter "synth" is null`,
+     `tts_linux.cpp`) — bu dev makinesinde Türkçe ses paketi olmadığı için "tr" çağrısında
+     tetiklendi. Non-fatal: boş dizi dönüyor, `TtsAutoload.Speak()`'ün mevcut boş-ses-kimliği
+     fallback'i (varsayılan sese düşme) bu durumda da hatasız çalışmaya devam ediyor —
+     yani hedef klinik bilgisayarda Türkçe ses paketi kurulu olmasa bile uygulama çökmüyor,
+     sadece stderr'e bir ERROR satırı yazılıyor.
+  Bulgular sonrası kapsam kullanıcıyla konuşuldu ("Windows/macOS'ta gerçek Godot TTS
+  doğrulaması için ne kadar kapsamla başlayalım?" → "Önce sadece ubuntu-latest
+  (Recommended)") — Windows/macOS için Godot mono binary'sinin asset adları ve macOS'ta
+  app-bundle yolu yerel olarak doğrulanamadığından, mediapipe/scene-tests'teki gibi kör
+  iterasyona girmeden önce Linux'ta sağlam bir temel kurulup ayrı bir adımda genişletilecek.
+  Eklenenler:
+  - `autoload/TtsDiagnosticRunner.cs` (yeni) — `SceneTestRunner` ile aynı desende (kalıcı,
+    env-var-gated autoload, `FREEREHABHUB_RUN_TTS_CHECK`), ama `SceneTestRunner`'a DAHİL
+    EDİLMEDİ çünkü farklı çalıştırma modu gerektiriyor (pencereli, headless değil).
+    `DisplayServer.HasFeature` false ise exit 1 (gerçek platform-desteği boşluğu, hata
+    sayılır); "tr" için 0 ses bulunması exit 1 SAYILMIYOR (beklenen/olası durum) — sadece
+    bilgi amaçlı loglanıyor; gerçek `TtsAutoload.Speak()`/`Stop()` çağrılıp hata fırlatmadığı
+    doğrulanıyor.
+  - `.github/workflows/ci.yml`'e yeni `tts-check` job'u (sadece `ubuntu-latest`): Godot
+    indirilip `--import` ile kaynaklar aktarılıyor, `speech-dispatcher`/`espeak-ng` apt ile
+    kuruluyor, sonra `FREEREHABHUB_RUN_TTS_CHECK=1` ile Xvfb altında ama **`--headless`
+    OLMADAN** (pencereli) çalıştırılıyor.
+  - `CLAUDE.md` §13 (yeni doğrulanmış bulgu maddesi) ve §14 (TTS riski "kısmen ilerletildi"
+    olarak güncellendi), `testing-approach` skill'i (yeni not: `DisplayServer` özellikleri
+    `--headless`'ta çalışmayabilir, `TtsDiagnosticRunner` örnek olarak referans verildi).
+  Yerel doğrulama: env var yokken hem headless hem pencereli modda tamamen etkisiz (sıfır
+  "TTS-CHECK" çıktısı); env var + `--headless` → beklendiği gibi exit 1 (`HasFeature = False`);
+  env var + pencereli (Xvfb, `--headless` yok) → exit 0, `HasFeature = True`, `tr` ses
+  sayısı = 0 (bu makinede Türkçe paket yok, beklenen), `Speak()`/`Stop()` hatasız. Mevcut
+  `scene-tests` de yeni autoload'la birlikte hâlâ 2/2 geçiyor (regresyon yok).
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

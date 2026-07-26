@@ -71,6 +71,50 @@ jobs:
           FREEREHABHUB_RUN_SCENE_TESTS: "1"
         run: xvfb-run -a "$GODOT_BIN" --headless --path .
 
+  # TTS'in Türkçe ses paketi Windows/macOS'ta doğrulanmadı riskinin (bkz. CLAUDE.md §14) ilk
+  # doğrulama adımı. --headless modda DisplayServer.HasFeature(TextToSpeech) HER PLATFORMDA hep
+  # false dönüyor (yerel bir spike'la doğrulandı) — bu yüzden scene-tests'in aksine PENCERELİ
+  # (Xvfb altında ama --headless olmadan) çalıştırılması gerekiyor. Şimdilik sadece ubuntu-latest
+  # (kullanıcıyla konuşuldu) — Windows/macOS için Godot mono binary'sinin tam asset adı/macOS'ta
+  # app-bundle yolu yerel olarak doğrulanamadığından, önce bu platformda gerçek CI sonucu
+  # görülüp yöntem netleşince ayrı bir adımda genişletilecek.
+  tts-check:
+    runs-on: ubuntu-latest
+    env:
+      GODOT_ZIP_URL: https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_mono_linux_x86_64.zip
+      GODOT_BIN: godot-bin/Godot_v4.7-stable_mono_linux_x86_64/Godot_v4.7-stable_mono_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore FreeRehabHub.sln
+
+      - name: Build
+        run: dotnet build FreeRehabHub.sln --no-restore --configuration Debug
+
+      - name: Install Xvfb and speech-dispatcher
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb speech-dispatcher espeak-ng
+
+      - name: Download Godot (.NET/Mono)
+        run: |
+          curl -L -o godot.zip "$GODOT_ZIP_URL"
+          unzip -q godot.zip -d godot-bin
+          chmod +x "$GODOT_BIN"
+
+      - name: Import project resources
+        run: xvfb-run -a "$GODOT_BIN" --headless --import --quit
+
+      - name: Run TTS check (windowed, not headless)
+        env:
+          FREEREHABHUB_RUN_TTS_CHECK: "1"
+        run: xvfb-run -a "$GODOT_BIN" --path .
+
   mediapipe-package:
     strategy:
       fail-fast: false

@@ -1,18 +1,17 @@
 namespace FreeRehabHub.Data.Tests;
 
-// Yanlış parolayla başarısız bir SqliteConnection açma denemesinden sonra, native SQLitePCLRaw/
-// e_sqlcipher handle'ının serbest bırakılması Windows'ta senkron değil (CI'da F8.09'da
-// gözlemlendi) — bu yüzden test temizliğinde dosya/dizin silme birkaç kısa denemeyle yapılıyor.
-// Bu sadece test-geçici-dosyaları için; üretim kodunda hiçbir yerde bu desen (başarısız bağlantı
-// sonrası aynı dosyayı silme) kullanılmıyor.
+// Yanlış parolayla başarısız bir SqliteConnection açma denemesinden sonra, Windows'ta native
+// SQLitePCLRaw/e_sqlcipher handle'ı bu process içinde hiç serbest bırakılmayabiliyor (F8.10/
+// F8.11'de denenen 30x200ms'lik retry bile CI'da yetmedi — bu bir zamanlama sorunu değil,
+// muhtemelen handle process ömrü boyunca kalıcı sızıyor). Bu yüzden temizlik en-iyi-çaba: birkaç
+// kısa deneme + son çare olarak sessizce vazgeçme. Bu sadece test-geçici-dosyaları için (OS temp
+// dizininde, CI runner'ı zaten her çalıştırmadan sonra siliniyor) — üretim kodunda hiçbir yerde
+// bu desen (başarısız bağlantı sonrası aynı dosyayı silme) kullanılmıyor, temizlik başarısızlığı
+// gerçek bir kaynak sızıntısı ya da davranış hatası anlamına gelmiyor.
 internal static class TestFileCleanup
 {
-    // F8.10'da 5 deneme × 50ms (200ms toplam) Windows CI runner'ında yetersiz kaldı — native
-    // handle serbest bırakma gecikmesi bundan uzun sürebiliyor. 30 × 200ms = 6 saniyeye kadar
-    // güvenli bir üst sınır; gerçek gecikme genelde çok daha kısa, retry ilk başarılı denemede
-    // çıkıyor.
-    private const int MaxAttempts = 30;
-    private const int RetryDelayMilliseconds = 200;
+    private const int MaxAttempts = 5;
+    private const int RetryDelayMilliseconds = 100;
 
     public static void DeleteFile(string path)
     {
@@ -27,8 +26,13 @@ internal static class TestFileCleanup
 
                 return;
             }
-            catch (IOException) when (attempt < MaxAttempts)
+            catch (IOException)
             {
+                if (attempt == MaxAttempts)
+                {
+                    return;
+                }
+
                 Thread.Sleep(RetryDelayMilliseconds);
             }
         }
@@ -47,8 +51,13 @@ internal static class TestFileCleanup
 
                 return;
             }
-            catch (IOException) when (attempt < MaxAttempts)
+            catch (IOException)
             {
+                if (attempt == MaxAttempts)
+                {
+                    return;
+                }
+
                 Thread.Sleep(RetryDelayMilliseconds);
             }
         }

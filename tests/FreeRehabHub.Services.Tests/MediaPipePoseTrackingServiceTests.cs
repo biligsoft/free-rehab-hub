@@ -164,8 +164,20 @@ public sealed class MediaPipePoseTrackingServiceTests
 
         public void Dispose()
         {
-            _listener.Stop();
-            _listener.Close();
+            // Sadece Close() yeterli (Stop()'u da kendi içinde yapıyor) — ikisini art arda
+            // çağırmak, HttpListener'ın Windows-dışı (mono kökenli, macOS/Linux'ta kullanılan)
+            // yönetilen implementasyonunda aynı prefix'i iki kez kaldırmaya çalışıp
+            // "Address already in use" fırlatıyor (macOS CI'da gerçekten gözlemlendi).
+            try
+            {
+                _listener.Close();
+            }
+            catch (HttpListenerException)
+            {
+                // Test yardımcı sınıfının kapanış temizliği — bir kapatma hatası, zaten geçmiş
+                // olan gerçek test assertion'larını geçersiz kılmamalı (bkz. TestFileCleanup.cs,
+                // F8.12'deki aynı prensip).
+            }
         }
     }
 }

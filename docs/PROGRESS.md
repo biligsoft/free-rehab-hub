@@ -2,16 +2,22 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.24
-- Son commit: F8.23 - TTS dogrulamasini Windows/macOS'a genisletildi: tts-check job'u 3
-  platform matrix'i oldu (push sonrası CI: 10/10 job yeşil — Windows/macOS'ta ilk denemede
-  sorunsuz)
-- **Modül manifest.json ↔ C# Manifest tutarlılık testi eklendi (F8.24, henüz commit
-  edilmedi).** Açık risk listesindeki küçük maddelerden biri ele alındı: Assessment modülleri
-  için xUnit testi, Exercise modülleri için (Node-türevi oldukları için) yeni bir sahne testi
-  — birlikte 3 gerçek modülün tamamını kapsıyor. Her iki test de bilerek bozulan bir alanla
-  (version, difficultyRange.max) doğrulanıp doğru şekilde başarısız olduğu, sonra düzeltilip
-  temiz duruma döndüğü teyit edildi.
+- Son tamamlanan adım: F8.25 (henüz commit edilmedi)
+- Son commit: F8.24 - Modul manifest.json ve C# Manifest tutarlilik testi eklendi (push
+  sonrası CI: 9/10 job yeşil — `build (macos-latest)`'te ilgisiz bir test bug'ı bulundu,
+  bkz. F8.25)
+- **Modül manifest.json ↔ C# Manifest tutarlılık testi eklendi (F8.24).** Açık risk
+  listesindeki küçük maddelerden biri ele alındı: Assessment modülleri için xUnit testi,
+  Exercise modülleri için (Node-türevi oldukları için) yeni bir sahne testi — birlikte 3
+  gerçek modülün tamamını kapsıyor. Her iki test de bilerek bozulan bir alanla (version,
+  difficultyRange.max) doğrulanıp doğru şekilde başarısız olduğu, sonra düzeltilip temiz
+  duruma döndüğü teyit edildi.
+- **Gerçek bug bulundu ve düzeltildi: `FakeMediaPipeServer.Dispose()` macOS'ta "Address
+  already in use" fırlatıyordu (F8.25, henüz commit edilmedi).** F8.24 push'u sonrası CI'da
+  `build (macos-latest)`'in `Test` adımı başarısız oldu — ama bu, yeni eklenen manifest
+  tutarlılık testleriyle hiç ilgisi olmayan, önceden var olan bir test yardımcı sınıfındaki
+  gerçek bir bug'dı (kullanıcının paylaştığı log ile teşhis edildi). Detay: bkz. aşağıdaki
+  Faz 8 sonrası girdisi.
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı.
@@ -502,6 +508,28 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   Her iki test de bilerek bozulup (manifest.json'da `version`/`difficultyRange.max` değiştirilip)
   doğru şekilde `[FAIL]`/`[BAŞARISIZ]` verdiği, sonra düzeltilip temiz duruma (xUnit 16/16,
   sahne testleri 3/3) döndüğü doğrulandı.
+- F8.25 - **Gerçek bug fix: `FakeMediaPipeServer.Dispose()` macOS'ta "Address already in
+  use" fırlatıyordu.** F8.24 push'u sonrası CI'da 9/10 job yeşildi, sadece
+  `build (macos-latest)`'in `Test` adımı başarısız oldu. Job log'unun tam metnine erişim
+  admin yetkisi gerektirdiğinden kullanıcı GitHub Actions arayüzünden log'u paylaştı — bu,
+  F8.09-F8.13'teki desenin aynısı (raw log erişimi sınırlı, gerçek kanıt kullanıcıdan geldi).
+  Log, hatanın YENİ manifest tutarlılık testleriyle hiç ilgisi olmadığını gösterdi
+  (`FreeRehabHub.Modules.Contracts.Tests.dll`: 16/16 geçti) — asıl hata önceden var olan
+  `MediaPipePoseTrackingServiceTests.StartStop_FullCycle_StatusTransitionsInOrder`'da,
+  `System.Net.HttpListenerException: Address already in use`, `FakeMediaPipeServer.Dispose()`
+  içinde. **Kök neden:** `Dispose()` art arda hem `_listener.Stop()` hem `_listener.Close()`
+  çağırıyordu — `HttpListener`'ın Windows-dışı (mono kökenli, macOS/Linux'ta kullanılan)
+  yönetilen implementasyonunda `Close()` zaten `Stop()`'un işini kendi içinde yapıyor; ikisini
+  art arda çağırmak aynı prefix'i iki kez kaldırmaya çalışıp bu hatayı fırlatıyor. Bu test
+  daha önce macOS'ta hep yeşildi (F8.13'te doğrulanmıştı) — muhtemelen runner image'ının
+  .NET SDK'sı güncellenip önceden zararsız kalan bu redundant çağrı artık tetiklenir hale
+  geldi (F8.09-F8.13'teki WebSocket race'lerinin aynı kategorisinde bir bulgu, ama üretim
+  kodunda değil, test yardımcı sınıfında). **Düzeltme:** sadece `Close()` çağrılıyor,
+  ayrıca `HttpListenerException` etrafında best-effort bir try/catch eklendi (bkz.
+  `TestFileCleanup.cs`, F8.12'deki aynı prensip — kapanış temizliği zaten geçmiş olan gerçek
+  test assertion'larını geçersiz kılmamalı). Yerel doğrulama: Linux'ta bu bug hiç
+  reprodüklenmedi (muhtemelen platform-özel timing farkı), ama düzeltme sonrası 5x arka
+  arkaya çalıştırılıp hep 48/48 geçti — asıl doğrulama macOS CI'da.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

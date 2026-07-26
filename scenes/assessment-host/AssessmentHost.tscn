@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/form-engine/FormRenderer.tscn" id="1"]
+[ext_resource type="Script" path="res://scenes/assessment-host/AssessmentHostController.cs" id="2"]
+
+[node name="AssessmentHost" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("2")
+_statusLabelPath = NodePath("Layout/ToolbarMargin/Toolbar/StatusLabel")
+_exitButtonPath = NodePath("Layout/ToolbarMargin/Toolbar/ExitButton")
+_formRendererPath = NodePath("Layout/FormRenderer")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 0
+
+[node name="ToolbarMargin" type="MarginContainer" parent="Layout"]
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Toolbar" type="HBoxContainer" parent="Layout/ToolbarMargin"]
+theme_override_constants/separation = 14
+
+[node name="ExitButton" type="Button" parent="Layout/ToolbarMargin/Toolbar"]
+text = "Çıkış"
+
+[node name="StatusLabel" type="Label" parent="Layout/ToolbarMargin/Toolbar"]
+size_flags_horizontal = 3
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="FormRenderer" parent="Layout" instance=ExtResource("1")]
+size_flags_vertical = 3

@@ -12,6 +12,7 @@ public partial class ModuleLibraryPanelController : Control
 {
     private const string EnglishLocale = "en";
     private const string ModuleHostScenePath = "res://scenes/module-host/ModuleHost.tscn";
+    private const string AssessmentHostScenePath = "res://scenes/assessment-host/AssessmentHost.tscn";
     private const string TherapistShellScenePath = "res://scenes/shells/TherapistShell.tscn";
 
     [Export] private NodePath _titleLabelPath = null!;
@@ -29,7 +30,7 @@ public partial class ModuleLibraryPanelController : Control
     private ModuleRegistryAutoload _moduleRegistryAutoload = null!;
     private LocalizationAutoload _localization = null!;
 
-    private IReadOnlyList<ModuleManifest> _exerciseModules = Array.Empty<ModuleManifest>();
+    private IReadOnlyList<ModuleManifest> _availableModules = Array.Empty<ModuleManifest>();
 
     public override void _Ready()
     {
@@ -63,14 +64,10 @@ public partial class ModuleLibraryPanelController : Control
 
         _titleLabel.Text = $"Modüller — {patient.FullName}";
 
-        // Şimdilik sadece Exercise modülleri listeleniyor — Assessment modüllerinin gerçek bir
-        // oynatma ekranı (FormRenderer'ı barındıran) henüz yok, bu Faz 5'in kapsamı dışında.
-        _exerciseModules = _moduleRegistryAutoload.Registry.GetAvailableModules()
-            .Where(manifest => manifest.Kind == ModuleKind.Exercise)
-            .ToList();
+        _availableModules = _moduleRegistryAutoload.Registry.GetAvailableModules().ToList();
 
         _moduleItemList.Clear();
-        foreach (var manifest in _exerciseModules)
+        foreach (var manifest in _availableModules)
         {
             _moduleItemList.AddItem(Localize(manifest.DisplayName));
         }
@@ -84,8 +81,9 @@ public partial class ModuleLibraryPanelController : Control
             return;
         }
 
-        _sessionContext.SetActiveModuleManifest(_exerciseModules[selectedIndices[0]]);
-        GetTree().ChangeSceneToFile(ModuleHostScenePath);
+        var manifest = _availableModules[selectedIndices[0]];
+        _sessionContext.SetActiveModuleManifest(manifest);
+        GetTree().ChangeSceneToFile(manifest.Kind == ModuleKind.Assessment ? AssessmentHostScenePath : ModuleHostScenePath);
     }
 
     private void OnBackPressed()

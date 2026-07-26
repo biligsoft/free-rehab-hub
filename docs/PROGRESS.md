@@ -1,20 +1,18 @@
 ## Güncel durum
-- Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
+- **CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı** (Faz 8, 2026-07-26'da
+  kullanıcıyla konuşulup tamamlanmış sayıldı — bkz. aşağıdaki Faz 8 kapanış notu).
 - Son tamamlanan adım: F8.17
 - Son commit: F8.17 - Son paketleme scripti (scripts/package_release.py) eklendi
-- **Installer+paketleme alt özelliği tamamlandı** (F8.07-F8.17): export preset'leri → CI
-  matrisi (6/6 job yeşil, Windows/Ubuntu/macOS) → paketlenmiş build path çözümleme →
-  PyInstaller mediapipe paketleme → son birleştirme scripti. Uçtan uca gerçek bir zip
-  paketi üretilip tamamen ayrı bir dizinde açılıp çalıştırılarak doğrulandı. Faz 8'in üç alt
-  özelliğinin üçü de bitti (test/güvenlik/KVKK taraması, CONTRIBUTING.md, installer+paketleme)
-  — Faz 8'in tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla konuşulmadı.
+- Sıradaki: henüz kullanıcıyla konuşulmadı — projenin bilinen açık riskleri (bu dosyanın
+  sonundaki "Açık riskler" bölümü) hâlâ geçerli, "8 faz bitti" onların hepsinin çözüldüğü
+  anlamına gelmiyor.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
 
-### Faz 8 — Sertleştirme, Paketleme, Katkıcı Onboarding: devam ediyor
+### Faz 8 — Sertleştirme, Paketleme, Katkıcı Onboarding: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): üç alt özellik var (CONTRIBUTING.md, installer+
   paketleme, test/güvenlik/KVKK taraması) — test/güvenlik/KVKK taramasıyla başlanacak, çünkü
   paketlemeden önce yapılması daha mantıklı (bulunacak açıklar installer'ı etkileyebilir).
@@ -240,10 +238,21 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   temayla render edildi, tıpkı bir kullanıcının indirip çalıştırması gibi. Bu, orijinal 5
   maddelik installer+paketleme planının tamamını bitiriyor.
 
-**Installer+paketleme alt özelliği tamamlandı (F8.07-F8.17).** Faz 8'in üç alt özelliğinin
-üçü de bitti: test/güvenlik/KVKK taraması (F8.01-F8.05), CONTRIBUTING.md (F8.06),
-installer+paketleme (F8.07-F8.17). Faz 8'in (ve dolayısıyla CLAUDE.md § Yol Haritası'ndaki
-son fazın) tamamlanmış sayılıp sayılmayacağı henüz kullanıcıyla konuşulmadı.
+**Faz 8 tamamlandı (2026-07-26).** Üç alt özelliğin üçü de bitti: test/güvenlik/KVKK taraması
+(F8.01-F8.05 — hasta silme cascade-delete bug'ı, rıza kaydı özelliği, SQLCipher anahtar
+yönetimi kararı), CONTRIBUTING.md (F8.06 — MIT lisansı), installer+paketleme (F8.07-F8.17 —
+export preset'leri, GitHub Actions çapraz-platform CI matrisi, paketlenmiş build path
+çözümleme, PyInstaller mediapipe paketleme, son birleştirme scripti). Bu, CLAUDE.md § Yol
+Haritası'ndaki 8 fazın tamamını kapatıyor.
+
+Bu, projenin "bitti" anlamına gelmediğini not etmek gerekir — bilinçli olarak dar tutulan
+kapsam kararları ve gerçek hedef donanımda doğrulanmayı bekleyen noktalar bu dosyanın sonundaki
+"Açık riskler" bölümünde duruyor: gerçek kamera donanımıyla uçtan uca test (bu geliştirme
+ortamında hiç yapılamadı), TTS'in Türkçe ses kalitesi Windows/macOS'ta doğrulanmadı, GUT hiç
+kurulmadı (sahne/UI testleri hâlâ elle/Xvfb ile yapılıyor), rıza kaydının geri çekme akışı yok,
+gerçek bir installer sihirbazı (v1 sadece export+zip) yok, code signing yok. Sekiz fazın
+tamamlanması, "planlanan iskelet uçtan uca çalışıyor ve gerçek platformlarda (CI ile) doğrulandı"
+anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

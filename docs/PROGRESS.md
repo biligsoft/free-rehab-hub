@@ -2,9 +2,10 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.22 (kod içermez — sadece sistem/dokümantasyon, bkz. aşağıda)
-- Son commit: F8.21 - TTS Turkce ses paketi dogrulamasi (kismi, sadece ubuntu-latest) (push
-  sonrası CI: 8/8 job yeşil — yeni tts-check job'u dahil, ilk denemede sorunsuz)
+- Son tamamlanan adım: F8.23
+- Son commit: F8.23 - TTS dogrulamasini Windows/macOS'a genisletildi: tts-check job'u 3
+  platform matrix'i oldu (push sonrası CI: 10/10 job yeşil — Windows/macOS'ta ilk denemede
+  sorunsuz)
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı.
@@ -15,13 +16,14 @@
   sadece kayıt (Recommended)") — geri çekme hiçbir işlevsel kısıtlama getirmiyor (yeni
   seans/modül başlatma engellenmiyor), sadece `WithdrawnAt` kaydediliyor ve UI'da gösteriliyor;
   terapist isterse ayrıca F8.01'in cascade-delete akışıyla hastayı silebilir.
-- **TTS Türkçe ses paketi doğrulaması kısmen ilerletildi (F8.21).** Yerel bir spike'la iki
-  gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature(TextToSpeech)` platform
-  fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma şart; (2)
-  `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa dahili bir Godot hatası logluyor ama
-  non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese düşüyor. Kullanıcıyla
-  konuşulup kapsam şimdilik ubuntu-latest'le sınırlandı. CI: yeni `tts-check` job'u ilk
-  denemede başarılı, 8/8 job yeşil.
+- **TTS Türkçe ses paketi doğrulaması TAMAMLANDI (F8.21 Linux, F8.23 Windows/macOS).**
+  F8.21'de iki gerçek bulgu çıktı: (1) `--headless` modda `DisplayServer.HasFeature
+  (TextToSpeech)` platform fark etmeksizin hep `false` — TTS testi için pencereli çalıştırma
+  şart; (2) `TtsGetVoicesForLanguage(dil)` o dilde hiç ses yoksa Linux'ta dahili bir Godot
+  hatası logluyor ama non-fatal, `TtsAutoload.Speak()` yine de çökmeden varsayılan sese
+  düşüyor. F8.23'te Godot'un gerçek Windows/macOS mono zip asset adları GitHub releases
+  API'sinden çekilip doğrulandı (tahmin edilmedi), `tts-check` job'u 3 platforma genişletildi
+  — **üçünde de ilk denemede başarılı**: `HasFeature = true`, `Speak()`/`Stop()` çökmedi.
 - **Kamera/PipeWire sorunu derinleştirildi ama tam çözülemedi (F8.22, sistem-seviyesi —
   commit edilecek bir kod değişikliği yok).** `wpctl`/`pw-cli` ile daha derin incelendi:
   WirePlumber aynı fiziksel kamerayı hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda
@@ -451,6 +453,27 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   - `CLAUDE.md` §14 güncellendi (daha kesin teşhis, aynı sonuç: hedef donanım Windows olduğu
     için bu Fedora-özel bulgu üretim mimarisini etkilemiyor). `docs/PROGRESS.md` § Açık
     riskler'deki eski (daha belirsiz) madde bu daha kesin bulguyla değiştirildi.
+- F8.23 - **TTS doğrulamasını Windows/macOS'a genişletme.** F8.21'de bilinçli olarak
+  ubuntu-latest'le sınırlanan kapsam ("Godot mono binary'sinin Windows/macOS asset adları
+  yerel doğrulanamadığından") bu adımda genişletildi. Önce asset adlarını TAHMİN ETMEDEN,
+  `https://api.github.com/repos/godotengine/godot/releases/tags/4.7-stable` ile gerçek dosya
+  listesi çekildi, ardından iki zip fiilen indirilip içerikleri incelendi:
+  - Windows: `Godot_v4.7-stable_mono_win64.zip` →
+    `Godot_v4.7-stable_mono_win64/Godot_v4.7-stable_mono_win64.exe` (Linux'takiyle birebir aynı
+    isimlendirme deseni, tahmin doğru çıktı).
+  - macOS: `Godot_v4.7-stable_mono_macos.universal.zip` → bir `.app` bundle,
+    `Godot_mono.app/Contents/MacOS/Godot`.
+  `.github/workflows/ci.yml`'deki `tts-check` job'u `matrix.include` ile 3 platforma
+  genişletildi (`os`, `godot_zip_url`, `godot_bin` üçlüsü her platform için ayrı) — Linux
+  Xvfb altında pencereli çalışıyor (F8.21'deki gibi), Windows/macOS'ta doğrudan (bu
+  runner'ların zaten gerçek bir masaüstü oturumu var, Xvfb'ye gerek yok). Push sonrası CI:
+  **10/10 job yeşil, Windows/macOS'taki `tts-check` job'ları da ilk denemede başarılı** —
+  F8.09-F8.13'teki gibi bir düzeltme turu gerekmedi (asset adlarının önceden gerçek API'den
+  doğrulanmış olması bu riski önceden bertaraf etmişti). `CLAUDE.md` §13/§14 güncellendi:
+  TTS Türkçe ses paketi doğrulaması riski artık kapatıldı (SQLCipher/mediapipe ile aynı
+  doğrulama seviyesinde) — CI runner'larında fiilen Türkçe ses paketi olup olmadığı hâlâ
+  bilinmiyor (job log'ları admin yetkisi gerektiriyor) ama bu önemli değil, çünkü zaten
+  önemli olan ("Türkçe ses yokken bile çökmüyor mu") doğrulandı.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

@@ -1,15 +1,54 @@
 ## Güncel durum
-- Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — henüz başlanmadı
-- Son tamamlanan adım: F7.08 (Faz 7'nin son adımı)
-- Son commit: F0.27 - docs/PROGRESS.md F7.08 ile ve CLAUDE.md §14 TTS platform riskiyle
-  güncellendi
-- Sıradaki: Faz 8'in hangi alt özelliğiyle (CONTRIBUTING.md / installer+paketleme (MediaPipe
-  binary gömülü) / test-güvenlik-KVKK taraması) başlanacağı henüz kullanıcıyla konuşulmadı
+- Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
+- Son tamamlanan adım: F8.01
+- Son commit: F8.01 - Hasta silme cascade-delete bug fix: geçmişli hasta silme artık FK hatası
+  vermiyor
+- Sıradaki: test/güvenlik/KVKK taraması sürüyor — F8.01'de bulunan diğer iki bulgu henüz
+  ele alınmadı: (1) rıza kaydı (consent record) hiç yok, (2) SQLCipher parola/anahtar
+  yönetiminin "her açılışta elle gir" halinde mi kalacağı (OS keychain alternatifi) henüz
+  kullanıcıyla konuşulmadı
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
 
 ## Faz geçmişi
+
+### Faz 8 — Sertleştirme, Paketleme, Katkıcı Onboarding: devam ediyor
+- Kapsam kararı (kullanıcıyla konuşuldu): üç alt özellik var (CONTRIBUTING.md, installer+
+  paketleme, test/güvenlik/KVKK taraması) — test/güvenlik/KVKK taramasıyla başlanacak, çünkü
+  paketlemeden önce yapılması daha mantıklı (bulunacak açıklar installer'ı etkileyebilir).
+- **Test/güvenlik/KVKK taraması (ilk tur bulguları):** `clinical-data-handling` skill'indeki
+  kontrol listesine göre kod taraması yapıldı. Temiz çıkanlar: şifreleme (gerçek, hardcoded
+  anahtar yok), loglama (üretim kodunda tek bir `GD.Print`/`Console.WriteLine` bile yok),
+  veri erişim yolu (%100 repository üzerinden, Data katmanı dışında ham SQL yok),
+  `content-packs/` telif durumu (özgün/jenerik içerik, isimli telifli ölçek yok), "tıbbi cihaz
+  değildir" feragatnamesi (PDF raporda mevcut), kiosk/çocuk modunda klinik veri izolasyonu
+  (F7.07'de zaten kurulmuştu). Bulunan 3 madde: (1) hasta silme bug'ı (aşağıda F8.01, düzeltildi),
+  (2) rıza kaydı (consent record) hiç yok — CLAUDE.md'nin "Faz 2'de temel atılır" dediği şey
+  aslında hiç yapılmamış, henüz ele alınmadı, (3) SQLCipher parolası her açılışta elle giriliyor
+  (F2.12'nin bilinçli kararı) — OS keychain alternatifine geçilip geçilmeyeceği henüz
+  kullanıcıyla konuşulmadı, bug değil.
+- F8.01 - **Hasta silme cascade-delete bug fix.** `SqlitePatientRepository.DeleteAsync` düz bir
+  `DELETE FROM Patients` çalıştırıyordu; `TherapySessions`/`Prescriptions`/`ProgressRecords`
+  FK'ları `ON DELETE CASCADE` içermediği için (`PRAGMA foreign_keys = ON` açıkken), gerçek
+  geçmişi olan herhangi bir hastayı silmek `SQLite Error 19: FOREIGN KEY constraint failed`
+  fırlatıyordu — `OnDeleteConfirmed` (`async void`) bunu hiç yakalamıyordu, çöküyordu. Hem
+  fonksiyonel bir bug hem KVKK "silme hakkı" engeli. Silme semantiği kullanıcıyla konuşuldu:
+  soft-delete yerine **tam (cascade) silme** seçildi — mevcut onay diyaloğu zaten "Bu işlem
+  geri alınamaz" diyor, bu vaadi gerçekten yerine getiren minimal düzeltme. `DeleteAsync` artık
+  tek transaction içinde `ProgressRecordMetrics → ProgressRecords → PrescriptionItems →
+  Prescriptions → TherapySessions → Patients` sırasıyla siliyor (şema `ON DELETE CASCADE`
+  yerine C# tarafında elle — gerekçe: `CREATE TABLE IF NOT EXISTS` mevcut DB'leri geriye dönük
+  migrate etmez, ayrıca projenin her yerdeki elle-transaction konvansiyonuyla tutarlı).
+  `AuditLogs`'a kasıtlı olarak dokunulmadı (`RecordId` polimorfik/FK'sız, erişim izi veriyle
+  birlikte silinmemeli). `PatientListPanelController.OnDeleteConfirmed`'e try/catch + hata
+  mesajı eklendi (defans amaçlı, `TherapistShellController`'daki yedekleme hata-gösterme
+  deseniyle aynı) — bu vesileyle `_kioskMessageLabel` genel amaçlı `_messageLabel`'e yeniden
+  adlandırıldı. Yeni xUnit testi: hasta + seans + reçete(+kalem) + ilerleme kaydı(+metrik)
+  oluşturup silme sonrası hepsinin gerçekten gittiğini doğruluyor. Tüm çözüm: 44/44 Data.Tests,
+  41/41 Services.Tests, diğer tüm test projeleri yeşil. Xvfb+gerçek Godot ile gerçek UI'dan
+  doğrulandı: geçmişli hasta "Sil" ile hatasız silindi, ilişkili kayıtların gerçekten gittiği
+  teyit edildi.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

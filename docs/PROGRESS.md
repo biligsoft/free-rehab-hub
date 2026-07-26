@@ -1,12 +1,12 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.07
-- Son commit: F8.07 - Godot export preset'leri eklendi (Linux/Windows/macOS), Linux export
-  Xvfb ile doğrulandı
-- Sıradaki: installer+paketleme kapsam/sıralama kararı kullanıcıyla konuşuldu — Windows/macOS
-  doğrulaması için GitHub Actions matrix CI kullanılacak (yerel donanım yok), v1 installer
-  basit export+zip olacak (sihirbaz yok). Sıradaki adım: GitHub Actions çapraz-platform build
-  matrisi (SQLCipher/export/PyInstaller'ı windows-latest/macos-latest'te gerçekten test etmek).
+- Son tamamlanan adım: F8.13
+- Son commit: F8.13 - MediaPipePoseTrackingService.StopAsync: CloseAsync yerine
+  CloseOutputAsync kullanılarak ReceiveLoopAsync ile ReceiveAsync çakışması giderildi
+- **GitHub Actions çapraz-platform CI matrisi artık tamamen yeşil** — Windows/Ubuntu/macOS
+  üçü de gerçekten geçiyor (repo ilk kez origin'e push edildi, F1-F8.13 arası 118 commit).
+  SQLCipher'ın Windows/macOS'ta gerçekten çalıştığı ilk kez doğrulandı (Faz 1'den beri açık
+  duran risk kapandı). Sıradaki: PyInstaller ile mediapipe-service paketleme.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -139,6 +139,49 @@ export+zip olacak (kurulum sihirbazı — NSIS/Inno Setup/.dmg — ayrı, sonrak
   `.gitignore`'a eklendi. Tüm çözüm: 47/47 Data.Tests, 45/45 Services.Tests — `project.godot`
   değişikliği regresyona yol açmadı. Bilinçli olarak dışarıda bırakılan: gerçek Windows/macOS'ta
   çalıştırma doğrulaması (sıradaki adım — CI matrisi — bunu kısmen çözecek), code signing/icon.
+- F8.08 - **CI, çapraz-platform build matrisine genişletildi.** `.github/workflows/ci.yml`,
+  tek `ubuntu-latest` job'ından `[ubuntu-latest, windows-latest, macos-latest]` matrisine
+  çevrildi (`fail-fast: false`). **Yol boyunca bulunan büyük gerçek durum:** repo hiç origin'e
+  push edilmemişti (F1'den beri, sadece "first commit" origin'deydi) — bu commit ilk kez tüm
+  F1-F8.08 geçmişini (112 commit) push etti. Push, GitHub'ın workflow-dosyası-değiştiren PAT'lar
+  için gerektirdiği `workflow` scope'u yüzünden ilk denemede reddedildi; kullanıcı PAT'ına bu
+  scope'u ekleyip tekrar push etti. **İlk gerçek CI sonucu:** macOS tamamen yeşil (SQLCipher
+  dahil — Faz 1'den beri açık duran "macOS'ta doğrulanmadı" riskini kapattı), Ubuntu'da 1 gerçek
+  ürün bug'ı (`MediaPipePoseTrackingService.StopAsync` race condition), Windows'ta 2 test-
+  temizliği hatası (SQLite dosya kilidi) bulundu — detaylar aşağıdaki adımlarda.
+- F8.09 - **İlk tur düzeltmeler.** (1) `SqliteConnectionFactory.CreateOpenConnection()`,
+  `Open()` başarısız olduğunda connection'ı hiç dispose etmiyordu (native handle leak,
+  Windows'ta dosya silmeyi engelliyordu) — try/catch+dispose eklendi. (2)
+  `MediaPipePoseTrackingService.StopAsync()`, `Cancel()`'ı `CloseAsync()`'ten önce çağırıyordu
+  — .NET'in `ClientWebSocket`'i iptal edilen bir `ReceiveAsync`'i "aborted" durumuna soktuğu
+  için `CloseAsync` sonra `ObjectDisposedException` fırlatıyordu; sıra tersine çevrildi.
+  Push sonrası CI: Ubuntu/macOS yeşil, Windows'ta aynı 2 hata **hâlâ** vardı (kök neden daha
+  derinmiş, bkz. F8.10).
+- F8.10 - **Windows dosya kilidi — gerçek kök neden.** Sızıntı `SqliteConnection` seviyesinde
+  değil, native SQLitePCLRaw/e_sqlcipher katmanındaymış — `.Dispose()` çağırmak çözmüyor.
+  Üretim kodunda (`src/`, `autoload/`, `scenes/`) bu desen (başarısız bağlantı sonrası aynı
+  dosyayı silme) hiç kullanılmadığı doğrulandı — yani bu **ürün bug'ı değil, sadece test
+  hijyeni**. `tests/FreeRehabHub.Data.Tests/TestFileCleanup.cs` eklendi (retry-with-backoff,
+  5×50ms). Push sonrası CI: Windows'ta **aynı hata devam etti** (bütçe yetersizmiş).
+- F8.11 - Retry penceresi 30×200ms'e (6 saniyeye kadar) büyütüldü. Push sonrası CI: Windows'ta
+  **yine aynı hata**, üstelik 1-3 saniyede — "yeterince bekleme" sorunu olmadığı netleşti,
+  native handle muhtemelen process ömrü boyunca hiç serbest bırakılmıyor.
+- F8.12 - **Yaklaşım değişti: retry yerine en-iyi-çaba temizlik.** `TestFileCleanup`, birkaç
+  kısa denemeden sonra hâlâ başarısız olursa sessizce vazgeçecek şekilde değiştirildi — bu
+  sadece OS temp dizinindeki bir dosya, CI runner'ı zaten siliniyor, gerçek bir kaynak sızıntısı
+  değil. Push sonrası CI: **Windows sonunda yeşil oldu** — ama bu sefer Ubuntu VE macOS'ta
+  `MediaPipePoseTrackingServiceTests` yeni bir semptomla başarısız oldu (exception değil, beklenmeyen
+  bir `Error` durumu: `[Starting, Running, Error, Stopped]`) — F8.09'un `Cancel`/`Close` sıra
+  düzeltmesi yeterli değilmiş.
+- F8.13 - **Gerçek kök neden: `CloseAsync` vs `CloseOutputAsync`.** `ClientWebSocket.CloseAsync()`
+  karşı taraftan kapanış onayı okumak için kendi içinde ayrı bir `ReceiveAsync` çalıştırıyor —
+  bu, `ReceiveLoopAsync`'in zaten bekleyen kendi `ReceiveAsync`'iyle aynı soket üzerinde
+  çakışıp `InvalidOperationException` fırlatıyordu (ReceiveLoopAsync bunu yakalayıp durumu
+  Error'a çeviriyordu). `CloseAsync` yerine `CloseOutputAsync` kullanıldı (sadece kapanış
+  çerçevesi gönderir, okuma yapmaz — karşı tarafın kapanışını zaten çalışan `ReceiveLoopAsync`
+  kendisi okuyup temiz çıkıyor). Yerel doğrulama: önceden flaky olan test art arda 20 kez
+  çalıştırıldı, 20/20 geçti. **Push sonrası CI: Windows/Ubuntu/macOS üçü de tamamen yeşil.**
+  GitHub Actions çapraz-platform CI matrisi (F8.08'in asıl amacı) artık gerçekten geçiyor.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

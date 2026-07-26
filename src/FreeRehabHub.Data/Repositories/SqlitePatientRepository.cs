@@ -68,10 +68,10 @@ public sealed class SqlitePatientRepository : IPatientRepository
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    // TherapySessions/Prescriptions/ProgressRecords, PatientId üzerinden Patients'a FK ile
-    // bağlı (PRAGMA foreign_keys = ON) — hastayı silmeden önce bu ilişkili klinik kayıtların
-    // (ve onların kendi çocuk tablolarının: PrescriptionItems, ProgressRecordMetrics) hepsi
-    // tek transaction içinde silinmeli, yoksa FOREIGN KEY constraint failed hatası alınır.
+    // TherapySessions/Prescriptions/ProgressRecords/ConsentRecords, PatientId üzerinden
+    // Patients'a FK ile bağlı (PRAGMA foreign_keys = ON) — hastayı silmeden önce bu ilişkili
+    // kayıtların (ve onların kendi çocuk tablolarının: PrescriptionItems, ProgressRecordMetrics)
+    // hepsi tek transaction içinde silinmeli, yoksa FOREIGN KEY constraint failed hatası alınır.
     // AuditLogs kasıtlı olarak dokunulmuyor — RecordId polimorfik, gerçek bir FK'ye bağlı değil,
     // erişim izi (kim ne zaman sildi) veriyle birlikte silinmemeli (bkz. clinical-data-handling
     // skill § 2).
@@ -95,6 +95,8 @@ public sealed class SqlitePatientRepository : IPatientRepository
             "DELETE FROM Prescriptions WHERE PatientId = $patientId", patientIdText, cancellationToken);
         await ExecuteAsync(connection, transaction,
             "DELETE FROM TherapySessions WHERE PatientId = $patientId", patientIdText, cancellationToken);
+        await ExecuteAsync(connection, transaction,
+            "DELETE FROM ConsentRecords WHERE PatientId = $patientId", patientIdText, cancellationToken);
         await ExecuteAsync(connection, transaction,
             "DELETE FROM Patients WHERE Id = $patientId", patientIdText, cancellationToken);
 

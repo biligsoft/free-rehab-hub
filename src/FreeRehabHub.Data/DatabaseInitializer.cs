@@ -91,6 +91,16 @@ public sealed class DatabaseInitializer
             Salt TEXT NOT NULL,
             UpdatedAt TEXT NOT NULL
         );
+
+        -- PatientId doğal anahtar (primary key) — hasta başına tek bir rıza kaydı (geri çekme
+        -- yeni bir satır değil, WithdrawnAt'in bu kayıt üzerinde güncellenmesiyle olacak).
+        CREATE TABLE IF NOT EXISTS ConsentRecords (
+            PatientId TEXT PRIMARY KEY REFERENCES Patients(Id),
+            ConsentGivenByName TEXT NOT NULL,
+            IsGuardianConsent INTEGER NOT NULL,
+            ConsentedAt TEXT NOT NULL,
+            WithdrawnAt TEXT NULL
+        );
         """;
 
     private readonly SqliteConnectionFactory _connectionFactory;

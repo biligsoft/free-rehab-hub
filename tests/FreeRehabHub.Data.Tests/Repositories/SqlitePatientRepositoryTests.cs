@@ -91,6 +91,7 @@ public sealed class SqlitePatientRepositoryTests : IDisposable
         var sessionRepository = new SqliteTherapySessionRepository(connectionFactory);
         var prescriptionRepository = new SqlitePrescriptionRepository(connectionFactory);
         var progressRecordRepository = new SqliteProgressRecordRepository(connectionFactory);
+        var consentRecordRepository = new SqliteConsentRecordRepository(connectionFactory);
 
         var therapist = new Therapist
         {
@@ -132,12 +133,21 @@ public sealed class SqlitePatientRepositoryTests : IDisposable
             Metrics = new Dictionary<string, double> { ["completedReps"] = 10 }
         });
 
+        await consentRecordRepository.AddAsync(new ConsentRecord
+        {
+            PatientId = patient.Id,
+            ConsentGivenByName = "Veli Yıldız",
+            IsGuardianConsent = true,
+            ConsentedAt = DateTime.UtcNow
+        });
+
         await _repository.DeleteAsync(patient.Id);
 
         Assert.Null(await _repository.GetByIdAsync(patient.Id));
         Assert.Empty(await sessionRepository.GetByPatientIdAsync(patient.Id));
         Assert.Empty(await prescriptionRepository.GetHistoryByPatientIdAsync(patient.Id));
         Assert.Empty(await progressRecordRepository.GetHistoryByPatientIdAsync(patient.Id));
+        Assert.Null(await consentRecordRepository.GetByPatientIdAsync(patient.Id));
     }
 
     private static Patient NewPatient(string fullName)

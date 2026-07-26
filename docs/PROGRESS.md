@@ -1,12 +1,12 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.01
-- Son commit: F8.01 - Hasta silme cascade-delete bug fix: geçmişli hasta silme artık FK hatası
-  vermiyor
-- Sıradaki: test/güvenlik/KVKK taraması sürüyor — F8.01'de bulunan diğer iki bulgu henüz
-  ele alınmadı: (1) rıza kaydı (consent record) hiç yok, (2) SQLCipher parola/anahtar
-  yönetiminin "her açılışta elle gir" halinde mi kalacağı (OS keychain alternatifi) henüz
-  kullanıcıyla konuşulmadı
+- Son tamamlanan adım: F8.02
+- Son commit: F8.02 - ConsentRecord domain modeli ve IConsentRecordRepository sözleşmesi
+  eklendi
+- Sıradaki: rıza kaydı (consent record) özelliğine devam — DB şeması +
+  `SqliteConsentRecordRepository`. Sonra: `PatientFormPanel`'e zorunlu rıza alanı entegrasyonu.
+  Ayrıca hâlâ ele alınmadı: SQLCipher parola/anahtar yönetiminin "her açılışta elle gir"
+  halinde mi kalacağı (OS keychain alternatifi)
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -49,6 +49,21 @@
   41/41 Services.Tests, diğer tüm test projeleri yeşil. Xvfb+gerçek Godot ile gerçek UI'dan
   doğrulandı: geçmişli hasta "Sil" ile hatasız silindi, ilişkili kayıtların gerçekten gittiği
   teyit edildi.
+- Rıza kaydı (consent record) kapsam kararları (kullanıcıyla konuşuldu): (1) hasta
+  oluşturmada zorunlu — PatientFormPanel'in "Yeni Hasta" akışına eklenecek, rıza bilgisi
+  girilmeden hasta kaydedilemeyecek (en doğal nokta: sağlık verisi işlenmeye başlamadan önce
+  alınıyor); var olan hastalar için geriye dönük boş kalacak (bu ortamdaki test DB'si için
+  önemsiz, gerçek kullanımda ayrıca ele alınmalı). (2) Kapsam minimal tutulacak: kim verdi
+  (hasta kendisi veya veli/vasi adı) + ne zaman — "veri saklama"/"rapor paylaşımı" gibi ayrı
+  amaç onayları veya versiyonlu rıza metni gibi zengin bir KVKK uyum programı bu projenin
+  ölçeğine göre orantısız büyük, yapılmayacak.
+- F8.02 - **`ConsentRecord` domain modeli + `IConsentRecordRepository` sözleşmesi.**
+  `Domain`'e eklendi — `KioskPin`(F7.01) ile aynı desen, bilinçli olarak dar. `ConsentRecord`:
+  `PatientId`, `ConsentGivenByName`, `IsGuardianConsent`, `ConsentedAt`, `WithdrawnAt`
+  (nullable — geri çekme alanı modelde şimdiden var, ama geri çekme UI/repository metodu bu
+  adımda yok, ayrı bir sonraki adımda eklenecek). `IConsentRecordRepository`:
+  `GetByPatientIdAsync`, `AddAsync` — sadece hasta oluşturmada tek seferlik kayıt için gereken
+  iki metot. DB şeması, SQLite implementasyonu, `PatientFormPanel` entegrasyonu bu adımda yok.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

@@ -69,6 +69,7 @@ Elle bir registry dosyasına ekleme **yapma**. `IModuleRegistry.GetAvailableModu
 ## 7. PR öncesi kontrol listesi
 
 - [ ] `manifest.json` iki dilde de dolu
+- [ ] `manifest.json` ↔ C# `Manifest` içeriği birebir aynı — yeni modül, tutarlılık testine eklendi (bkz. `testing-approach` skill § 4)
 - [ ] Scoring mantığı Godot-bağımsız bir sınıfta ve test edilmiş
 - [ ] `RequiredCapabilities` doğru beyan edilmiş (özellikle kamera)
 - [ ] `content-packs/`'e telifli içerik commit edilmemiş

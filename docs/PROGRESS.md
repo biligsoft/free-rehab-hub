@@ -2,10 +2,16 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26'da kullanıcıyla
   konuşulup tamamlanmış sayıldı). Sonrasında kalan açık riskler kullanıcıyla gözden geçirilip
   önceliklendirildi (bkz. § Açık riskler); şu an bunlardan üzerinde çalışılıyor.
-- Son tamamlanan adım: F8.23
+- Son tamamlanan adım: F8.24
 - Son commit: F8.23 - TTS dogrulamasini Windows/macOS'a genisletildi: tts-check job'u 3
   platform matrix'i oldu (push sonrası CI: 10/10 job yeşil — Windows/macOS'ta ilk denemede
   sorunsuz)
+- **Modül manifest.json ↔ C# Manifest tutarlılık testi eklendi (F8.24, henüz commit
+  edilmedi).** Açık risk listesindeki küçük maddelerden biri ele alındı: Assessment modülleri
+  için xUnit testi, Exercise modülleri için (Node-türevi oldukları için) yeni bir sahne testi
+  — birlikte 3 gerçek modülün tamamını kapsıyor. Her iki test de bilerek bozulan bir alanla
+  (version, difficultyRange.max) doğrulanıp doğru şekilde başarısız olduğu, sonra düzeltilip
+  temiz duruma döndüğü teyit edildi.
 - **Açık risk #1 (Assessment modülü oynatma ekranı) kapatıldı.** F5.10'dan beri bilinçli
   olarak açık bırakılan boşluk (`FormRenderer`'ı barındıran bir host ekranı yoktu) F8.18'de
   kapatıldı.
@@ -474,6 +480,28 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   doğrulama seviyesinde) — CI runner'larında fiilen Türkçe ses paketi olup olmadığı hâlâ
   bilinmiyor (job log'ları admin yetkisi gerektiriyor) ama bu önemli değil, çünkü zaten
   önemli olan ("Türkçe ses yokken bile çökmüyor mu") doğrulandı.
+- F8.24 - **Modül manifest.json ↔ C# Manifest tutarlılık testi.** Açık risk listesinden
+  ("İkisi elle senkron tutulmalı; ileride bir tutarlılık testi eklenebilir ama henüz yok")
+  ele alındı. `ModuleRegistry.GetAvailableModules()` manifest.json'ları JSON'dan parse ediyor;
+  her modülün C# sınıfındaki hardcoded `Manifest` property'si ayrı, elle yazılmış bir kopya —
+  ikisi arasında hiçbir otomatik kontrol yoktu. İki parçada eklendi (modül türüne göre
+  farklı test aracı gerektiği için, bkz. `testing-approach` skill'i):
+  - **Assessment modülleri (Godot-bağımsız):** `tests/FreeRehabHub.Modules.Contracts.Tests/
+    ManifestConsistencyTests.cs` — mevcut `ModuleRegistryTests.cs`'nin zaten kurduğu
+    `TestModulesRoot` fixture'ını (general-functional-checkin'in gerçek manifest.json'unun bir
+    kopyası) yeniden kullanıyor, `new GeneralFunctionalCheckinAssessment().Manifest` ile
+    karşılaştırıyor. Karşılaştırma mantığı `ManifestAssert.Equal()` yardımcı sınıfında (alan
+    alan `Assert.Equal` — `ModuleManifest`/`LocalizedText`/`DifficultyRange` `Equals`
+    override etmediği için xUnit'in `Assert.Equal`'ı doğrudan kullanılamıyor).
+  - **Exercise modülleri (Node-türevi, target-tap + arm-raise):** xUnit'te kurulamadıkları
+    için (bkz. testing-approach § 2, "Controller'ı xUnit ile test etmeye çalıştığını fark
+    edersen bu bir uyarı işareti") yeni bir sahne testi:
+    `tests/scene-tests/ModuleManifestConsistencySceneTest.cs` — `ModuleRegistryAutoload.
+    Registry.GetAvailableModules()` (gerçek `modules/` klasörü) ile `new TargetTapController()`/
+    `new ArmRaiseController()`'ın `.Manifest`'ini karşılaştırıyor.
+  Her iki test de bilerek bozulup (manifest.json'da `version`/`difficultyRange.max` değiştirilip)
+  doğru şekilde `[FAIL]`/`[BAŞARISIZ]` verdiği, sonra düzeltilip temiz duruma (xUnit 16/16,
+  sahne testleri 3/3) döndüğü doğrulandı.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -722,7 +750,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - ~~GUT (Godot Unit Test) hiç kurulmadı~~ — **F8.19'da çözüldü.** GUT sadece GDScript içindir (README'sinde C# hiç geçmiyor), bu proje tamamen C# olduğu için kullanılamayacağı doğrulandı. Bunun yerine `tests/scene-tests/` altında özel bir C# sahne-test harness'ı yazıldı (`ISceneTest`/`SceneAssert`/`SceneTestRunner`, kalıcı env-var-gated autoload) ve `.github/workflows/ci.yml`'e `scene-tests` job'u (şimdilik sadece `ubuntu-latest`) eklendi. Detay: `testing-approach` skill'i § 3a, PROGRESS.md F8.19.
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
 - `SessionContext` F2.11'de, `ModuleRegistryAutoload` F4.03'te eklendi.
-- Modül `manifest.json` dosyaları hâlâ her modülün C# sınıfındaki hardcoded `ModuleManifest`'le aynı içeriği taşıyor (bilinçli ikilik — bkz. F4.02: `manifest.json` hafif keşif/katalog için, C# `Manifest` çalışma zamanında otorite). İkisi elle senkron tutulmalı; ileride bir tutarlılık testi (manifest.json ↔ C# Manifest) eklenebilir ama henüz yok.
+- ~~Modül `manifest.json` ↔ C# `Manifest` tutarlılık testi yok~~ — **F8.24'te eklendi.** İkisinin elle senkron tutulması gereken bilinçli ikiliği (bkz. F4.02) hâlâ geçerli, ama artık bir divergence sessizce fark edilmeden kalamaz: `tests/FreeRehabHub.Modules.Contracts.Tests/ManifestConsistencyTests.cs` (Assessment modülleri, Godot-bağımsız, xUnit) ve `tests/scene-tests/ModuleManifestConsistencySceneTest.cs` (Exercise modülleri, Node-türevi, sahne testi) birlikte 3 gerçek modülün tamamını kapsıyor.
 - **Exercise modülleri kendi `.csproj`'una sahip DEĞİL** (Godot 4'ün "script sadece ana derlemede bulunabilir" motor kısıtlaması yüzünden, bkz. F4.14 ve `module-development` skill § 3a) — yeni bir Exercise modülü eklerken bu farkı unutma: sadece `*Controller.cs`/`Scoring/*.cs` isimlendirme kuralına uy, `.csproj` ekleme. Faz 5'in kamera-tabanlı modülleri de bu kurala tabi olacak.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
 - SQLCipher şifreleme anahtarının kaynağı kullanıcıyla konuşuldu (Faz 8, F8.05 sonrası) — **şimdilik elle giriş kalıyor** (LockScreen'de her açılışta soruluyor, hiçbir yere kaydedilmiyor, F2.12'nin kararı korundu). OS keychain alternatifine Faz 8'in sonunda, paketleme aşamasına yakın tekrar bakılacak — o zamana kadar `SqliteConnectionFactory` anahtarı parametre olarak almaya devam edecek (bkz. `clinical-data-handling` skill).

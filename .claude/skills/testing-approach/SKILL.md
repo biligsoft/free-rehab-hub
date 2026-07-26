@@ -60,6 +60,7 @@ Her modülün kendi scoring testleri modül klasörünün içinde kalır (`modul
 - Her modül scoring sınıfı: en az bir "normal" ve bir "uç durum" testi.
 - `Data` katmanı repository'leri: gerçek SQLite (in-memory veya geçici dosya) üzerinden entegrasyon testi — mock DB kullanma, SQLCipher davranışı mock ile yakalanamaz.
 - `IExerciseModule.Completed` event'inin tam bir kez tetiklendiği en az bir sahne-test senaryosuyla doğrulanmalı (çift tetikleme veya hiç tetiklenmeme, ilerleme kaydının bozulmasına yol açar).
+- Yeni bir modül eklerken `manifest.json` ↔ C# `Manifest` tutarlılık kontrolüne yeni modülü de dahil et (bkz. `tests/FreeRehabHub.Modules.Contracts.Tests/ManifestConsistencyTests.cs` Assessment için, `tests/scene-tests/ModuleManifestConsistencySceneTest.cs` Exercise için) — ikisi elle senkron tutulduğu için (bkz. `module-development` skill'i), yeni modül bu kontrole eklenmezse divergence sessizce fark edilmez.
 
 ## 5. Ne test edilmez
 

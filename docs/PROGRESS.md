@@ -1,13 +1,9 @@
 ## Güncel durum
 - Faz: 8 (Sertleştirme, Paketleme, Katkıcı Onboarding) — devam ediyor
-- Son tamamlanan adım: F8.05
-- Son commit: F8.05 - PatientFormPanel'e hasta oluşturmada zorunlu rıza kaydı entegrasyonu
-  eklendi
-- Sıradaki: rıza kaydı özelliği tamamlandı (F8.02-05). Test/güvenlik/KVKK taraması bulguları
-  kapandı: SQLCipher parola/anahtar yönetimi kararı kullanıcıyla konuşuldu — **şimdilik elle
-  giriş kalıyor** (OS keychain'e Faz 8'in sonunda, paketleme aşamasına yakın tekrar bakılacak).
-  Sırada: Faz 8'in diğer iki alt özelliği (CONTRIBUTING.md, installer+paketleme) henüz
-  başlanmadı.
+- Son tamamlanan adım: F8.06
+- Son commit: F8.06 - MIT LICENSE ve CONTRIBUTING.md eklendi
+- Sıradaki: CONTRIBUTING.md tamamlandı. Sırada Faz 8'in son alt özelliği: installer +
+  paketleme (MediaPipe binary gömülü) — henüz başlanmadı.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -96,6 +92,24 @@ ne zaman) bir rıza kaydı — CLAUDE.md'nin "Faz 2'de temel atılır" dediği a
 KVKK boşluğunu kapatıyor (bkz. F8.01'in tarama notu). Geri çekme (`WithdrawnAt` alanı modelde
 var ama UI/repository güncelleme metodu yok) ve mevcut/geçmiş hastalar için geriye dönük kayıt
 girme, bilinçli olarak bu kapsamın dışında bırakıldı — ayrı bir iş olarak ele alınabilir.
+
+SQLCipher parola/anahtar yönetimi kararı kullanıcıyla konuşuldu: **şimdilik elle giriş kalıyor**
+(F2.12'nin kararı korundu), OS keychain alternatifine Faz 8'in sonunda, paketleme aşamasına
+yakın tekrar bakılacak.
+
+- F8.06 - **`LICENSE` (MIT) + `CONTRIBUTING.md`.** Lisans kararı kullanıcıyla konuşuldu — proje
+  MIT ile yayınlanacak (F6.05'te PdfSharp'ın "lisans netliği" gerekçesiyle seçilmesiyle tutarlı).
+  `CONTRIBUTING.md`: proje tanıtımı+lisans notu, geliştirme ortamı kurulumu, mimari özet +
+  `CLAUDE.md`/skill dosyalarına yönlendirme tablosu (tekrar yazmak yerine DRY), en yaygın katkı
+  yolu olarak modül ekleme rehberi (`templates/module-starter/`), içerik telif politikası,
+  klinik veri/güvenlik kuralları özeti, test çalıştırma, kod stili özeti, PR süreci. **Bilinçli
+  karar:** dış katkıcılar için içsel `F<faz>.<adım>` commit formatı zorunlu tutulmadı (bu
+  projenin kendi Claude-Code-destekli sürecine özgü bir kayıt yöntemi) — standart açıklayıcı
+  commit + PR açıklaması istendi. **Yol boyunca bulunan boşluk:** `CLAUDE.md`/`testing-approach`
+  skill'i GUT'u (Godot Unit Test) sahne/controller testleri için öngörüyor ama `tests/gut/` hiç
+  oluşturulmadı, CI hiç Godot-seviyeli test çalıştırmıyor — şimdiye kadarki tüm sahne
+  doğrulamaları geçici Xvfb script'leriyle yapıldı (bkz. Açık riskler). CONTRIBUTING.md bunu
+  olduğu gibi (GUT kurulu değil, elle test edin) yazdı, kurulumuna girilmedi.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -341,6 +355,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - F1.06 - i18n/tema autoload iskeleti (`LocalizationAutoload`, `ThemeManager`, TR/EN CSV, tema `.tres` iskeletleri); ana projede gerçek bir yapısal build hatası (obj/ glob çakışması) bulunup düzeltildi
 
 ## Açık riskler / bir sonraki fazda hatırlanacaklar
+- **GUT (Godot Unit Test) hiç kurulmadı** (F8.06'da fark edildi) — `CLAUDE.md` ve `testing-approach` skill'i sahne/controller testleri için GUT öngörüyor, `tests/gut/` klasör planı var, ama gerçekte hiç oluşturulmadı; CI (`.github/workflows/ci.yml`) sadece xUnit katmanlarını çalıştırıyor, hiç Godot-seviyeli test adımı yok. Şimdiye kadarki tüm sahne/UI doğrulamaları bu oturumlarda geçici, commit edilmeyen Xvfb autopilot script'leriyle yapıldı (bkz. bu dosyadaki F0.07'den beri tekrarlanan doğrulama deseni). Kalıcı bir GUT kurulumu + CI adımı henüz planlanmadı, ayrı bir faz-bağımsız iş olarak ele alınabilir.
 - SQLCipher paket kombinasyonu Windows/macOS'ta henüz test edilmedi (Faz 2 bu platformlarda doğrulamadan kapandı — en geç Faz 8'de (paketleme) yapılmalı).
 - `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
 - `SessionContext` F2.11'de, `ModuleRegistryAutoload` F4.03'te eklendi.

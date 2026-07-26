@@ -3,10 +3,11 @@
 - Son tamamlanan adım: F8.05
 - Son commit: F8.05 - PatientFormPanel'e hasta oluşturmada zorunlu rıza kaydı entegrasyonu
   eklendi
-- Sıradaki: rıza kaydı özelliği tamamlandı (F8.02-05). Test/güvenlik/KVKK taramasından kalan
-  tek madde: SQLCipher parola/anahtar yönetiminin "her açılışta elle gir" halinde mi kalacağı
-  (OS keychain alternatifi) — henüz kullanıcıyla konuşulmadı. Sonra: Faz 8'in diğer iki alt
-  özelliği (CONTRIBUTING.md, installer+paketleme) henüz başlanmadı.
+- Sıradaki: rıza kaydı özelliği tamamlandı (F8.02-05). Test/güvenlik/KVKK taraması bulguları
+  kapandı: SQLCipher parola/anahtar yönetimi kararı kullanıcıyla konuşuldu — **şimdilik elle
+  giriş kalıyor** (OS keychain'e Faz 8'in sonunda, paketleme aşamasına yakın tekrar bakılacak).
+  Sırada: Faz 8'in diğer iki alt özelliği (CONTRIBUTING.md, installer+paketleme) henüz
+  başlanmadı.
 - Faz-bağımsız: F0.07'de tüm ekranlar gerçek bir temayla (renk/buton/kart) ve
   responsive (anchor tabanlı, ortalanmış kart) yerleşimle güncellendi —
   ayrıntı ve önce/sonra karşılaştırması için bkz. UI inceleme artifact'ı
@@ -346,7 +347,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - Modül `manifest.json` dosyaları hâlâ her modülün C# sınıfındaki hardcoded `ModuleManifest`'le aynı içeriği taşıyor (bilinçli ikilik — bkz. F4.02: `manifest.json` hafif keşif/katalog için, C# `Manifest` çalışma zamanında otorite). İkisi elle senkron tutulmalı; ileride bir tutarlılık testi (manifest.json ↔ C# Manifest) eklenebilir ama henüz yok.
 - **Exercise modülleri kendi `.csproj`'una sahip DEĞİL** (Godot 4'ün "script sadece ana derlemede bulunabilir" motor kısıtlaması yüzünden, bkz. F4.14 ve `module-development` skill § 3a) — yeni bir Exercise modülü eklerken bu farkı unutma: sadece `*Controller.cs`/`Scoring/*.cs` isimlendirme kuralına uy, `.csproj` ekleme. Faz 5'in kamera-tabanlı modülleri de bu kurala tabi olacak.
 - Godot editörünün ürettiği `.uid`/`project.godot` değişiklikleri, ben fark etmeden oturumlar arasında birikebiliyor (editör bu ortamın dışında, kullanıcının kendi makinesinde açılıyor) — her adımda `git status` ile kontrol etmeye devam et.
-- SQLCipher şifreleme anahtarının nereden geleceği (OS keychain / ilk kurulum parolası) hâlâ çözülmedi — `SqliteConnectionFactory` şu an anahtarı parametre olarak alıyor, kaynağı belirlenmedi (bkz. `clinical-data-handling` skill).
+- SQLCipher şifreleme anahtarının kaynağı kullanıcıyla konuşuldu (Faz 8, F8.05 sonrası) — **şimdilik elle giriş kalıyor** (LockScreen'de her açılışta soruluyor, hiçbir yere kaydedilmiyor, F2.12'nin kararı korundu). OS keychain alternatifine Faz 8'in sonunda, paketleme aşamasına yakın tekrar bakılacak — o zamana kadar `SqliteConnectionFactory` anahtarı parametre olarak almaya devam edecek (bkz. `clinical-data-handling` skill).
 - `assets/.gdignore` mevcut — bir modül `assets/` altındaki ikon/2D/3D varlıklarından birini gerçekten kullanmaya başladığında bu dosya kaldırılmalı (veya sadece kullanılan alt klasör için daraltılmalı), yoksa Godot editörü o varlığı içe aktarmaz.
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
 - **Faz 5'ten kalan, henüz bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). Bu geliştirme makinesinde hem kamera erişimi (`video` grubu izni eksik) hem mediapipe'ın kendisi (Fedora araç zinciri uyumsuzluğu, Docker'da doğrulandı) engelli — kullanıcının kendi makinesinde `video` grubu düzeltmesi + `services/mediapipe-service/.venv` kurulumu (`pip install -r requirements.txt`, `python download_model.py`) sonrası gerçek kamerayla test edilmeli.

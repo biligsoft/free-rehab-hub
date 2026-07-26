@@ -9,7 +9,8 @@ script = ExtResource("1")
 _titleLabelPath = NodePath("Card/Content/TitleLabel")
 _errorLabelPath = NodePath("Card/Content/ErrorLabel")
 _moduleItemListPath = NodePath("Card/Content/ModuleItemList")
-_startButtonPath = NodePath("Card/Content/StartButton")
+_listenButtonPath = NodePath("Card/Content/ModuleActions/ListenButton")
+_startButtonPath = NodePath("Card/Content/ModuleActions/StartButton")
 _therapistPinInputPath = NodePath("Card/Content/TherapistExit/TherapistPinInput")
 _therapistExitButtonPath = NodePath("Card/Content/TherapistExit/TherapistExitButton")
 _exitMessageLabelPath = NodePath("Card/Content/ExitMessageLabel")
@@ -43,8 +44,15 @@ autowrap_mode = 2
 [node name="ModuleItemList" type="ItemList" parent="Card/Content"]
 custom_minimum_size = Vector2(0, 260)
 
-[node name="StartButton" type="Button" parent="Card/Content"]
+[node name="ModuleActions" type="HBoxContainer" parent="Card/Content"]
+theme_override_constants/separation = 10
+
+[node name="ListenButton" type="Button" parent="Card/Content/ModuleActions"]
+text = "Dinle"
+
+[node name="StartButton" type="Button" parent="Card/Content/ModuleActions"]
 theme_type_variation = &"PrimaryButton"
+size_flags_horizontal = 3
 text = "Başlat"
 
 [node name="Separator" type="HSeparator" parent="Card/Content"]

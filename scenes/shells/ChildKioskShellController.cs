@@ -17,6 +17,7 @@ public partial class ChildKioskShellController : Control
     [Export] private NodePath _titleLabelPath = null!;
     [Export] private NodePath _errorLabelPath = null!;
     [Export] private NodePath _moduleItemListPath = null!;
+    [Export] private NodePath _listenButtonPath = null!;
     [Export] private NodePath _startButtonPath = null!;
     [Export] private NodePath _therapistPinInputPath = null!;
     [Export] private NodePath _therapistExitButtonPath = null!;
@@ -25,6 +26,7 @@ public partial class ChildKioskShellController : Control
     private Label _titleLabel = null!;
     private Label _errorLabel = null!;
     private ItemList _moduleItemList = null!;
+    private Button _listenButton = null!;
     private Button _startButton = null!;
     private LineEdit _therapistPinInput = null!;
     private Button _therapistExitButton = null!;
@@ -33,6 +35,7 @@ public partial class ChildKioskShellController : Control
     private AppServices _appServices = null!;
     private ModuleRegistryAutoload _moduleRegistryAutoload = null!;
     private LocalizationAutoload _localization = null!;
+    private TtsAutoload _tts = null!;
 
     private IReadOnlyList<ModuleManifest> _exerciseModules = Array.Empty<ModuleManifest>();
 
@@ -41,6 +44,7 @@ public partial class ChildKioskShellController : Control
         _titleLabel = GetNode<Label>(_titleLabelPath);
         _errorLabel = GetNode<Label>(_errorLabelPath);
         _moduleItemList = GetNode<ItemList>(_moduleItemListPath);
+        _listenButton = GetNode<Button>(_listenButtonPath);
         _startButton = GetNode<Button>(_startButtonPath);
         _therapistPinInput = GetNode<LineEdit>(_therapistPinInputPath);
         _therapistExitButton = GetNode<Button>(_therapistExitButtonPath);
@@ -49,11 +53,18 @@ public partial class ChildKioskShellController : Control
         _appServices = GetNode<AppServices>("/root/AppServices");
         _moduleRegistryAutoload = GetNode<ModuleRegistryAutoload>("/root/ModuleRegistryAutoload");
         _localization = GetNode<LocalizationAutoload>("/root/LocalizationAutoload");
+        _tts = GetNode<TtsAutoload>("/root/TtsAutoload");
 
         _errorLabel.Text = string.Empty;
         _exitMessageLabel.Text = string.Empty;
         _startButton.Disabled = true;
-        _moduleItemList.ItemSelected += _ => _startButton.Disabled = false;
+        _listenButton.Disabled = true;
+        _moduleItemList.ItemSelected += _ =>
+        {
+            _startButton.Disabled = false;
+            _listenButton.Disabled = false;
+        };
+        _listenButton.Pressed += OnListenPressed;
         _startButton.Pressed += OnStartPressed;
         _therapistExitButton.Pressed += OnTherapistExitPressed;
         _therapistPinInput.TextSubmitted += _ => OnTherapistExitPressed();
@@ -84,6 +95,17 @@ public partial class ChildKioskShellController : Control
         {
             _moduleItemList.AddItem(Localize(manifest.DisplayName));
         }
+    }
+
+    private void OnListenPressed()
+    {
+        var selectedIndices = _moduleItemList.GetSelectedItems();
+        if (selectedIndices.Length == 0)
+        {
+            return;
+        }
+
+        _tts.Speak(Localize(_exerciseModules[selectedIndices[0]].DisplayName));
     }
 
     private void OnStartPressed()

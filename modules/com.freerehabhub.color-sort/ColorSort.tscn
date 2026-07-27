@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/com.freerehabhub.color-sort/ColorSortController.cs" id="1"]
+
+[node name="ColorSort" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_roundLabelPath = NodePath("Layout/RoundLabel")
+_targetDisplayPath = NodePath("Layout/TargetDisplay")
+_redBinButtonPath = NodePath("Layout/BinsContainer/RedBinButton")
+_blueBinButtonPath = NodePath("Layout/BinsContainer/BlueBinButton")
+_greenBinButtonPath = NodePath("Layout/BinsContainer/GreenBinButton")
+_yellowBinButtonPath = NodePath("Layout/BinsContainer/YellowBinButton")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 14
+
+[node name="RoundLabel" type="Label" parent="Layout"]
+theme_type_variation = &"TitleLabel"
+text = "Tur: 0 / 8"
+horizontal_alignment = 1
+
+[node name="TargetDisplay" type="ColorRect" parent="Layout"]
+custom_minimum_size = Vector2(150, 150)
+size_flags_horizontal = 4
+color = Color(1, 1, 1, 1)
+
+[node name="BinsContainer" type="HBoxContainer" parent="Layout"]
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="RedBinButton" type="Button" parent="Layout/BinsContainer"]
+theme_type_variation = &"PrimaryButton"
+text = "Kırmızı"
+
+[node name="BlueBinButton" type="Button" parent="Layout/BinsContainer"]
+theme_type_variation = &"PrimaryButton"
+text = "Mavi"
+
+[node name="GreenBinButton" type="Button" parent="Layout/BinsContainer"]
+theme_type_variation = &"PrimaryButton"
+text = "Yeşil"
+
+[node name="YellowBinButton" type="Button" parent="Layout/BinsContainer"]
+theme_type_variation = &"PrimaryButton"
+text = "Sarı"

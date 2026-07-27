@@ -2,8 +2,11 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.32 (kod değişikliği yok — teşhis + docs güncellemesi)
-- Son commit: F8.31 - ProgressRecord.SessionId gercek TherapySession kaydina baglandi (FK)
+- Son tamamlanan adım: F8.33
+- Son commit: F8.32 - Kamera/PipeWire riskinin gercek kok nedeni bulundu (motion_bridge Docker container'i)
+- F8.33'te `egzersiz.md`/`oyunlar.md` taslaklarından biri ("Renk Kutusu") gerçek bir
+  `com.freerehabhub.color-sort` Exercise modülüne çevrildi — bkz. § Faz 8 sonrası. Özel Eğitim
+  disiplininde ilk gerçek modül. Sıradaki: kullanıcıyla henüz konuşulmadı.
 - F8.32'de kamera/PipeWire riskinin **gerçek** kök nedeni bulundu: F8.22'nin teşhisi (PipeWire
   monitor.v4l2 çift-yönetimi) yanlışmış — asıl engel kullanıcının kendi kurduğu, projeyle
   ilgisiz bir Docker container'ı (`motion_bridge`, `/dev/video0`'ı doğrudan mount edip tekelen
@@ -649,6 +652,38 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   `motion_bridge`'i durdurup (`docker stop`, `unless-stopped` yüzünden reboot dahil kendiliğinden
   geri gelmez) kamerayı gerçekten serbest bırakabilir, bu FreeRehabHub'ın kod tabanını hiç
   ilgilendirmiyor.
+- F8.33 - **Yeni modül: `com.freerehabhub.color-sort` (Renk Kutusu) — Özel Eğitim disiplininde
+  ilk gerçek modül.** Kullanıcı isteğiyle önce `egzersiz.md` (5 disiplini kapsayan egzersiz
+  taslakları) ve `oyunlar.md` (bunlardan bir kısmını gerçek `IExerciseModule` oyunlarına
+  dönüştüren 9 tasarım taslağı, internetten araştırılıp özgün yazıldı) hazırlandı; kullanıcı
+  bunlardan "Renk Kutusu"nu (kamerasız, sürükle-bırak yerine tıklama tabanlı sadeleştirilmiş
+  sınıflandırma/tepki hızı oyunu) gerçek modüle çevirmeyi seçti. `module-development` skill'indeki
+  adımlar izlendi: `templates/module-starter/exercise/` kopyalandı,
+  `modules/com.freerehabhub.color-sort/` altına taşındı — `manifest.json` (TR+EN, disciplines:
+  `specialEducation`+`occupationalTherapy`, `metricLabels` F8.28 deseniyle baştan dolu),
+  `ColorSortController.cs` (8 tur, her turda rastgele bir hedef renk beliriyor, 4 renkli kutu
+  butonundan doğrusuna tıklanıyor — `TargetTapController`'ın tur/timer desenine benzer ama zaman
+  aşımı yok, sadece doğru/yanlış), Godot-bağımsız `Scoring/ColorSortScorer.cs`
+  (`TargetTapScorer`'ın accuracy+speed formülüyle birebir aynı desen, ayrı test edilebilir).
+  **Yol boyunca bulunan gerçek bug (kod incelemesiyle, yazılırken yakalandı):** ilk taslakta
+  buton `Pressed` event'ine lambda ifadeleri (`() => OnBinPressed(Colors.Red)`) ile abone
+  olunmuştu — `Dispose()`'ta aynı şekilde yeni bir lambda ile `-=` çağırmak hiçbir şeyi
+  gerçekten abonelikten çıkarmaz (her lambda ayrı bir delegate nesnesi), bu yüzden dört ayrı
+  adlandırılmış handler metoduna (`OnRedBinPressed` vb.) çevrildi — `TargetTapController`'daki
+  `OnTargetPressed` deseniyle tutarlı. **Testler:** `Tests/ColorSortScorerTests.cs` (5 senaryo,
+  `TargetTapScorerTests`'in aynısı — tam isabet, tam kaçırma, orta-aralık, aşırı-yavaş-yanıt,
+  sıfır-tur), `FreeRehabHub.sln`'e `dotnet sln add` ile eklendi.
+  `tests/scene-tests/ModuleManifestConsistencySceneTest.cs`'e yeni modül eklendi (manifest.json
+  ↔ C# Manifest tutarlılığı, module-development skill § 7 kontrol listesi gereği). Yeni
+  `tests/scene-tests/ColorSortSceneTest.cs`: gerçek UI'da modül kütüphanesinden seçip
+  `ModuleHost`'a geçiyor, `TargetDisplay`'in gerçek anlık rengini okuyup 6 doğru + 2 kasıtlı
+  yanlış buton tıklaması yapıyor, `ModuleResult.Metrics`'in (`correctCount=6`,
+  `incorrectCount=2`) beklenenle birebir eştiğini VE `Completed`'in tam bir kez tetiklendiğini
+  (çift `ProgressRecord` OLMADIĞINI, tam 1 kayıt olduğunu) doğruluyor. Doğrulama: `dotnet build`
+  temiz, `dotnet test` 141/141 yeşil (yeni 5 `ColorSort.Tests` dahil), Xvfb+gerçek Godot sahne
+  testleri 6/6 geçti (yeni `ColorSortSceneTest` ilk denemede geçti). Ekran görüntüsüyle görsel
+  doğrulama bu adımda yapılmadı — sahne testi zaten gerçek node ağacı üzerinden etkileşiyor,
+  istenirse ayrıca eklenebilir.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

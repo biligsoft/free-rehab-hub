@@ -1,0 +1,22 @@
+{
+  "id": "com.freerehabhub.color-sort",
+  "version": "1.0.0",
+  "kind": "exercise",
+  "displayName": { "tr": "Renk Kutusu", "en": "Color Sort" },
+  "description": {
+    "tr": "Ekranda beliren rengi doğru kutuya tıklayarak eşleştiren, kamera gerektirmeyen bir sınıflandırma ve tepki hızı egzersizi.",
+    "en": "A camera-free sorting and reaction-time exercise that matches the color shown on screen to the correct bin."
+  },
+  "disciplines": ["specialEducation", "occupationalTherapy"],
+  "difficultyRange": { "min": 1, "max": 1 },
+  "requiredCapabilities": [],
+  "minAppVersion": "0.1.0",
+  "entryPointType": "FreeRehabHub.Modules.ColorSort.ColorSortController",
+  "scenePath": "res://modules/com.freerehabhub.color-sort/ColorSort.tscn",
+  "metricLabels": {
+    "totalRounds": { "tr": "Toplam Tur", "en": "Total Rounds" },
+    "correctCount": { "tr": "Doğru Sayısı", "en": "Correct Count" },
+    "incorrectCount": { "tr": "Yanlış Sayısı", "en": "Incorrect Count" },
+    "averageResponseTimeSeconds": { "tr": "Ortalama Yanıt Süresi (sn)", "en": "Average Response Time (s)" }
+  }
+}

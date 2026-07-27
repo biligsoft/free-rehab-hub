@@ -3,8 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using FreeRehabHub.App.Autoload;
 using FreeRehabHub.Modules.ArmRaise;
+using FreeRehabHub.Modules.BalloonPop;
 using FreeRehabHub.Modules.ColorSort;
 using FreeRehabHub.Modules.Contracts;
+using FreeRehabHub.Modules.MemoryMatch;
 using FreeRehabHub.Modules.TargetTap;
 using Godot;
 
@@ -28,6 +30,8 @@ public sealed class ModuleManifestConsistencySceneTest : ISceneTest
         AssertMatches(manifestsFromJson, new TargetTapController().Manifest);
         AssertMatches(manifestsFromJson, new ArmRaiseController().Manifest);
         AssertMatches(manifestsFromJson, new ColorSortController().Manifest);
+        AssertMatches(manifestsFromJson, new BalloonPopController().Manifest);
+        AssertMatches(manifestsFromJson, new MemoryMatchController().Manifest);
 
         return Task.CompletedTask;
     }

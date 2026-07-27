@@ -4,10 +4,12 @@
 oyunlarına dönüştürmek için tasarım taslakları. Bu dosya **kod değil** — henüz hiçbir modül
 implementasyonu yazılmadı, `module-development` skill'indeki adımlara göre (şablon kopyala →
 manifest doldur → Controller+Scoring yaz → test yaz) gerçek modüle çevrilmeden önce fikirlerin
-gözden geçirilmesi için hazırlandı. Mevcut 3 gerçek Exercise modülü (`arm-raise`: kamera-tabanlı,
-`target-tap`/`color-sort`: kamerasız) ile aynı kategorilere ayrılıyor; bilişsel egzersiz oyunları
-için ayrı bir üçüncü bölüm eklendi (bkz. aşağıda) — bunlar da kamerasız ama farklı bir klinik
-hedefi (bellek/dikkat/yürütücü işlevler) var, bu yüzden ayrı gruplandı.
+gözden geçirilmesi için hazırlandı. Mevcut 5 gerçek Exercise modülü (`arm-raise`/`balloon-pop`:
+kamera-tabanlı, `target-tap`/`color-sort`/`memory-match`: kamerasız) ile aynı kategorilere
+ayrılıyor; bilişsel egzersiz oyunları için ayrı bir üçüncü bölüm eklendi (bkz. aşağıda) — bunlar
+da kamerasız ama farklı bir klinik hedefi (bellek/dikkat/yürütücü işlevler) var, bu yüzden ayrı
+gruplandı. **Gerçek modüle çevrilenler** (F8.33/F8.35) her kategoriden birer örnek: "Renk
+Kutusu" → `color-sort`, "Balon Patlat" → `balloon-pop`, "Hafıza Kartları" → `memory-match`.
 
 Her tasarım şu alanları taşıyor (gerçek `ModuleManifest`'e kolay çevrilsin diye):
 `id` (taslak) / `displayName` (TR-EN) / `description` (TR-EN) / `disciplines` / `requiredCapabilities`
@@ -23,6 +25,11 @@ kendi `ModuleContext`/`ModuleResult`/`IPoseAwareModule` sözleşmesine göre öz
 ## Kamera Tabanlı Oyunlar (`IPoseAwareModule`, MediaPipe pose landmark gerektirir)
 
 ### balon-patlat — Balloon Pop
+**→ GERÇEK MODÜLE ÇEVRİLDİ (F8.35): `com.freerehabhub.balloon-pop`.** Uygulamada basitleştirilmiş
+bir hali var: gerçek hareketli balon sprite'ları/el-landmark çarpışması yerine, her turda sabit
+bir hedef açı (60°'den başlayıp 15°'lik artışlarla) ProgressBar/Label ile gösteriliyor — balon
+"patlaması" o turun hedef açısına ulaşıp kolun tekrar indirilmesiyle tetikleniyor. Detay:
+`docs/PROGRESS.md` F8.35.
 - **displayName:** TR "Balon Patlat" / EN "Balloon Pop"
 - **description TR:** Ekranın altından yukarı doğru çıkan balonları, kolunuzu kaldırarak
   (omuz fleksiyonu) patlatın — balonlar gittikçe daha yüksekte beliriyor.
@@ -179,6 +186,11 @@ karşılıkları `Discipline` enum'unda ayrı bir "bilişsel" değeri olmadığ�
 eklemek ayrı, daha büyük bir mimari karar olurdu, bu tasarım turunda önerilmiyor.
 
 ### hafiza-kartlari — Memory Match
+**→ GERÇEK MODÜLE ÇEVRİLDİ (F8.35): `com.freerehabhub.memory-match`.** Uygulamada sabit 6 çift
+(12 kart) ile — resim/görsel asset yerine renkli kartlar kullanılıyor (`color-sort`'la aynı
+asset-siz yaklaşım). Skor iki bileşenli: tamamlama oranı (kaç çift bulundu) + verimlilik
+(kaç denemede bulundu) — sadece "toplam çift / deneme" kullanmak erken çıkışta skoru yanlış
+şişirirdi, bu yol boyunca bulunup düzeltildi. Detay: `docs/PROGRESS.md` F8.35.
 - **displayName:** TR "Hafıza Kartları" / EN "Memory Match"
 - **description TR:** Ters çevrilmiş kart çiftlerini sırayla açıp eşleşenleri bulun —
   hangi kartın nerede olduğunu hatırlamanız gerekiyor.

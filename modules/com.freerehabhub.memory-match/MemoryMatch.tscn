@@ -1,0 +1,75 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/com.freerehabhub.memory-match/MemoryMatchController.cs" id="1"]
+
+[node name="MemoryMatch" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_statusLabelPath = NodePath("Layout/StatusLabel")
+_cardsContainerPath = NodePath("Layout/CardsContainer")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 14
+
+[node name="StatusLabel" type="Label" parent="Layout"]
+theme_type_variation = &"TitleLabel"
+text = "Eşleşen: 0 / 6  (Deneme: 0)"
+horizontal_alignment = 1
+
+[node name="CardsContainer" type="GridContainer" parent="Layout"]
+size_flags_horizontal = 4
+size_flags_vertical = 4
+columns = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="CardButton0" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton1" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton2" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton3" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton4" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton5" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton6" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton7" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton8" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton9" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton10" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"
+
+[node name="CardButton11" type="Button" parent="Layout/CardsContainer"]
+custom_minimum_size = Vector2(80, 80)
+theme_type_variation = &"PrimaryButton"

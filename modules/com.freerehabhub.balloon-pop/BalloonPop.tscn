@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/com.freerehabhub.balloon-pop/BalloonPopController.cs" id="1"]
+
+[node name="BalloonPop" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+_balloonLabelPath = NodePath("Layout/BalloonLabel")
+_angleLabelPath = NodePath("Layout/AngleLabel")
+_statusLabelPath = NodePath("Layout/StatusLabel")
+_angleProgressBarPath = NodePath("Layout/AngleProgressBar")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 10
+
+[node name="BalloonLabel" type="Label" parent="Layout"]
+theme_type_variation = &"TitleLabel"
+text = "Balon: 0 / 6"
+
+[node name="AngleLabel" type="Label" parent="Layout"]
+text = "Açı: 0°"
+
+[node name="StatusLabel" type="Label" parent="Layout"]
+theme_type_variation = &"ErrorLabel"
+text = ""
+autowrap_mode = 2
+
+[node name="AngleProgressBar" type="ProgressBar" parent="Layout"]
+custom_minimum_size = Vector2(0, 32)

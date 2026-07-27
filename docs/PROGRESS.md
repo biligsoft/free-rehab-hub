@@ -2,12 +2,12 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.34 (kod değişikliği yok — sadece `oyunlar.md` genişletildi)
-- Son commit: F8.34 - oyunlar.md'ye 8 bilissel egzersiz oyunu eklendi (bellek/dikkat/yurutucu islevler)
-- F8.33'te `egzersiz.md`/`oyunlar.md` taslaklarından biri ("Renk Kutusu") gerçek bir
-  `com.freerehabhub.color-sort` Exercise modülüne çevrildi — Özel Eğitim disiplininde ilk
-  gerçek modül. F8.34'te `oyunlar.md`'ye 8 yeni bilişsel egzersiz oyunu (hafıza/dikkat/
-  yürütücü işlevler) eklendi, henüz hiçbiri gerçek modüle çevrilmedi — bkz. § Faz 8 sonrası.
+- Son tamamlanan adım: F8.35
+- Son commit: F0.48 - F8.34 icin unutulan docs/PROGRESS.md guncellemesi eklendi
+- F8.35'te kullanıcı isteğiyle oyunlar.md'nin her kategorisinden (kamera-tabanlı, kamerasız,
+  bilişsel) birer örnek daha gerçek modüle çevrildi: `com.freerehabhub.balloon-pop` (kamera
+  tabanlı, arm-raise'in aynı omuz-açısı hesaplamasıyla) ve `com.freerehabhub.memory-match`
+  (bilişsel, kart eşleştirme). Artık 5 gerçek Exercise modülü var — bkz. § Faz 8 sonrası.
   Sıradaki: kullanıcıyla henüz konuşulmadı.
 - F8.32'de kamera/PipeWire riskinin **gerçek** kök nedeni bulundu: F8.22'nin teşhisi (PipeWire
   monitor.v4l2 çift-yönetimi) yanlışmış — asıl engel kullanıcının kendi kurduğu, projeyle
@@ -702,6 +702,59 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   ama isimli ölçeklerin kendisi değil (`clinical-data-handling` skill § 4 telif riski) — gerçek
   modüle çevrilirken jenerik isimlendirme korunmalı ve hiçbir sonuç "bilişsel bozukluk
   taraması" gibi sunulmamalı (§ 5). Hiçbiri henüz gerçek modüle çevrilmedi, sadece tasarım.
+- F8.35 - **İki yeni modül: `com.freerehabhub.balloon-pop` (kamera-tabanlı) ve
+  `com.freerehabhub.memory-match` (bilişsel) — artık her oyunlar.md kategorisinden (kamera,
+  kamerasız, bilişsel) gerçek bir örnek var.**
+  - **`balloon-pop` (Balon Patlat, physiotherapy, `requiredCapabilities: ["camera"]`):**
+    `arm-raise`'in `ShoulderFlexionCalculator`'ı **kasıtlı olarak kopyalandı** (cross-module
+    bağımlılık yerine — her modül core'a/başka modüle dokunmadan bağımsız eklenip
+    kaldırılabilmeli, bkz. `module-development` skill § 3a). 6 tur, her turda hedef açı
+    60°'den başlayıp 15°'lik artışlarla yükseliyor (60,75,90,105,120,135) — `arm-raise`'in
+    aynı hysteresis state machine'i (isArmRaised/maxAngleThisAttempt) kullanılıyor, ama
+    "her rep sayılır" yerine "sadece o turun hedef açısına ulaşılırsa patlamış sayılır".
+    `BalloonPopScorer`: completionRate (patlatılan/toplam) + angleQuality (arm-raise'le aynı
+    formül). **Bu proje için İLK KEZ**: kamera-tabanlı bir `IPoseAwareModule`'ün gerçek UI
+    akışında (modül kütüphanesi → ModuleHost → gerçek oynatış) sentetik `PoseFrame`'lerle
+    uçtan uca doğrulandığı bir sahne testi (`BalloonPopSceneTest.cs`) — `arm-raise`'in
+    kendisi bunu hiç yapmamıştı. Sentetik kare üretimi: kalça/omuz/dirsek `PosePoint`'leri
+    trigonometrik olarak istenen açıyı verecek şekilde kuruluyor (`hip=(0,-1,0)`,
+    `elbow=(sinθ,-cosθ,0)`, `shoulder=(0,0,0)` — `ShoulderFlexionCalculator`'ın formülüyle
+    ters mühendislik). Test 4/6 balonu bilerek patlatıp 2'sini bilerek kaçırarak
+    deterministik kısmi bir skor doğruluyor.
+  - **`memory-match` (Hafıza Kartları, occupationalTherapy+speechTherapy+psychology,
+    kamerasız):** 6 çift (12 kart), gerçek resim/asset yerine renkli butonlar
+    (`color-sort`'la aynı asset-siz yaklaşım) — `Button.Modulate` ile açık/kapalı gösteriliyor.
+    **Yol boyunca yazarken yakalanan gerçek tasarım hatası:** ilk taslakta skor sadece
+    `totalPairs/totalAttempts` idi — erken çıkışta (ör. 6 hedeften sadece 2'si bulunmuşken
+    5 denemeyle çıkılırsa) bu formül 6/5=1.2→clamp 1.0 vererek YANLIŞ ŞEKİLDE tam skor
+    üretirdi. `MemoryMatchScorer` iki bileşenli hale getirildi: completionRate
+    (matchedPairs/totalPairs) + efficiency (matchedPairs/totalAttempts) — artık erken
+    çıkışta skor gerçekten düşük kalıyor (yeni bir xUnit testi, `Score_EarlyExitWith
+    FewPairsMatched_DoesNotInflateScoreAboveCompletionRate`, bu senaryoyu sabitliyor).
+    Yeni sahne testi (`MemoryMatchSceneTest.cs`) "mükemmel hafızalı bir oyuncu botu" gibi
+    davranıyor: her açılan kartın rengini (`Button.Modulate`, herkese açık bir Godot node
+    property'si — private alanlara hiç dokunulmuyor) hatırlayıp bilinen bir eşi varsa onu
+    oynuyor, yoksa yeni bir kart açıyor; gerçek karışık sıra (RNG) bilinmediği için
+    kaçınılmaz olan gerçek eşleşmeme durumlarında geri-çevirme zamanlayıcısının
+    (`Godot.Timer`) da gerçekten çalıştığını (kart `Colors.White`'a dönene kadar aktif
+    bekleyerek, sabit kare sayısı varsaymadan) doğruluyor. **Yol boyunca bulunan/düzeltilen
+    2 gerçek sahne-testi bug'ı:** (1) son çift bulunduğunda modül `Completed`'i anında
+    tetikleyip sahneyi değiştiriyor — test bu durumda artık var olmayan bir `Button`'ın
+    `Modulate`'ini okumaya çalışıp `ObjectDisposedException` fırlatıyordu, `GodotObject
+    .IsInstanceValid()` kontrolüyle düzeltildi; (2) "bilinen bir kart + hiç keşfedilmemiş
+    son kart" kenar durumunda bot algoritması `unexplored[1]`'de `IndexOutOfRangeException`
+    fırlatabiliyordu (son çiftin bir kartı biliniyor ama diğeri hiç açılmamışsa) — bilinen
+    tekil kartı yeni bir kartla eşleştirme önceliği eklenerek düzeltildi.
+  - **Ortak:** her iki modül de `manifest.json`/hardcoded `Manifest` (TR+EN, `MetricLabels`
+    dahil), Godot-bağımsız `Scoring/` sınıfı + xUnit testleri, `ModuleManifestConsistency
+    SceneTest`'e eklendi, `FreeRehabHub.sln`'e `dotnet sln add` ile kayıt. **Sağlamlık
+    kontrolü:** her iki yeni sahne testi de ayrı ayrı geçici olarak bozulup gerçekten
+    `[BAŞARISIZ]` verdiği doğrulandı, sonra geri alınıp temiz duruma dönüldü. Doğrulama:
+    `dotnet build` temiz, `dotnet test FreeRehabHub.sln` 155/155 yeşil (bir tur Services
+    .Tests'te bilinen/tarihsel bir flaky test — muhtemelen MediaPipePoseTrackingServiceTests
+    timing hassasiyeti, F8.09-13'teki aynı aile — tek seferlik başarısız oldu, tekrar
+    çalıştırılınca yeşildi, bu değişikliklerle ilgisi yok), Xvfb+gerçek Godot sahne testleri
+    8/8 geçti.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

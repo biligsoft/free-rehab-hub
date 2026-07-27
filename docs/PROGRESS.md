@@ -2,11 +2,11 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.28
-- Son commit: F8.28 - Modul manifest.json/Manifest'e MetricLabels (TR/EN) eklendi, tutarlilik testleri genisletildi
-- Sıradaki: `MetricKeyFormatter` + 3 çağrı noktasının (ModuleResultPanel/ProgressPanel/PDF rapor)
-  F8.28'de eklenen `MetricLabels` sözlüğünü kullanacak şekilde güncellenmesi — metrik etiketleri
-  hâlâ ekranda mekanik Title Case ile görünüyor, F8.28 sadece veriyi ekledi.
+- Son tamamlanan adım: F8.29
+- Son commit: F8.29 - MetricKeyFormatter + 3 cagri noktasi MetricLabels'i kullanacak sekilde baglandi
+- Metrik etiketi yerelleştirmesi (F8.27'de bulunan risk) F8.28+F8.29 ile tamamlandı — bkz. § Açık
+  riskler. Sıradaki: kullanıcıyla henüz konuşulmadı, açık risk listesindeki diğer maddelerden biri
+  seçilebilir (`localization/strings.csv` kaydı, `ProgressRecord.SessionId` FK'ı, vb.).
 
 ## Faz geçmişi
 
@@ -532,6 +532,29 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   `dotnet build` temiz (Godot ana projesi/Exercise modülleri dahil), `dotnet test
   FreeRehabHub.sln` 132/132 yeşil, Xvfb+gerçek Godot ile sahne testleri 4/4 geçti (genişletilmiş
   `ModuleManifestConsistencySceneTest` dahil).
+- F8.29 - **Metrik etiketi yerelleştirmesi — 2. adım: `MetricKeyFormatter` bağlandı, risk kapandı.**
+  F8.28'de eklenen `ModuleManifest.MetricLabels` verisi bu adımda gerçekten kullanılmaya başlandı.
+  `MetricKeyFormatter.Humanize(key, manifest, locale)`: önce `manifest.MetricLabels`'ta arar,
+  bulamazsa (anahtar eksik VEYA `manifest` null) eski mekanik camelCase→Title Case dönüşümüne
+  düşer — kullanıcı kararı (bkz. F8.28), hiçbir zaman boş/çökük görünmesin diye. 3 çağrı noktası
+  güncellendi: `ModuleResultPanelController` (zaten elindeki `ActiveModuleManifest`'i geçiyor),
+  `ProgressPanelController` (yeni `ResolveManifest(moduleId)` yardımcı metodu — `FormatRecordLine`
+  `static`'ten instance metoda çevrildi, `ResolveModuleDisplayName` da aynı yardımcıyı paylaşıyor),
+  `ProgressReportService.GeneratePdfAsync` (imzaya `string locale` + `modules` tuple'ına
+  `ModuleManifest? Manifest` eklendi — `FreeRehabHub.Services`'in zaten `Modules.Contracts`'a
+  referans verdiği doğrulanmıştı, katman kuralı ihlal edilmedi).
+  **Testler:** yeni `tests/FreeRehabHub.Services.Tests/MetricKeyFormatterTests.cs` (4 senaryo:
+  TR/EN etiket bulundu, anahtar eksik → fallback, manifest null → fallback) + mevcut iki sahne
+  testine (`AssessmentHostSceneTest`, `ProgressPanelAssessmentSceneTest`) gerçek UI'da "Ağrı
+  Seviyesi" metninin göründüğünü doğrulayan assertion eklendi — F8.27'nin bulduğu sorunun
+  gerçekten düzeldiğini, sadece kod okumasıyla değil çalışan uygulamada kanıtlıyor (hem
+  `ModuleResultPanel` hem `ProgressPanel` ekranında). `ProgressReportServiceTests.cs` yeni
+  imzaya uyacak şekilde güncellendi (PDF içeriğinden metin çıkarma bu projede hiç yapılmıyor,
+  önceki testler gibi sadece geçerli PDF üretimini doğruluyor). `module-development` skill'i
+  (§2 tablo, §6 yerelleştirme, §7 kontrol listesi) ve `templates/module-starter/README.md`
+  yeni katkıcılar için `metricLabels` notuyla güncellendi. Doğrulama: `dotnet build` temiz,
+  `dotnet test FreeRehabHub.sln` 136/136 yeşil, Xvfb+gerçek Godot sahne testleri 4/4 geçti.
+  **Metrik etiketi yerelleştirmesi riski (F8.27'de bulundu) F8.28+F8.29 ile tamamen kapandı.**
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -790,4 +813,4 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
 - **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
 - ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — **F8.27'de gerçek UI'dan uçtan uca doğrulandı** (önceden sadece kod okumasıyla teyit edilmişti). Bkz. aşağıdaki Faz 8 sonrası girdisi.
-- **Metrik etiketleri hiç yerelleştirilmiyor (F8.27'de keşfedildi) — DEVAM EDİYOR, 1. adım F8.28'de bitti.** `MetricKeyFormatter.Humanize()` (`ModuleResultPanel`/`ProgressPanel`/PDF rapor — üçünde de kullanılıyor) camelCase metrik anahtarlarını (`painLevel`, `functionalDifficulty`) sadece mekanik olarak boşluklu Title Case'e çeviriyor ("Pain Level", "Functional Difficulty") — hiçbir çeviri tablosu yok, bu yüzden arayüz Türkçe olsa bile metrik etiketleri her zaman İngilizce görünüyor. CLAUDE.md §14'teki "klinik ölçek normlarının yerelleştirilmesi ayrı, çözülmemiş bir problem" notuyla aynı aile ama tam olarak aynı şey değil (bu, ölçek normu değil, sade bir alan etiketi sorunu). **F8.28'de veri tarafı tamam:** `ModuleManifest.MetricLabels` eklendi, 3 gerçek modül + 2 şablonun TR/EN etiketleri dolduruldu, tutarlılık testleri genişletildi. **Kalan iş:** `MetricKeyFormatter.Humanize` ve 3 çağrı noktası (`ModuleResultPanelController`/`ProgressPanelController`/`ProgressReportService`) bu sözlüğü henüz okumuyor — ekranlarda hâlâ eski mekanik dönüşüm görünüyor, bu risk tam kapanmadı.
+- ~~Metrik etiketleri hiç yerelleştirilmiyor~~ — **F8.28+F8.29'da tamamen çözüldü.** F8.27'de keşfedildi: `MetricKeyFormatter.Humanize()` camelCase metrik anahtarlarını (`painLevel`, `functionalDifficulty`) sadece mekanik olarak Title Case'e çeviriyordu ("Pain Level"), hiçbir çeviri tablosu yoktu. F8.28'de `ModuleManifest.MetricLabels` (TR/EN sözlük) eklendi, 3 gerçek modül + 2 şablon dolduruldu, tutarlılık testleri genişletildi. F8.29'da `MetricKeyFormatter.Humanize` + 3 çağrı noktası (`ModuleResultPanelController`/`ProgressPanelController`/`ProgressReportService`) bu sözlüğü kullanacak şekilde bağlandı; gerçek UI'da ("Ağrı Seviyesi" görünüyor) sahne testleriyle doğrulandı. Karşılığı olmayan bir anahtar hâlâ mekanik Title Case'e düşüyor (bilinçli fallback, çökme yok).

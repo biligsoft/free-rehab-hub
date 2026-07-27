@@ -96,6 +96,15 @@ public sealed class AssessmentHostSceneTest : ISceneTest
         SceneAssert.Equal(1.0, lastResult.Metrics["symptomCount"], "symptomCount metriği doğru sayılmalı.");
         SceneAssert.Equal("Sahne testi notu", lastResult.Notes, "Notes alanı doğru taşınmalı.");
 
+        // F8.28: metrik etiketleri artık manifest'in MetricLabels sözlüğünden yerelleştiriliyor —
+        // ModuleResultPanel'in gösterdiği metin, mekanik Title-Case yerine gerçek TR etiket içermeli.
+        var metricsContainer = root.GetNode<VBoxContainer>("ModuleResultPanel/Card/Content/MetricsContainer");
+        var metricsText = string.Join(
+            " | ", metricsContainer.GetChildren().OfType<Label>().Select(label => label.Text));
+        SceneAssert.True(
+            metricsText.Contains("Ağrı Seviyesi", StringComparison.Ordinal),
+            $"ModuleResultPanel metrik listesi 'painLevel' için yerelleştirilmiş TR etiket göstermeli, gerçek: '{metricsText}'");
+
         var history = await appServices.ProgressRecordService!.GetHistoryByPatientIdAsync(patient.Id);
         SceneAssert.Equal(1, history.Count, "Gönderim sonrası tam olarak 1 ProgressRecord kaydedilmeli.");
         SceneAssert.Equal("com.freerehabhub.general-functional-checkin", history[0].ModuleId, "Kaydedilen ProgressRecord doğru modül id'sini taşımalı.");

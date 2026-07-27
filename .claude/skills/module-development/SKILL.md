@@ -34,6 +34,7 @@ Zorunlu alanlar (bkz. `ModuleManifest` sözleşmesi, `FreeRehabHub.Modules.Contr
 | `EntryPointType` | `IModule` implementasyonunun tam nitelikli tip adı |
 | `ScenePath` | Sadece Exercise |
 | `FormSchemaPath` | Sadece Assessment |
+| `MetricLabels` | `Score()`/Scorer'ın ürettiği `ModuleResult.Metrics` sözlüğündeki **her anahtar** için TR+EN etiket (bkz. § 6) — zorunlu değil ama boş bırakılan bir anahtar sonuç/ilerleme/PDF rapor ekranlarında mekanik camelCase→Title Case dönüşümüne düşer (F8.28) |
 
 ## 3a. Exercise modülü implementasyonu
 
@@ -66,9 +67,12 @@ Elle bir registry dosyasına ekleme **yapma**. `IModuleRegistry.GetAvailableModu
 
 `DisplayName`, `Description` ve modül içi tüm kullanıcıya görünen metinler TR ve EN için `localization/` sözlüğüne eklenir. Sabit kodlanmış (hardcoded) UI metni modül kodunda yasak.
 
+**Metrik etiketleri:** `Score()`/Scorer'ın `ModuleResult.Metrics`'e yazdığı her anahtar (ör. `completedReps`, `painLevel`) `manifest.json`'daki `metricLabels`'a VE hardcoded C# `Manifest.MetricLabels`'a TR+EN eklenmeli — bu, sonuç ekranı/ilerleme grafiği/PDF raporunda o metriğin nasıl görüneceğini belirler (`MetricKeyFormatter.Humanize`, `FreeRehabHub.Services`). Yeni bir metrik anahtarı eklerken veya var olanın adını değiştirirken burayı unutma: karşılığı olmayan bir anahtar sessizce mekanik bir Title-Case dönüşümüne düşer (çökmez, ama TR arayüzde bile İngilizce görünür — bkz. F8.27/F8.28).
+
 ## 7. PR öncesi kontrol listesi
 
 - [ ] `manifest.json` iki dilde de dolu
+- [ ] `Metrics`'e yazılan her anahtarın `metricLabels`'ta TR+EN karşılığı var (bkz. § 6)
 - [ ] `manifest.json` ↔ C# `Manifest` içeriği birebir aynı — yeni modül, tutarlılık testine eklendi (bkz. `testing-approach` skill § 4)
 - [ ] Scoring mantığı Godot-bağımsız bir sınıfta ve test edilmiş
 - [ ] `RequiredCapabilities` doğru beyan edilmiş (özellikle kamera)

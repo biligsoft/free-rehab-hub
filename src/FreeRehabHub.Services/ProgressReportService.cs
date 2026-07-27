@@ -1,6 +1,7 @@
 using System.Text;
 using FreeRehabHub.Domain;
 using FreeRehabHub.Domain.Repositories;
+using FreeRehabHub.Modules.Contracts;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
 using PdfSharp.Pdf;
@@ -41,7 +42,8 @@ public sealed class ProgressReportService
         Patient patient,
         Therapist therapist,
         IReadOnlyList<ProgressRecord> history,
-        IReadOnlyList<(string ModuleId, string DisplayName)> modules,
+        IReadOnlyList<(string ModuleId, string DisplayName, ModuleManifest? Manifest)> modules,
+        string locale,
         string outputFilePath,
         CancellationToken cancellationToken = default)
     {
@@ -66,7 +68,7 @@ public sealed class ProgressReportService
         cursorY = DrawWrapped(graphics, DisclaimerText, bodyFont, cursorY, contentWidth);
         cursorY += SectionSpacingPoints;
 
-        foreach (var (moduleId, displayName) in modules)
+        foreach (var (moduleId, displayName, manifest) in modules)
         {
             var moduleRecords = history
                 .Where(record => record.ModuleId == moduleId)
@@ -83,7 +85,7 @@ public sealed class ProgressReportService
             foreach (var record in moduleRecords)
             {
                 (page, graphics, cursorY) = EnsureSpace(document, page, graphics, cursorY, LineHeightPoints);
-                cursorY = DrawLine(graphics, FormatRecordLine(record), bodyFont, cursorY);
+                cursorY = DrawLine(graphics, FormatRecordLine(record, manifest, locale), bodyFont, cursorY);
             }
 
             cursorY += SectionSpacingPoints;
@@ -104,11 +106,12 @@ public sealed class ProgressReportService
             cancellationToken);
     }
 
-    private static string FormatRecordLine(ProgressRecord record)
+    private static string FormatRecordLine(ProgressRecord record, ModuleManifest? manifest, string locale)
     {
         var metricsText = string.Join(
             ", ",
-            record.Metrics.Select(metric => $"{MetricKeyFormatter.Humanize(metric.Key)}: {metric.Value:0.##}"));
+            record.Metrics.Select(metric =>
+                $"{MetricKeyFormatter.Humanize(metric.Key, manifest, locale)}: {metric.Value:0.##}"));
         var scoreText = $"{record.CompletedAt:dd.MM.yyyy HH:mm} — {record.NormalizedScore:P0}";
         return metricsText.Length == 0 ? scoreText : $"{scoreText} ({metricsText})";
     }

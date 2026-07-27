@@ -88,7 +88,8 @@ public partial class ModuleResultPanelController : Control
 
         foreach (var (key, value) in result.Metrics)
         {
-            _metricsContainer.AddChild(new Label { Text = $"{MetricKeyFormatter.Humanize(key)}: {value:0.##}" });
+            var label = MetricKeyFormatter.Humanize(key, manifest, _localization.CurrentLocale);
+            _metricsContainer.AddChild(new Label { Text = $"{label}: {value:0.##}" });
         }
     }
 

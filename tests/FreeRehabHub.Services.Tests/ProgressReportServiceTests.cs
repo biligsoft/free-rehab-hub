@@ -1,6 +1,7 @@
 using System.Text;
 using FreeRehabHub.Core;
 using FreeRehabHub.Domain;
+using FreeRehabHub.Modules.Contracts;
 using FreeRehabHub.Services.Tests.Fakes;
 using PdfSharp.Pdf.IO;
 using Xunit;
@@ -42,9 +43,12 @@ public sealed class ProgressReportServiceTests : IDisposable
             NewRecord("com.freerehabhub.arm-raise", 0.5, new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Utc)),
             NewRecord("com.freerehabhub.arm-raise", 0.8, new DateTime(2026, 2, 1, 9, 0, 0, DateTimeKind.Utc))
         };
-        var modules = new List<(string ModuleId, string DisplayName)> { ("com.freerehabhub.arm-raise", "Kol Kaldırma") };
+        var modules = new List<(string ModuleId, string DisplayName, ModuleManifest? Manifest)>
+        {
+            ("com.freerehabhub.arm-raise", "Kol Kaldırma", null)
+        };
 
-        await service.GeneratePdfAsync(_patient, _therapist, history, modules, _outputFilePath);
+        await service.GeneratePdfAsync(_patient, _therapist, history, modules, "tr", _outputFilePath);
 
         Assert.True(File.Exists(_outputFilePath));
         var header = Encoding.ASCII.GetString(File.ReadAllBytes(_outputFilePath), 0, 5);
@@ -67,9 +71,12 @@ public sealed class ProgressReportServiceTests : IDisposable
                 0.5,
                 new DateTime(2026, 1, 1, 9, 0, 0, DateTimeKind.Utc).AddDays(index)))
             .ToList();
-        var modules = new List<(string ModuleId, string DisplayName)> { ("com.freerehabhub.arm-raise", "Kol Kaldırma") };
+        var modules = new List<(string ModuleId, string DisplayName, ModuleManifest? Manifest)>
+        {
+            ("com.freerehabhub.arm-raise", "Kol Kaldırma", null)
+        };
 
-        await service.GeneratePdfAsync(_patient, _therapist, history, modules, _outputFilePath);
+        await service.GeneratePdfAsync(_patient, _therapist, history, modules, "tr", _outputFilePath);
 
         using var reopened = PdfReader.Open(_outputFilePath, PdfDocumentOpenMode.Import);
         Assert.True(reopened.PageCount > 1);

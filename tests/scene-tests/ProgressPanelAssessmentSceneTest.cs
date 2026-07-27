@@ -87,6 +87,11 @@ public sealed class ProgressPanelAssessmentSceneTest : ISceneTest
         SceneAssert.True(
             recordLabel.Text.Contains("65", StringComparison.Ordinal),
             $"Kayıt satırı normalize skoru (%65) içermeli, gerçek metin: '{recordLabel.Text}'");
+        // F8.28: metrik etiketleri artık manifest'in MetricLabels sözlüğünden yerelleştiriliyor —
+        // mekanik Title-Case dönüşümüyle üretilecek "Pain Level" yerine gerçek TR etiket görünmeli.
+        SceneAssert.True(
+            recordLabel.Text.Contains("Ağrı Seviyesi", StringComparison.Ordinal),
+            $"Kayıt satırı 'painLevel' metriğinin yerelleştirilmiş TR etiketini içermeli, gerçek metin: '{recordLabel.Text}'");
 
         SceneAssert.False(pdfReportButton.Disabled, "En az bir kayıt varken PDF Rapor butonu aktif olmalı.");
 

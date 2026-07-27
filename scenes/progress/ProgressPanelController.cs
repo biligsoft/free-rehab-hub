@@ -131,19 +131,26 @@ public partial class ProgressPanelController : Control
         }
     }
 
-    private static string FormatRecordLine(ProgressRecord record)
+    private string FormatRecordLine(ProgressRecord record)
     {
+        var manifest = ResolveManifest(record.ModuleId);
         var metricsText = string.Join(
             ", ",
-            record.Metrics.Select(metric => $"{MetricKeyFormatter.Humanize(metric.Key)}: {metric.Value:0.##}"));
+            record.Metrics.Select(metric =>
+                $"{MetricKeyFormatter.Humanize(metric.Key, manifest, _localization.CurrentLocale)}: {metric.Value:0.##}"));
         var scoreText = $"{record.CompletedAt.ToLocalTime():dd.MM.yyyy HH:mm} — {record.NormalizedScore:P0}";
         return metricsText.Length == 0 ? scoreText : $"{scoreText} ({metricsText})";
     }
 
+    private ModuleManifest? ResolveManifest(string moduleId)
+    {
+        return _moduleRegistryAutoload.Registry.GetAvailableModules()
+            .FirstOrDefault(candidate => candidate.Id == moduleId);
+    }
+
     private string ResolveModuleDisplayName(string moduleId)
     {
-        var manifest = _moduleRegistryAutoload.Registry.GetAvailableModules()
-            .FirstOrDefault(candidate => candidate.Id == moduleId);
+        var manifest = ResolveManifest(moduleId);
         return manifest is null ? moduleId : Localize(manifest.DisplayName);
     }
 
@@ -175,8 +182,11 @@ public partial class ProgressPanelController : Control
 
         try
         {
-            var modules = _moduleIds.Select(id => (ModuleId: id, DisplayName: ResolveModuleDisplayName(id))).ToList();
-            await _appServices.ProgressReportService!.GeneratePdfAsync(patient, therapist, _history, modules, filePath);
+            var modules = _moduleIds
+                .Select(id => (ModuleId: id, DisplayName: ResolveModuleDisplayName(id), Manifest: ResolveManifest(id)))
+                .ToList();
+            await _appServices.ProgressReportService!.GeneratePdfAsync(
+                patient, therapist, _history, modules, _localization.CurrentLocale, filePath);
             _reportStatusLabel.Text = $"Rapor oluşturuldu: {filePath}";
         }
         catch (Exception exception)

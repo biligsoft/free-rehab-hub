@@ -2,11 +2,13 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.33
-- Son commit: F8.32 - Kamera/PipeWire riskinin gercek kok nedeni bulundu (motion_bridge Docker container'i)
+- Son tamamlanan adım: F8.34 (kod değişikliği yok — sadece `oyunlar.md` genişletildi)
+- Son commit: F8.34 - oyunlar.md'ye 8 bilissel egzersiz oyunu eklendi (bellek/dikkat/yurutucu islevler)
 - F8.33'te `egzersiz.md`/`oyunlar.md` taslaklarından biri ("Renk Kutusu") gerçek bir
-  `com.freerehabhub.color-sort` Exercise modülüne çevrildi — bkz. § Faz 8 sonrası. Özel Eğitim
-  disiplininde ilk gerçek modül. Sıradaki: kullanıcıyla henüz konuşulmadı.
+  `com.freerehabhub.color-sort` Exercise modülüne çevrildi — Özel Eğitim disiplininde ilk
+  gerçek modül. F8.34'te `oyunlar.md`'ye 8 yeni bilişsel egzersiz oyunu (hafıza/dikkat/
+  yürütücü işlevler) eklendi, henüz hiçbiri gerçek modüle çevrilmedi — bkz. § Faz 8 sonrası.
+  Sıradaki: kullanıcıyla henüz konuşulmadı.
 - F8.32'de kamera/PipeWire riskinin **gerçek** kök nedeni bulundu: F8.22'nin teşhisi (PipeWire
   monitor.v4l2 çift-yönetimi) yanlışmış — asıl engel kullanıcının kendi kurduğu, projeyle
   ilgisiz bir Docker container'ı (`motion_bridge`, `/dev/video0`'ı doğrudan mount edip tekelen
@@ -684,6 +686,22 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   testleri 6/6 geçti (yeni `ColorSortSceneTest` ilk denemede geçti). Ekran görüntüsüyle görsel
   doğrulama bu adımda yapılmadı — sahne testi zaten gerçek node ağacı üzerinden etkileşiyor,
   istenirse ayrıca eklenebilir.
+- F8.34 - **`oyunlar.md`'ye 8 bilişsel egzersiz oyunu eklendi (kod değişikliği yok).** Kullanıcı
+  isteğiyle bellek/dikkat/yürütücü işlev odaklı yeni bir "Bilişsel Egzersiz Oyunları" bölümü
+  eklendi: Hafıza Kartları (memory match), Farkı Bul (sürdürülen dikkat), Sırayı Tamamla
+  (planlama/sıralama), Renk-Kelime Uyumu (Stroop-esinli seçici dikkat — `color-sort`'un
+  altyapısını yeniden kullanabilir), Çift Görev Meydan Okuması (dual-task/bölünmüş dikkat —
+  `target-tap`'in doğal devamı), Sayı/Renk Dizisi Hatırlama (digit span/çalışma belleği),
+  Kategori Avcısı (set-shifting/bilişsel esneklik, perseverasyon hatası metriği dahil),
+  Labirent Planlayıcı (ileriye dönük planlama — hareket önceden planlanıp toplu uygulanıyor,
+  mevcut anlık-iz-sürme oyunlarından farklı). `Discipline` enum'unda ayrı bir "bilişsel"
+  değeri olmadığından her tasarım en yakın mevcut disipline (occupationalTherapy/
+  speechTherapy/psychology) atandı — yeni bir `Discipline` değeri eklemek ayrı bir mimari
+  karar, bu turda önerilmedi. Notlar bölümüne bilinçli bir klinik uyarı eklendi:
+  Stroop/digit-span gibi görev aileleri gerçek isimli nöropsikolojik testlerden esinleniyor
+  ama isimli ölçeklerin kendisi değil (`clinical-data-handling` skill § 4 telif riski) — gerçek
+  modüle çevrilirken jenerik isimlendirme korunmalı ve hiçbir sonuç "bilişsel bozukluk
+  taraması" gibi sunulmamalı (§ 5). Hiçbiri henüz gerçek modüle çevrilmedi, sadece tasarım.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk

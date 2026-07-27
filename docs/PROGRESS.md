@@ -2,11 +2,13 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.31
+- Son tamamlanan adım: F8.32 (kod değişikliği yok — teşhis + docs güncellemesi)
 - Son commit: F8.31 - ProgressRecord.SessionId gercek TherapySession kaydina baglandi (FK)
-- `ProgressRecord.SessionId` FK riski F8.31'de kapandı (A seçeneği: modül oynatışı başına 1
-  `TherapySession`) — bkz. § Açık riskler. Sıradaki: kullanıcıyla henüz konuşulmadı, açık risk
-  listesi artık kısa (kamera/PipeWire dışında aktif madde kalmadı).
+- F8.32'de kamera/PipeWire riskinin **gerçek** kök nedeni bulundu: F8.22'nin teşhisi (PipeWire
+  monitor.v4l2 çift-yönetimi) yanlışmış — asıl engel kullanıcının kendi kurduğu, projeyle
+  ilgisiz bir Docker container'ı (`motion_bridge`, `/dev/video0`'ı doğrudan mount edip tekelen
+  tutuyor). Kullanıcı "şimdilik dokunma" dedi, risk bilinçli olarak açık kalıyor — bkz. § Açık
+  riskler. Sıradaki: kullanıcıyla henüz konuşulmadı.
 
 ## Faz geçmişi
 
@@ -621,6 +623,32 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
     gerçekten `[BAŞARISIZ]` verdiği doğrulandı, sonra geri alınıp temiz 5/5 durumuna dönüldü.
   Doğrulama: `dotnet build` temiz, `dotnet test FreeRehabHub.sln` 136/136 yeşil, Xvfb+gerçek Godot
   ile sahne testleri 5/5 geçti (4'ten 5'e — yeni Exercise seans testi dahil).
+- F8.32 - **Kamera/PipeWire riski yeniden açıldı ve gerçek kök nedeni bulundu (kod değişikliği
+  yok, sistem-seviyesi teşhis).** Kullanıcı F8.22'nin bulduğu kesin çözümü ("`monitor.v4l2`'yi de
+  devre dışı bırak") denemek istedi. Geçici olarak uygulandı
+  (`~/.config/wireplumber/wireplumber.conf.d/52-disable-v4l2-monitor.conf`, `wireplumber`/
+  `pipewire`/`pipewire-pulse` yeniden başlatıldı) ve doğrulandı: `wpctl status`'ta Video bölümü
+  tamamen boştu, `fuser /dev/video0` hiçbir şey göstermiyordu — yani PipeWire kamerayı artık hiç
+  yönetmiyordu. **Ama `ffmpeg -f v4l2 -i /dev/video0` yine de "Device or resource busy" verdi.**
+  Bu, F8.22'nin teşhisinin (PipeWire'ın kendi monitörünün cihazı tuttuğu) **yanlış/eksik**
+  olduğunu kanıtladı. Derinlemesine bakılınca (`ps aux`, sonra kullanıcının kendi oturumunda
+  `sudo` ile `/proc/<pid>/exe`, `/proc/<pid>/cwd`, `systemctl status <pid>`, `docker inspect`)
+  gerçek sebep ortaya çıktı: **`motion_bridge-motion-bridge` adında, kullanıcının kendi kurduğu,
+  bu projeyle hiç ilgisi olmayan bir Docker container** — `/dev/video0`'ı doğrudan cihaz
+  geçişiyle (`--device=/dev/video0`) mount edip kernel seviyesinde tekelen tutuyordu,
+  `RestartPolicy: unless-stopped` olduğu için kesintisiz (tespit anında 4 gündür) çalışıyordu.
+  Root yetkisiyle çalıştığı için normal kullanıcı `fuser`'ı bu process'i hiç göremiyordu — F8.22'nin
+  "fuser hiçbir şey göstermiyor" bulgusunun neden yanıltıcı olduğu da böylece anlaşıldı. WirePlumber
+  deneyi hemen geri alındı (`52-disable-v4l2-monitor.conf` silindi, servisler yeniden başlatıldı,
+  `wpctl status` F8.22 sonrası duruma birebir döndüğü doğrulandı) — kalıcı hiçbir iz bırakılmadı.
+  Kullanıcıya `motion_bridge` container'ı hakkında ne yapmak istediği soruldu (dokunma / geçici
+  durdurup test et / kalıcı durdur) → **"Şimdilik dokunma"** — container'a hiç dokunulmadı.
+  `CLAUDE.md` §14 bu yeni, doğru teşhisi yansıtacak şekilde güncellendi (F8.22'nin PipeWire
+  bulgusu gerçek ama artık alakasız bir tarihsel not olarak korundu). **Sonuç:** kamera riski
+  hâlâ açık (bilinçli olarak), ama artık YANLIŞ bir teşhise dayanmıyor — kullanıcı isterse
+  `motion_bridge`'i durdurup (`docker stop`, `unless-stopped` yüzünden reboot dahil kendiliğinden
+  geri gelmez) kamerayı gerçekten serbest bırakabilir, bu FreeRehabHub'ın kod tabanını hiç
+  ilgilendirmiyor.
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -875,7 +903,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - ~~SQLCipher şifreleme anahtarı: elle giriş mi, OS keychain mi?~~ — **F8.26'da kalıcı olarak karara bağlandı: elle giriş.** Faz 8 sonrası açık risk taramasında tekrar gündeme alındı (F8.05 sonrası "Faz 8'in sonunda tekrar bakılacak" notu buradaydı). İki seçenek karşılaştırıldı: (A) OS keychain entegrasyonu (Windows Credential Manager P/Invoke, macOS `security` CLI, Linux `secret-tool`/libsecret — üçü de yeni bir NuGet bağımlılığı gerektirmez ama Linux'ta evrensel kurulu değil, fallback gerekir) — gerçek kullanılabilirlik kazancı ama 3 platform-özel backend + sınırlı CI-doğrulanabilirlik riski; (B) mevcut elle-giriş davranışını koru. Kullanıcı B'yi seçti: bu ölçekte tek-kullanıcı/klinik senaryosunda elle giriş kabul edilebilir, projenin minimalizm çizgisiyle tutarlı, KVKK açısından da savunulabilir (OS keychain'in kendisi düzgün kilitli değilse daha az güvenli bile olabilir). LockScreen her açılışta soruyor, hiçbir yere kaydedilmiyor, `SqliteConnectionFactory` anahtarı parametre olarak almaya devam ediyor (F2.12'nin orijinal kararı — artık kalıcı, "geçici" değil). Bu konu tekrar açılmayacak.
 - `assets/.gdignore` mevcut — bir modül `assets/` altındaki ikon/2D/3D varlıklarından birini gerçekten kullanmaya başladığında bu dosya kaldırılmalı (veya sadece kullanılan alt klasör için daraltılmalı), yoksa Godot editörü o varlığı içe aktarmaz.
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
-- **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). F8.22'de daha derin incelendi ve tanı netleşti: `wpctl`/`pw-cli` ile bakıldığında WirePlumber aynı fiziksel USB kamerayı (Azurewave `ov9734`) hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla kalıcı olarak düzeltildi (`~/.config/wireplumber/wireplumber.conf.d/51-disable-libcamera-monitor.conf`, `monitor.libcamera = disabled`), ama asıl "meşgul" hatasını ÇÖZMEDİ. Tamamen temiz bir durumda bile (fuser hiçbir işlem göstermiyor, `pipewire`/`pipewire-pulse` de tam yeniden başlatılmış) hem `ffmpeg -f v4l2` hem PipeWire'ın KENDİ `gst-launch-1.0 pipewiresrc`'i aynı `-16 (Device or resource busy)` hatasını veriyor — yani sorun iki sürecin çakışması değil, PipeWire'ın kendi v4l2 monitörünün cihazı sadece var olduğu için sürekli açık tutması ve bu spesifik kameranın sürücüsünün ikinci HİÇBİR açma denemesine (PipeWire'ın kendisi dahil) izin vermemesi. **Kesin çözüm yolu bulundu ama uygulanmadı:** `monitor.v4l2`'yi de devre dışı bırakmak muhtemelen çözerdi, ama kullanıcıyla konuşulup bilinçli olarak durduruldu — bu günlük kullanılan masaüstü makinede tarayıcı/video görüşme gibi PipeWire-tabanlı diğer kamera kullanımlarını kalıcı olarak bozardı, kapsam bu projenin ihtiyacına göre orantısız büyük bir tradeoff. **Sonuç:** hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir Fedora-özel bulgu, üretim mimarisini etkilemiyor; bu makinede gerçek kamerayla test hâlâ mümkün değil, sentetik/statik görüntüyle pipeline testi (F5.12) geçerli yol olmaya devam ediyor.
+- **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). **F8.32'de gerçek kök nedeni bulundu — F8.22'nin teşhisi (PipeWire'ın kendi `monitor.v4l2`'sinin cihazı tuttuğu) yanlış/eksikmiş.** `monitor.v4l2`'yi geçici olarak devre dışı bırakıp PipeWire'ın kamerayı artık hiç yönetmediği doğrulandıktan sonra bile `ffmpeg -f v4l2` yine "Device or resource busy" verdi. Gerçek sebep: kullanıcının kendi kurduğu, bu projeyle **hiç ilgisi olmayan** bir Docker container (`motion_bridge-motion-bridge`) `/dev/video0`'ı doğrudan cihaz geçişiyle mount edip kernel seviyesinde tekelen tutuyor (`RestartPolicy: unless-stopped` — reboot dahil kendiliğinden gelmeye devam eder) — root yetkisiyle çalıştığı için normal kullanıcı `fuser`'ı bunu hiç göremiyordu. WirePlumber deneyi hemen geri alındı, kalıcı hiçbir iz bırakılmadı. Kullanıcıya soruldu, **"şimdilik dokunma"** dendi — container'a hiç dokunulmadı, risk bilinçli olarak açık bırakıldı. **Sonuç:** PipeWire `monitor.v4l2`/`monitor.libcamera` çift-yönetimi (F8.22) gerçek ama alakasız bir bulguydu; asıl engel hep bu Docker container'ıymış, hedef donanımı (klinik bilgisayarlarda böyle bir container olmayacak) hiç etkilemiyor. Kullanıcı isterse `motion_bridge`'i durdurup kamerayı gerçekten serbest bırakabilir — bu FreeRehabHub'ın kod tabanını hiç ilgilendirmiyor. Bu makinede gerçek kamerayla test hâlâ mümkün değil, sentetik/statik görüntüyle pipeline testi (F5.12) geçerli yol olmaya devam ediyor.
 - ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
 - ~~`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok~~ — **F8.31'de çözüldü** (A seçeneği: modül oynatışı başına 1 `TherapySession`, kullanıcıyla konuşulup seçildi). `ModuleHostController`/`AssessmentHostController` artık her modül başlatışında gerçek bir `TherapySession` oluşturup (`StartedAt`), tamamlanınca kapatıyor (`EndedAt`); `ProgressRecords.SessionId`'ye gerçek bir `REFERENCES TherapySessions(Id)` eklendi. **Bilinçli olarak kapsam dışı bırakılan (B seçeneği):** çok-modüllü bir "ziyaret" kavramı (bir terapi seansında birden fazla modül oynatılıp tek bir seansa bağlanması) — bu, şu an hiç var olmayan yeni bir "ziyaret başlat/bitir" UX'i gerektiriyor, istenirse ayrı bir iş olarak ele alınabilir.
 - ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — **F8.27'de gerçek UI'dan uçtan uca doğrulandı** (önceden sadece kod okumasıyla teyit edilmişti). Bkz. aşağıdaki Faz 8 sonrası girdisi.

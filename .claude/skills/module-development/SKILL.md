@@ -65,7 +65,7 @@ Elle bir registry dosyasına ekleme **yapma**. `IModuleRegistry.GetAvailableModu
 
 ## 6. Yerelleştirme
 
-`DisplayName`, `Description` ve modül içi tüm kullanıcıya görünen metinler TR ve EN için `localization/` sözlüğüne eklenir. Sabit kodlanmış (hardcoded) UI metni modül kodunda yasak.
+`DisplayName`, `Description` ve `MetricLabels` (bkz. aşağıda) `LocalizedText` (`Tr`/`En`) tipinde alanlar — hem `manifest.json`'da hem hardcoded C# `Manifest`'te TR+EN dolu olmalı. Godot'un native CSV-tabanlı çeviri sistemi (`TranslationServer`) modül içeriği için **kullanılmıyor** — hiçbir modül veya ekran ona bağlı değil, bu amaçla var olan `localization/strings.csv` scaffold'u hiçbir yerde referans edilmediği için kullanılmayan ölü kod olarak kaldırıldı (F8.30). Modül içeriğinin TR/EN'i her zaman doğrudan `LocalizedText` alanlarıyla taşınır. Sabit kodlanmış (hardcoded) tek dilli UI metni modül kodunda yasak.
 
 **Metrik etiketleri:** `Score()`/Scorer'ın `ModuleResult.Metrics`'e yazdığı her anahtar (ör. `completedReps`, `painLevel`) `manifest.json`'daki `metricLabels`'a VE hardcoded C# `Manifest.MetricLabels`'a TR+EN eklenmeli — bu, sonuç ekranı/ilerleme grafiği/PDF raporunda o metriğin nasıl görüneceğini belirler (`MetricKeyFormatter.Humanize`, `FreeRehabHub.Services`). Yeni bir metrik anahtarı eklerken veya var olanın adını değiştirirken burayı unutma: karşılığı olmayan bir anahtar sessizce mekanik bir Title-Case dönüşümüne düşer (çökmez, ama TR arayüzde bile İngilizce görünür — bkz. F8.27/F8.28).
 

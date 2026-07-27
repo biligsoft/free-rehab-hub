@@ -2,11 +2,12 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.29
-- Son commit: F8.29 - MetricKeyFormatter + 3 cagri noktasi MetricLabels'i kullanacak sekilde baglandi
-- Metrik etiketi yerelleştirmesi (F8.27'de bulunan risk) F8.28+F8.29 ile tamamlandı — bkz. § Açık
+- Son tamamlanan adım: F8.30
+- Son commit: F8.30 - Kullanilmayan localization/strings.csv scaffold'u kaldirildi
+- `localization/strings.csv` kaydı riski (F0.02'den beri açıktı) F8.30'da beklenenden farklı
+  şekilde kapandı: CSV'nin `project.godot`'a kaydı değil, tamamen kaldırılması — bkz. § Açık
   riskler. Sıradaki: kullanıcıyla henüz konuşulmadı, açık risk listesindeki diğer maddelerden biri
-  seçilebilir (`localization/strings.csv` kaydı, `ProgressRecord.SessionId` FK'ı, vb.).
+  seçilebilir (`ProgressRecord.SessionId` FK'ı, vb.).
 
 ## Faz geçmişi
 
@@ -555,6 +556,35 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   yeni katkıcılar için `metricLabels` notuyla güncellendi. Doğrulama: `dotnet build` temiz,
   `dotnet test FreeRehabHub.sln` 136/136 yeşil, Xvfb+gerçek Godot sahne testleri 4/4 geçti.
   **Metrik etiketi yerelleştirmesi riski (F8.27'de bulundu) F8.28+F8.29 ile tamamen kapandı.**
+- F8.30 - **`localization/strings.csv` riski — beklenenden farklı bir kapanış: kayıt değil, kaldırma.**
+  Açık risk listesindeki madde ("CSV import edildi ama `project.godot`'a kaydedilmedi") ele
+  alınmaya başlandı, ama araştırma orijinal tanının eksik olduğunu ortaya çıkardı: CSV'deki 7
+  anahtar (`APP_NAME`, `ROLE_THERAPIST`, `ROLE_CHILD`, `MENU_PATIENTS`, `MENU_SETTINGS`,
+  `ACTION_SAVE`, `ACTION_CANCEL`) kod veya `.tscn` içinde **hiçbir yerde** kullanılmıyordu (grep
+  ile doğrulandı) — `TranslationServer` sadece `LocalizationAutoload.SetLocale()` içinde
+  çağrılıyordu, hiçbir yerde `Tr("ANAHTAR")` çağrısı yoktu. Gerçek ekran metinleri (ör.
+  `PatientFormPanel.tscn`'deki "Kaydet"/"Vazgeç" butonları) doğrudan Türkçe hardcoded — TR/EN
+  geçişi sadece modül içeriği için (manifest `DisplayName`/`Description`, F8.28'in
+  `MetricLabels`'ı) projenin kendi `LocalizedText`/`Localize()` deseniyle çalışıyor, Godot'un
+  native CSV-tabanlı çeviri sistemiyle hiç bağlantısı yok. **Sonuç:** `project.godot`'a CSV'yi
+  kaydetmek (riskin orijinal isteği) hiçbir görünür etki yaratmayacaktı. Kullanıcıya bu bulgu
+  sunuldu, 4 seçenek arasından "kullanılmayan scaffold'u kaldır" seçildi — sabit UI metinlerini
+  gerçekten `Tr()` çağrılarına çevirip işlevsel hale getirmek (daha büyük kapsamlı, ayrı bir iş)
+  veya sadece mekanik kayıt (etkisiz olacağı bilinerek) yerine. Yapılan: `localization/strings.csv`
+  + üretilen `.import`/`.translation` dosyaları `git rm` ile kaldırıldı (klasör artık yok, boş
+  dizin git'te izlenmez). `CLAUDE.md`'nin klasör haritasından `localization/` satırı çıkarıldı.
+  `module-development` skill § 6'daki **yanlış** iddia ("DisplayName/Description `localization/`
+  sözlüğüne eklenir") düzeltildi — gerçekte bu alanlar her zaman doğrudan `LocalizedText` (Tr/En)
+  olarak `manifest.json`/hardcoded `Manifest`'te taşınıyor, `localization/` hiç kullanılmadı;
+  bu yanlış iddia muhtemelen F0.02'de CSV kurulduğunda "böyle olacak" niyetiyle yazılmış ama
+  gerçek modül geliştirme hiç bu yoldan gitmemişti. Doğrulama: `dotnet build`/`dotnet test`
+  temiz (kod değişikliği olmadığı için test sayısı sabit), Xvfb+gerçek Godot ile sahne testleri
+  4/4 geçti (CSV'nin kaldırılması projenin re-import/çalışma davranışını bozmadı), `git status`
+  ile Godot'un stray `.uid`/`project.godot` değişikliği üretmediği teyit edildi.
+  **Bilinçli olarak bu adımın dışında bırakıldı:** sabit UI metinlerinin (buton/panel başlıkları)
+  gerçekten `Tr()` ile yerelleştirilmesi — bu, EN'e geçildiğinde uygulamanın chrome'unun hâlâ
+  Türkçe kalması anlamına geliyor, ayrı ve daha büyük kapsamlı bir iş olarak kalıyor (istenirse
+  ileride ele alınabilir).
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -801,7 +831,7 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 
 ## Açık riskler / bir sonraki fazda hatırlanacaklar
 - ~~GUT (Godot Unit Test) hiç kurulmadı~~ — **F8.19'da çözüldü.** GUT sadece GDScript içindir (README'sinde C# hiç geçmiyor), bu proje tamamen C# olduğu için kullanılamayacağı doğrulandı. Bunun yerine `tests/scene-tests/` altında özel bir C# sahne-test harness'ı yazıldı (`ISceneTest`/`SceneAssert`/`SceneTestRunner`, kalıcı env-var-gated autoload) ve `.github/workflows/ci.yml`'e `scene-tests` job'u (şimdilik sadece `ubuntu-latest`) eklendi. Detay: `testing-approach` skill'i § 3a, PROGRESS.md F8.19.
-- `localization/strings.csv` editörde import edildi (`.import`/`.translation` dosyaları oluştu, F0.02) ama `project.godot`'un `[internationalization]` bölümüne hâlâ kaydedilmedi — Project Settings → Localization'dan elle eklenmesi gerekiyor (TranslationServer çalışma zamanında CSV'yi otomatik almıyor).
+- ~~`localization/strings.csv` `project.godot`'a kaydedilmedi~~ — **F8.30'da çözüldü, ama beklenenden farklı şekilde: kayıt değil, kaldırma.** Araştırma CSV'deki 7 anahtarın kod/`.tscn` içinde hiç kullanılmadığını ortaya çıkardı (gerçek UI metinleri hardcoded Türkçe, modül içeriği TR/EN'i ayrı bir mekanizmayla — `LocalizedText` — çalışıyor) — `project.godot`'a kaydetmenin hiçbir görünür etkisi olmayacaktı. Kullanıcıyla konuşulup dosyalar `git rm` ile kaldırıldı, `CLAUDE.md`/`module-development` skill'i güncellendi (skill'deki yanlış "DisplayName `localization/`'a eklenir" iddiası da düzeltildi). Sabit UI metinlerinin gerçekten `Tr()` ile yerelleştirilmesi bilinçli olarak kapsam dışı bırakıldı — istenirse ayrı bir iş.
 - `SessionContext` F2.11'de, `ModuleRegistryAutoload` F4.03'te eklendi.
 - ~~Modül `manifest.json` ↔ C# `Manifest` tutarlılık testi yok~~ — **F8.24'te eklendi.** İkisinin elle senkron tutulması gereken bilinçli ikiliği (bkz. F4.02) hâlâ geçerli, ama artık bir divergence sessizce fark edilmeden kalamaz: `tests/FreeRehabHub.Modules.Contracts.Tests/ManifestConsistencyTests.cs` (Assessment modülleri, Godot-bağımsız, xUnit) ve `tests/scene-tests/ModuleManifestConsistencySceneTest.cs` (Exercise modülleri, Node-türevi, sahne testi) birlikte 3 gerçek modülün tamamını kapsıyor.
 - **Exercise modülleri kendi `.csproj`'una sahip DEĞİL** (Godot 4'ün "script sadece ana derlemede bulunabilir" motor kısıtlaması yüzünden, bkz. F4.14 ve `module-development` skill § 3a) — yeni bir Exercise modülü eklerken bu farkı unutma: sadece `*Controller.cs`/`Scoring/*.cs` isimlendirme kuralına uy, `.csproj` ekleme. Faz 5'in kamera-tabanlı modülleri de bu kurala tabi olacak.

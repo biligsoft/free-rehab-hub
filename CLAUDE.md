@@ -81,7 +81,6 @@ free-rehab-hub/
 │   └── assessment-forms/
 
 ├── schemas/                         # form motorunun meta-şeması
-├── localization/                    # TR/EN
 ├── themes/
 ├── assets/
 

@@ -12,5 +12,10 @@
   "requiredCapabilities": ["camera"],
   "minAppVersion": "0.1.0",
   "entryPointType": "FreeRehabHub.Modules.ArmRaise.ArmRaiseController",
-  "scenePath": "res://modules/com.freerehabhub.arm-raise/ArmRaise.tscn"
+  "scenePath": "res://modules/com.freerehabhub.arm-raise/ArmRaise.tscn",
+  "metricLabels": {
+    "targetReps": { "tr": "Hedef Tekrar", "en": "Target Reps" },
+    "completedReps": { "tr": "Tamamlanan Tekrar", "en": "Completed Reps" },
+    "averageMaxAngleDegrees": { "tr": "Ortalama Maksimum Açı (°)", "en": "Average Max Angle (°)" }
+  }
 }

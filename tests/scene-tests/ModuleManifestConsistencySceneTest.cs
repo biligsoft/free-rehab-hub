@@ -51,5 +51,15 @@ public sealed class ModuleManifestConsistencySceneTest : ISceneTest
         SceneAssert.Equal(fromCode.MinAppVersion, fromManifestJson.MinAppVersion, $"MinAppVersion ({fromCode.Id})");
         SceneAssert.Equal(fromCode.EntryPointType, fromManifestJson.EntryPointType, $"EntryPointType ({fromCode.Id})");
         SceneAssert.Equal(fromCode.ScenePath, fromManifestJson.ScenePath, $"ScenePath ({fromCode.Id})");
+        SceneAssert.True(
+            fromCode.MetricLabels.Keys.OrderBy(key => key).SequenceEqual(fromManifestJson.MetricLabels.Keys.OrderBy(key => key)),
+            $"MetricLabels anahtarları eşleşmeli ({fromCode.Id})");
+        foreach (var key in fromCode.MetricLabels.Keys)
+        {
+            SceneAssert.Equal(
+                fromCode.MetricLabels[key].Tr, fromManifestJson.MetricLabels[key].Tr, $"MetricLabels[{key}].Tr ({fromCode.Id})");
+            SceneAssert.Equal(
+                fromCode.MetricLabels[key].En, fromManifestJson.MetricLabels[key].En, $"MetricLabels[{key}].En ({fromCode.Id})");
+        }
     }
 }

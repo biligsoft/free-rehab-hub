@@ -34,7 +34,11 @@ public sealed class TemplateAssessment : IAssessmentModule
         RequiredCapabilities = new List<string>(),
         MinAppVersion = "0.1.0",
         EntryPointType = "FreeRehabHub.Modules.TemplateAssessment.TemplateAssessment",
-        FormSchemaPath = "res://templates/module-starter/assessment/form-schema.json"
+        FormSchemaPath = "res://templates/module-starter/assessment/form-schema.json",
+        MetricLabels = new Dictionary<string, LocalizedText>
+        {
+            [ScoreFieldId] = new LocalizedText { Tr = "Skor", En = "Score" }
+        }
     };
 
     public ModuleResult Score(FormSubmission submission, ModuleContext context)

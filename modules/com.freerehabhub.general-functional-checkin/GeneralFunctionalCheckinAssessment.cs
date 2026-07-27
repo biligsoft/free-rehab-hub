@@ -39,7 +39,13 @@ public sealed class GeneralFunctionalCheckinAssessment : IAssessmentModule
         RequiredCapabilities = new List<string>(),
         MinAppVersion = "0.1.0",
         EntryPointType = "FreeRehabHub.Modules.GeneralFunctionalCheckin.GeneralFunctionalCheckinAssessment",
-        FormSchemaPath = "res://content-packs/assessment-forms/general-functional-checkin.json"
+        FormSchemaPath = "res://content-packs/assessment-forms/general-functional-checkin.json",
+        MetricLabels = new Dictionary<string, LocalizedText>
+        {
+            [PainLevelFieldId] = new LocalizedText { Tr = "Ağrı Seviyesi", En = "Pain Level" },
+            [FunctionalDifficultyFieldId] = new LocalizedText { Tr = "Fonksiyonel Zorluk", En = "Functional Difficulty" },
+            ["symptomCount"] = new LocalizedText { Tr = "Belirti Sayısı", En = "Symptom Count" }
+        }
     };
 
     public ModuleResult Score(FormSubmission submission, ModuleContext context)

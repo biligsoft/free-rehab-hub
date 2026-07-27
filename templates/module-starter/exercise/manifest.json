@@ -12,5 +12,9 @@
   "requiredCapabilities": [],
   "minAppVersion": "0.1.0",
   "entryPointType": "FreeRehabHub.Modules.TemplateExercise.TemplateExerciseController",
-  "scenePath": "res://templates/module-starter/exercise/TemplateExercise.tscn"
+  "scenePath": "res://templates/module-starter/exercise/TemplateExercise.tscn",
+  "metricLabels": {
+    "completedRepetitions": { "tr": "Tamamlanan Tekrar", "en": "Completed Repetitions" },
+    "targetRepetitions": { "tr": "Hedef Tekrar", "en": "Target Repetitions" }
+  }
 }

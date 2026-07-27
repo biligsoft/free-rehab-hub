@@ -12,5 +12,8 @@
   "requiredCapabilities": [],
   "minAppVersion": "0.1.0",
   "entryPointType": "FreeRehabHub.Modules.TemplateAssessment.TemplateAssessment",
-  "formSchemaPath": "res://templates/module-starter/assessment/form-schema.json"
+  "formSchemaPath": "res://templates/module-starter/assessment/form-schema.json",
+  "metricLabels": {
+    "score": { "tr": "Skor", "en": "Score" }
+  }
 }

@@ -12,5 +12,11 @@
   "requiredCapabilities": [],
   "minAppVersion": "0.1.0",
   "entryPointType": "FreeRehabHub.Modules.TargetTap.TargetTapController",
-  "scenePath": "res://modules/com.freerehabhub.target-tap/TargetTap.tscn"
+  "scenePath": "res://modules/com.freerehabhub.target-tap/TargetTap.tscn",
+  "metricLabels": {
+    "totalRounds": { "tr": "Toplam Tur", "en": "Total Rounds" },
+    "hitCount": { "tr": "İsabet Sayısı", "en": "Hit Count" },
+    "missCount": { "tr": "Kaçırma Sayısı", "en": "Miss Count" },
+    "averageReactionTimeSeconds": { "tr": "Ortalama Reaksiyon Süresi (sn)", "en": "Average Reaction Time (s)" }
+  }
 }

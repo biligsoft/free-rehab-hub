@@ -12,5 +12,10 @@
   "requiredCapabilities": [],
   "minAppVersion": "0.1.0",
   "entryPointType": "FreeRehabHub.Modules.GeneralFunctionalCheckin.GeneralFunctionalCheckinAssessment",
-  "formSchemaPath": "res://content-packs/assessment-forms/general-functional-checkin.json"
+  "formSchemaPath": "res://content-packs/assessment-forms/general-functional-checkin.json",
+  "metricLabels": {
+    "painLevel": { "tr": "Ağrı Seviyesi", "en": "Pain Level" },
+    "functionalDifficulty": { "tr": "Fonksiyonel Zorluk", "en": "Functional Difficulty" },
+    "symptomCount": { "tr": "Belirti Sayısı", "en": "Symptom Count" }
+  }
 }

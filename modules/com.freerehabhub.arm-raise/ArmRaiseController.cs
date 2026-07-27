@@ -58,7 +58,13 @@ public partial class ArmRaiseController : Node, IExerciseModule, IPoseAwareModul
         RequiredCapabilities = new List<string> { "camera" },
         MinAppVersion = "0.1.0",
         EntryPointType = "FreeRehabHub.Modules.ArmRaise.ArmRaiseController",
-        ScenePath = "res://modules/com.freerehabhub.arm-raise/ArmRaise.tscn"
+        ScenePath = "res://modules/com.freerehabhub.arm-raise/ArmRaise.tscn",
+        MetricLabels = new Dictionary<string, LocalizedText>
+        {
+            ["targetReps"] = new LocalizedText { Tr = "Hedef Tekrar", En = "Target Reps" },
+            ["completedReps"] = new LocalizedText { Tr = "Tamamlanan Tekrar", En = "Completed Reps" },
+            ["averageMaxAngleDegrees"] = new LocalizedText { Tr = "Ortalama Maksimum Açı (°)", En = "Average Max Angle (°)" }
+        }
     };
 
     public event EventHandler<ModuleResult>? Completed;

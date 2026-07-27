@@ -56,7 +56,18 @@ public partial class TargetTapController : Node, IExerciseModule
         RequiredCapabilities = new List<string>(),
         MinAppVersion = "0.1.0",
         EntryPointType = "FreeRehabHub.Modules.TargetTap.TargetTapController",
-        ScenePath = "res://modules/com.freerehabhub.target-tap/TargetTap.tscn"
+        ScenePath = "res://modules/com.freerehabhub.target-tap/TargetTap.tscn",
+        MetricLabels = new Dictionary<string, LocalizedText>
+        {
+            ["totalRounds"] = new LocalizedText { Tr = "Toplam Tur", En = "Total Rounds" },
+            ["hitCount"] = new LocalizedText { Tr = "İsabet Sayısı", En = "Hit Count" },
+            ["missCount"] = new LocalizedText { Tr = "Kaçırma Sayısı", En = "Miss Count" },
+            ["averageReactionTimeSeconds"] = new LocalizedText
+            {
+                Tr = "Ortalama Reaksiyon Süresi (sn)",
+                En = "Average Reaction Time (s)"
+            }
+        }
     };
 
     public event EventHandler<ModuleResult>? Completed;

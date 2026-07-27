@@ -16,4 +16,5 @@ public sealed class ModuleManifest
     public string EntryPointType { get; set; } = string.Empty;
     public string? ScenePath { get; set; }
     public string? FormSchemaPath { get; set; }
+    public Dictionary<string, LocalizedText> MetricLabels { get; set; } = new();
 }

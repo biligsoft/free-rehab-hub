@@ -1,3 +1,4 @@
+using System.Linq;
 using Xunit;
 
 namespace FreeRehabHub.Modules.Contracts.Tests;
@@ -24,5 +25,13 @@ public static class ManifestAssert
         Assert.Equal(fromCode.EntryPointType, fromManifestJson.EntryPointType);
         Assert.Equal(fromCode.ScenePath, fromManifestJson.ScenePath);
         Assert.Equal(fromCode.FormSchemaPath, fromManifestJson.FormSchemaPath);
+        Assert.Equal(
+            fromCode.MetricLabels.Keys.OrderBy(key => key),
+            fromManifestJson.MetricLabels.Keys.OrderBy(key => key));
+        foreach (var key in fromCode.MetricLabels.Keys)
+        {
+            Assert.Equal(fromCode.MetricLabels[key].Tr, fromManifestJson.MetricLabels[key].Tr);
+            Assert.Equal(fromCode.MetricLabels[key].En, fromManifestJson.MetricLabels[key].En);
+        }
     }
 }

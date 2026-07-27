@@ -43,7 +43,12 @@ public partial class TemplateExerciseController : Node, IExerciseModule
         RequiredCapabilities = new List<string>(),
         MinAppVersion = "0.1.0",
         EntryPointType = "FreeRehabHub.Modules.TemplateExercise.TemplateExerciseController",
-        ScenePath = "res://templates/module-starter/exercise/TemplateExercise.tscn"
+        ScenePath = "res://templates/module-starter/exercise/TemplateExercise.tscn",
+        MetricLabels = new Dictionary<string, LocalizedText>
+        {
+            ["completedRepetitions"] = new LocalizedText { Tr = "Tamamlanan Tekrar", En = "Completed Repetitions" },
+            ["targetRepetitions"] = new LocalizedText { Tr = "Hedef Tekrar", En = "Target Repetitions" }
+        }
     };
 
     public event EventHandler<ModuleResult>? Completed;

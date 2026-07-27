@@ -45,6 +45,18 @@ public sealed class ProgressPanelAssessmentSceneTest : ISceneTest
         await appServices.PatientService!.AddAsync(patient, therapist.Id);
         sessionContext.SetActivePatient(patient);
 
+        // ProgressRecords.SessionId artık gerçek bir TherapySessions kaydına FK'li (F8.31) —
+        // AssessmentHostController'ın gerçek üretim akışında yaptığı gibi önce bir seans açıyoruz.
+        var therapySession = new TherapySession
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patient.Id,
+            TherapistId = therapist.Id,
+            StartedAt = DateTime.UtcNow,
+            EndedAt = DateTime.UtcNow
+        };
+        await appServices.TherapySessionService!.AddAsync(therapySession, therapist.Id);
+
         // AssessmentHost'un tüm formu doldurup skorlama akışı zaten AssessmentHostSceneTest'te
         // uçtan uca doğrulanıyor — burada asıl ilgi alanı ProgressPanel/rapor olduğu için
         // ProgressRecord'u doğrudan servis üzerinden ekliyoruz (gerçek üretim kaydı şekli).
@@ -53,7 +65,7 @@ public sealed class ProgressPanelAssessmentSceneTest : ISceneTest
             Id = Guid.NewGuid(),
             PatientId = patient.Id,
             ModuleId = AssessmentModuleId,
-            SessionId = Guid.NewGuid(),
+            SessionId = therapySession.Id,
             CompletedAt = DateTime.UtcNow,
             NormalizedScore = 0.65,
             Metrics = new System.Collections.Generic.Dictionary<string, double>

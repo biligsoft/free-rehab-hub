@@ -61,13 +61,15 @@ public sealed class DatabaseInitializer
 
         CREATE INDEX IF NOT EXISTS idx_prescriptionitems_prescriptionid ON PrescriptionItems(PrescriptionId);
 
-        -- SessionId'ye kasıtlı olarak FK yok: ModuleHost henüz her modül oynatışında gerçek bir
-        -- TherapySessions kaydı oluşturmuyor (bkz. docs/PROGRESS.md açık riskler), sadece tekil bir Guid.
+        -- SessionId artik gercek bir TherapySessions kaydina FK'li (F8.31) — ModuleHost/AssessmentHost
+        -- her modul oynatisinda once bir TherapySession olusturuyor, sonra onun Id'sini kullaniyor.
+        -- NOT: bu FK sadece bu satirdan itibaren OLUSTURULAN veritabanlari icin gecerli — CREATE TABLE
+        -- IF NOT EXISTS var olan bir tabloyu geriye donuk migrate etmez (bkz. F8.01'deki ayni not).
         CREATE TABLE IF NOT EXISTS ProgressRecords (
             Id TEXT PRIMARY KEY,
             PatientId TEXT NOT NULL REFERENCES Patients(Id),
             ModuleId TEXT NOT NULL,
-            SessionId TEXT NOT NULL,
+            SessionId TEXT NOT NULL REFERENCES TherapySessions(Id),
             CompletedAt TEXT NOT NULL,
             NormalizedScore REAL NOT NULL,
             Notes TEXT NULL

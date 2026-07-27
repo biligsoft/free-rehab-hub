@@ -34,6 +34,7 @@ public partial class ModuleHostController : Control
 
     private IExerciseModule? _activeModule;
     private IPoseAwareModule? _poseAwareModule;
+    private TherapySession? _activeSession;
     private bool _isPaused;
     private bool _isCompleted;
 
@@ -95,10 +96,11 @@ public partial class ModuleHostController : Control
         _activeModule = module;
         module.Completed += OnModuleCompleted;
 
+        var sessionId = await StartTherapySessionAsync(patient.Id);
         var context = new ModuleContext
         {
             PatientId = patient.Id,
-            SessionId = Guid.NewGuid(),
+            SessionId = sessionId,
             CompletedAt = DateTime.UtcNow
         };
         await module.InitializeAsync(context);
@@ -200,8 +202,37 @@ public partial class ModuleHostController : Control
             await _appServices.ProgressRecordService.AddAsync(record, therapist.Id);
         }
 
+        if (therapist is not null && _activeSession is not null && _appServices.TherapySessionService is not null)
+        {
+            _activeSession.EndedAt = result.CompletedAt;
+            await _appServices.TherapySessionService.UpdateAsync(_activeSession, therapist.Id);
+        }
+
         _sessionContext.SetLastModuleResult(result);
         GetTree().ChangeSceneToFile(ModuleResultPanelScenePath);
+    }
+
+    // Modul oynatisi = 1 TherapySession (bkz. docs/PROGRESS.md acik riskler, F8.31 karari) —
+    // gercek bir "ziyaret" kavramini degil, tek bir modul oynatisinin baslangic/bitis zamanini
+    // temsil eder. Terapist aktif degilse (beklenmeyen bir durum, ama ProgressRecord kaydiyla
+    // ayni guard) gercek bir seans olusturulmaz, ModuleContext.SessionId rastgele bir Guid'e duser.
+    private async Task<Guid> StartTherapySessionAsync(Guid patientId)
+    {
+        var therapist = _sessionContext.ActiveTherapist;
+        if (therapist is null || _appServices.TherapySessionService is null)
+        {
+            return Guid.NewGuid();
+        }
+
+        _activeSession = new TherapySession
+        {
+            Id = Guid.NewGuid(),
+            PatientId = patientId,
+            TherapistId = therapist.Id,
+            StartedAt = DateTime.UtcNow
+        };
+        await _appServices.TherapySessionService.AddAsync(_activeSession, therapist.Id);
+        return _activeSession.Id;
     }
 
     private void CleanUpActiveModule()

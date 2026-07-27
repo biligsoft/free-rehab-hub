@@ -108,6 +108,14 @@ public sealed class AssessmentHostSceneTest : ISceneTest
         var history = await appServices.ProgressRecordService!.GetHistoryByPatientIdAsync(patient.Id);
         SceneAssert.Equal(1, history.Count, "Gönderim sonrası tam olarak 1 ProgressRecord kaydedilmeli.");
         SceneAssert.Equal("com.freerehabhub.general-functional-checkin", history[0].ModuleId, "Kaydedilen ProgressRecord doğru modül id'sini taşımalı.");
+
+        // F8.31: ProgressRecord.SessionId artık gerçek bir TherapySessions kaydına FK'li —
+        // AssessmentHostController'ın gerçekten bir seans oluşturup kapattığını doğruluyoruz.
+        var therapySession = await appServices.TherapySessionService!.GetByIdAsync(history[0].SessionId, therapist.Id);
+        SceneAssert.NotNull(therapySession, "ProgressRecord.SessionId gerçek bir TherapySessions kaydına işaret etmeli.");
+        SceneAssert.Equal(patient.Id, therapySession!.PatientId, "TherapySession doğru hastaya bağlı olmalı.");
+        SceneAssert.Equal(therapist.Id, therapySession.TherapistId, "TherapySession doğru terapiste bağlı olmalı.");
+        SceneAssert.NotNull(therapySession.EndedAt, "Assessment senkron tamamlandığı için EndedAt dolu olmalı.");
     }
 
     private static async Task WaitFramesAsync(SceneTree sceneTree, int frameCount)

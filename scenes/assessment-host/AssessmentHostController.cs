@@ -99,15 +99,33 @@ public partial class AssessmentHostController : Control
             return;
         }
 
+        // Modul oynatisi = 1 TherapySession (bkz. ModuleHostController'daki ayni desen,
+        // docs/PROGRESS.md acik riskler F8.31). Assessment'ta baslama/skorlama ayni anda
+        // (senkron Score() cagrisi) gerceklestigi icin StartedAt=EndedAt=CompletedAt.
+        var completedAt = DateTime.UtcNow;
+        var therapist = _sessionContext.ActiveTherapist;
+        var sessionId = Guid.NewGuid();
+        if (therapist is not null && _appServices.TherapySessionService is not null)
+        {
+            var session = new TherapySession
+            {
+                Id = sessionId,
+                PatientId = patient.Id,
+                TherapistId = therapist.Id,
+                StartedAt = completedAt,
+                EndedAt = completedAt
+            };
+            await _appServices.TherapySessionService.AddAsync(session, therapist.Id);
+        }
+
         var context = new ModuleContext
         {
             PatientId = patient.Id,
-            SessionId = Guid.NewGuid(),
-            CompletedAt = DateTime.UtcNow
+            SessionId = sessionId,
+            CompletedAt = completedAt
         };
         var result = _activeModule.Score(submission, context);
 
-        var therapist = _sessionContext.ActiveTherapist;
         if (therapist is not null && _appServices.ProgressRecordService is not null)
         {
             var record = new ProgressRecord

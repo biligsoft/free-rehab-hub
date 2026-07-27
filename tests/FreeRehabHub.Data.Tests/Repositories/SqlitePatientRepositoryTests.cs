@@ -105,13 +105,14 @@ public sealed class SqlitePatientRepositoryTests : IDisposable
         var patient = NewPatient("Can Yıldız");
         await _repository.AddAsync(patient);
 
-        await sessionRepository.AddAsync(new TherapySession
+        var session = new TherapySession
         {
             Id = Guid.NewGuid(),
             PatientId = patient.Id,
             TherapistId = therapist.Id,
             StartedAt = DateTime.UtcNow
-        });
+        };
+        await sessionRepository.AddAsync(session);
 
         await prescriptionRepository.AddAsync(new ExercisePrescription
         {
@@ -127,7 +128,7 @@ public sealed class SqlitePatientRepositoryTests : IDisposable
             Id = Guid.NewGuid(),
             PatientId = patient.Id,
             ModuleId = "com.freerehabhub.arm-raise",
-            SessionId = Guid.NewGuid(),
+            SessionId = session.Id,
             CompletedAt = DateTime.UtcNow,
             NormalizedScore = 1.0,
             Metrics = new Dictionary<string, double> { ["completedReps"] = 10 }

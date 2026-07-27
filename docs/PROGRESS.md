@@ -2,12 +2,11 @@
 - CLAUDE.md § Yol Haritası'ndaki 8 fazın tamamı tamamlandı (Faz 8, 2026-07-26). Sonrasında
   açık risk listesi kullanıcıyla gözden geçirilip önceliklendirildi, tek tek ele alınıyor
   (bkz. § Açık riskler ve aşağıdaki "Faz 8 sonrası" bölümü — tüm detay/gerekçe orada).
-- Son tamamlanan adım: F8.30
-- Son commit: F8.30 - Kullanilmayan localization/strings.csv scaffold'u kaldirildi
-- `localization/strings.csv` kaydı riski (F0.02'den beri açıktı) F8.30'da beklenenden farklı
-  şekilde kapandı: CSV'nin `project.godot`'a kaydı değil, tamamen kaldırılması — bkz. § Açık
-  riskler. Sıradaki: kullanıcıyla henüz konuşulmadı, açık risk listesindeki diğer maddelerden biri
-  seçilebilir (`ProgressRecord.SessionId` FK'ı, vb.).
+- Son tamamlanan adım: F8.31
+- Son commit: F8.31 - ProgressRecord.SessionId gercek TherapySession kaydina baglandi (FK)
+- `ProgressRecord.SessionId` FK riski F8.31'de kapandı (A seçeneği: modül oynatışı başına 1
+  `TherapySession`) — bkz. § Açık riskler. Sıradaki: kullanıcıyla henüz konuşulmadı, açık risk
+  listesi artık kısa (kamera/PipeWire dışında aktif madde kalmadı).
 
 ## Faz geçmişi
 
@@ -585,6 +584,43 @@ anlamına geliyor — "artık hiçbir açık yok" anlamına gelmiyor.
   gerçekten `Tr()` ile yerelleştirilmesi — bu, EN'e geçildiğinde uygulamanın chrome'unun hâlâ
   Türkçe kalması anlamına geliyor, ayrı ve daha büyük kapsamlı bir iş olarak kalıyor (istenirse
   ileride ele alınabilir).
+- F8.31 - **`ProgressRecord.SessionId` FK riski kapandı: modül oynatışı başına gerçek bir
+  `TherapySession`.** Araştırma `TherapySession` domain modeli + repository + `TherapySessionService`'in
+  (Faz 2'den beri) zaten tam ve test edilmiş olduğunu ama hiçbir ekran tarafından kullanılmadığını
+  ortaya çıkardı — `ModuleHostController`/`AssessmentHostController` her modül başlatışında sadece
+  `Guid.NewGuid()` üretiyordu, karşılığında hiçbir DB satırı yoktu. Kullanıcıya üç seçenek sunuldu
+  (A: modül-oynatışı-başına seans / B: çok-modüllü ziyaret bazlı seans, yeni UX gerektirir / C:
+  dokunma) — **A seçildi** (minimal, yeni UX yok). Yapılan:
+  - `ModuleHostController.StartModuleAsync`: modül başlamadan önce (`therapist`/`TherapySessionService`
+    mevcutsa) yeni bir `TherapySession` (`StartedAt = DateTime.UtcNow`) oluşturup `TherapySessionService
+    .AddAsync` ile kaydediyor, `Id`'sini `ModuleContext.SessionId` olarak kullanıyor (`_activeSession`
+    alanında saklanıyor). `OnModuleCompleted`: aynı `_activeSession`'ın `EndedAt`'ini `result.CompletedAt`
+    ile güncelleyip `UpdateAsync` çağırıyor — hem doğal tamamlanma hem erken çıkış (`OnDeactivated`
+    üzerinden, `IExerciseModule`'ün "Completed tam bir kez tetiklenir" garantisi sayesinde) aynı yoldan
+    geçtiği için tek bir kapatma noktası yeterli.
+  - `AssessmentHostController.OnFormSubmitted`: Assessment'ta başlama/skorlama senkron tek bir çağrıda
+    olduğu için `StartedAt = EndedAt = completedAt` ile tek adımda oluşturuluyor.
+  - Terapist aktif değilse (beklenmeyen durum, ama `ProgressRecord` kaydıyla aynı guard) gerçek bir
+    seans oluşturulmuyor, `SessionId` eskisi gibi rastgele bir `Guid`'e düşüyor — zarif geri düşme.
+  - `DatabaseInitializer.cs`: `ProgressRecords.SessionId`'ye `REFERENCES TherapySessions(Id)` eklendi,
+    eski "FK yok" yorumu güncellendi. **Not:** `CREATE TABLE IF NOT EXISTS` var olan veritabanlarını
+    geriye dönük migrate etmiyor (bkz. F8.01'deki aynı kısıt) — bu FK sadece bundan sonra oluşturulan
+    veritabanları için geçerli, bu projenin henüz üretime çıkmamış olması nedeniyle kabul edilebilir.
+  - **Testler kırıldı ve düzeltildi:** `PRAGMA foreign_keys = ON` zaten açık olduğundan, gerçek SQLite
+    üzerinden çalışan mevcut testler (`SqliteProgressRecordRepositoryTests`, `SqlitePatientRepositoryTests`
+    'in cascade-delete testi, `ProgressPanelAssessmentSceneTest`) rastgele `SessionId = Guid.NewGuid()`
+    kullanıyordu — yeni FK ile bunlar gerçek bir FK ihlaliyle başarısız olurdu. Hepsi önce gerçek bir
+    `TherapySession` seed edip onun `Id`'sini kullanacak şekilde güncellendi.
+  - **Yeni testler:** `AssessmentHostSceneTest`'e gerçek UI akışının gerçekten bir `TherapySession`
+    oluşturup kapattığını doğrulayan assertion'lar eklendi. Exercise tarafı için hiç var olmayan bir
+    boşluk fark edildi (`ModuleHostController`'ın hiç sahne testi yoktu) — yeni
+    `tests/scene-tests/ModuleHostTherapySessionSceneTest.cs` eklendi: kamerasız `target-tap` modülünü
+    başlatıp hemen Exit'e basarak (round'ları kazanmaya gerek yok, `OnDeactivated` zaten `Completed`'ı
+    tetikliyor) gerçek bir `TherapySession`'ın oluşup kapandığını uçtan uca doğruluyor. **Sağlamlık
+    kontrolü:** `_activeSession.EndedAt` güncellemesi geçici olarak devre dışı bırakılıp test
+    gerçekten `[BAŞARISIZ]` verdiği doğrulandı, sonra geri alınıp temiz 5/5 durumuna dönüldü.
+  Doğrulama: `dotnet build` temiz, `dotnet test FreeRehabHub.sln` 136/136 yeşil, Xvfb+gerçek Godot
+  ile sahne testleri 5/5 geçti (4'ten 5'e — yeni Exercise seans testi dahil).
 
 ### Faz 7 — Çocuk Modu / Kiosk + Erişilebilirlik: tamamlandı (2026-07-26)
 - Kapsam kararı (kullanıcıyla konuşuldu): dört alt özellik var (AccessControlService+kiosk
@@ -841,6 +877,6 @@ doğrulanmadı (SQLCipher'daki aynı platform-doğrulama boşluğuyla aynı kate
 - Bu ortamda artık Godot 4.7 mono binary'si (`~/İndirilenler/godot-4.7-mono/godot`) ve Xvfb kurulu — gerçek Godot render'ından ekran görüntüsü almak/UI doğrulamak için kullanılabiliyor (bkz. F0.07'nin doğrulama yöntemi). Kalıcı bir otomasyon script'i repoya eklenmedi, her seferinde geçici bir GDScript autoload ile kurulup iş bitince temizleniyor.
 - **Faz 5'ten kalan, hâlâ bu ortamda doğrulanamayan şey: gerçek kamerayla uçtan uca akış** (`mediapipe-service` + `com.freerehabhub.arm-raise`). F8.22'de daha derin incelendi ve tanı netleşti: `wpctl`/`pw-cli` ile bakıldığında WirePlumber aynı fiziksel USB kamerayı (Azurewave `ov9734`) hem `monitor.v4l2` hem `monitor.libcamera` ile aynı anda yönetiyordu — bu gereksiz çift-yönetim kullanıcının onayıyla kalıcı olarak düzeltildi (`~/.config/wireplumber/wireplumber.conf.d/51-disable-libcamera-monitor.conf`, `monitor.libcamera = disabled`), ama asıl "meşgul" hatasını ÇÖZMEDİ. Tamamen temiz bir durumda bile (fuser hiçbir işlem göstermiyor, `pipewire`/`pipewire-pulse` de tam yeniden başlatılmış) hem `ffmpeg -f v4l2` hem PipeWire'ın KENDİ `gst-launch-1.0 pipewiresrc`'i aynı `-16 (Device or resource busy)` hatasını veriyor — yani sorun iki sürecin çakışması değil, PipeWire'ın kendi v4l2 monitörünün cihazı sadece var olduğu için sürekli açık tutması ve bu spesifik kameranın sürücüsünün ikinci HİÇBİR açma denemesine (PipeWire'ın kendisi dahil) izin vermemesi. **Kesin çözüm yolu bulundu ama uygulanmadı:** `monitor.v4l2`'yi de devre dışı bırakmak muhtemelen çözerdi, ama kullanıcıyla konuşulup bilinçli olarak durduruldu — bu günlük kullanılan masaüstü makinede tarayıcı/video görüşme gibi PipeWire-tabanlı diğer kamera kullanımlarını kalıcı olarak bozardı, kapsam bu projenin ihtiyacına göre orantısız büyük bir tradeoff. **Sonuç:** hedef donanımdan (çoğunlukla Windows, PipeWire yok) bağımsız bir Fedora-özel bulgu, üretim mimarisini etkilemiyor; bu makinede gerçek kamerayla test hâlâ mümkün değil, sentetik/statik görüntüyle pipeline testi (F5.12) geçerli yol olmaya devam ediyor.
 - ~~Assessment modüllerinin hâlâ gerçek bir oynatma ekranı yok~~ — **F8.18'de çözüldü** (`AssessmentHost.tscn`/Controller, bkz. yukarıdaki F8.18 girdisi).
-- **`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok** (F6.02) — `ModuleHost`, modül başlatırken `TherapySessionService` üzerinden gerçek bir oturum satırı hiç oluşturmuyor, sadece `Guid.NewGuid()` üretiyor (bkz. F5.09/F5.11). İleride gerçek oturum takibi (ör. bir terapi seansında birden fazla modül oynatılması, oturum başlangıç/bitiş zamanı) gerekirse bu bağlantı kurulmalı — Faz 6'nın grafik/rapor ekranları için şimdilik gerekli değil.
+- ~~`ProgressRecord.SessionId`'nin gerçek bir `TherapySessions` kaydına FK'ı yok~~ — **F8.31'de çözüldü** (A seçeneği: modül oynatışı başına 1 `TherapySession`, kullanıcıyla konuşulup seçildi). `ModuleHostController`/`AssessmentHostController` artık her modül başlatışında gerçek bir `TherapySession` oluşturup (`StartedAt`), tamamlanınca kapatıyor (`EndedAt`); `ProgressRecords.SessionId`'ye gerçek bir `REFERENCES TherapySessions(Id)` eklendi. **Bilinçli olarak kapsam dışı bırakılan (B seçeneği):** çok-modüllü bir "ziyaret" kavramı (bir terapi seansında birden fazla modül oynatılıp tek bir seansa bağlanması) — bu, şu an hiç var olmayan yeni bir "ziyaret başlat/bitir" UX'i gerektiriyor, istenirse ayrı bir iş olarak ele alınabilir.
 - ~~İlerleme/PDF rapor özellikleri sadece Exercise modüllerini kapsıyor~~ — **F8.27'de gerçek UI'dan uçtan uca doğrulandı** (önceden sadece kod okumasıyla teyit edilmişti). Bkz. aşağıdaki Faz 8 sonrası girdisi.
 - ~~Metrik etiketleri hiç yerelleştirilmiyor~~ — **F8.28+F8.29'da tamamen çözüldü.** F8.27'de keşfedildi: `MetricKeyFormatter.Humanize()` camelCase metrik anahtarlarını (`painLevel`, `functionalDifficulty`) sadece mekanik olarak Title Case'e çeviriyordu ("Pain Level"), hiçbir çeviri tablosu yoktu. F8.28'de `ModuleManifest.MetricLabels` (TR/EN sözlük) eklendi, 3 gerçek modül + 2 şablon dolduruldu, tutarlılık testleri genişletildi. F8.29'da `MetricKeyFormatter.Humanize` + 3 çağrı noktası (`ModuleResultPanelController`/`ProgressPanelController`/`ProgressReportService`) bu sözlüğü kullanacak şekilde bağlandı; gerçek UI'da ("Ağrı Seviyesi" görünüyor) sahne testleriyle doğrulandı. Karşılığı olmayan bir anahtar hâlâ mekanik Title Case'e düşüyor (bilinçli fallback, çökme yok).

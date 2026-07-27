@@ -1,3 +1,4 @@
+using FreeRehabHub.Core;
 using FreeRehabHub.Data;
 using FreeRehabHub.Data.Repositories;
 using FreeRehabHub.Domain;
@@ -9,20 +10,32 @@ public sealed class SqliteProgressRecordRepositoryTests : IDisposable
 {
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.db");
     private readonly SqliteProgressRecordRepository _repository;
+    private readonly SqliteTherapySessionRepository _sessionRepository;
     private readonly Guid _patientId = Guid.NewGuid();
+    private readonly Guid _therapistId = Guid.NewGuid();
 
     public SqliteProgressRecordRepositoryTests()
     {
         var connectionFactory = new SqliteConnectionFactory(_databasePath, "test-password");
         new DatabaseInitializer(connectionFactory).Initialize();
         _repository = new SqliteProgressRecordRepository(connectionFactory);
+        _sessionRepository = new SqliteTherapySessionRepository(connectionFactory);
 
-        // ProgressRecords, Patients'a FK ile bağlı (PRAGMA foreign_keys = ON) — önce seed lazım.
+        // ProgressRecords, Patients'a VE (F8.31) TherapySessions'a FK ile bağlı
+        // (PRAGMA foreign_keys = ON) — önce ikisini de seed etmek lazım.
         new SqlitePatientRepository(connectionFactory).AddAsync(new Patient
         {
             Id = _patientId,
             FullName = "Test Hasta",
             DateOfBirth = new DateOnly(2000, 1, 1),
+            CreatedAt = DateTime.UtcNow
+        }).GetAwaiter().GetResult();
+
+        new SqliteTherapistRepository(connectionFactory).AddAsync(new Therapist
+        {
+            Id = _therapistId,
+            FullName = "Test Terapist",
+            Discipline = Discipline.Physiotherapy,
             CreatedAt = DateTime.UtcNow
         }).GetAwaiter().GetResult();
     }
@@ -84,12 +97,21 @@ public sealed class SqliteProgressRecordRepositoryTests : IDisposable
 
     private ProgressRecord NewRecord()
     {
+        var session = new TherapySession
+        {
+            Id = Guid.NewGuid(),
+            PatientId = _patientId,
+            TherapistId = _therapistId,
+            StartedAt = DateTime.UtcNow
+        };
+        _sessionRepository.AddAsync(session).GetAwaiter().GetResult();
+
         return new ProgressRecord
         {
             Id = Guid.NewGuid(),
             PatientId = _patientId,
             ModuleId = "com.freerehabhub.arm-raise",
-            SessionId = Guid.NewGuid(),
+            SessionId = session.Id,
             CompletedAt = DateTime.UtcNow,
             NormalizedScore = 0.8,
             Notes = "Test notu"
